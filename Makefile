@@ -22,7 +22,7 @@ clean:
 	test -e $(LIBNAME) && rm $(LIBNAME) || true
 
 test: bin
-	@./$(BINNAME) ./script.kby
+	@./$(BINNAME) ./script.kmb
 	@make clean >> /dev/null
 
 prompt: bin

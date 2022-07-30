@@ -1,0 +1,5 @@
+puts 'Hello, world!'
+name = "Henrique"
+puts "My name is:" name
+puts "Sum:" (1 + (2 + 3))
+puts "END"
