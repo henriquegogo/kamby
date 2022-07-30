@@ -1,80 +1,42 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-typedef enum { NONE, NUM, IDF, STR, EXPR } Type;
-
-struct Node {
-  Type type;
-  char *key;
-  union {
-    long num;
-    char *str;
-    struct Node *chld;
-  };
-  struct Node *(*fn)();
-  struct Node *next;
-};
+#include "kamby.h"
 
 int pos = 0;
 int bol = 1;
 
-struct Node *builtin_set(struct Node *node, struct Node **env) {
-  struct Node *reg = malloc(sizeof(struct Node));
-  memcpy(reg, node->next, sizeof(struct Node));
+struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *reg = malloc(sizeof(struct KaNode));
+  memcpy(reg, node->next, sizeof(struct KaNode));
   reg->key = node->str;
   reg->next = *env;
   *env = reg;
   return node->next;
 }
 
-struct Node *builtin_get(struct Node *node, struct Node **env) {
-  struct Node *reg = *env;
+struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *reg = *env;
   while (reg->next && strcmp(node->str, reg->key) != 0) reg = reg->next;
-  struct Node *result = malloc(sizeof(struct Node));
-  memcpy(result, reg, sizeof(struct Node));
+  struct KaNode *result = malloc(sizeof(struct KaNode));
+  memcpy(result, reg, sizeof(struct KaNode));
   result->next = NULL;
   return result;
 }
 
-struct Node *builtin_sum(struct Node *node, struct Node **env) {
-  struct Node *value = malloc(sizeof(struct Node));
-  value->type = node->type;
-  value->num = node->num + node->next->num;
-  return value;
-}
-
-struct Node *builtin_puts(struct Node *node, struct Node **env) {
-  while (node) {
-    struct Node *value = malloc(sizeof(struct Node));
-    switch (node->type) {
-      case NUM:
-        printf("%lu ", node->num);
-        break;
-      case STR:
-        printf("%s ", node->str);
-        break;
-      default:;
-    }
-    node = node->next;
-  }
-  printf("\b\n");
-  return malloc(sizeof(struct Node));
-}
-
-struct Node *eval(struct Node *node, struct Node **env) {
-  struct Node *head = malloc(sizeof(struct Node));
-  struct Node *tail = head;
+struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *head = malloc(sizeof(struct KaNode));
+  struct KaNode *tail = head;
   
   while (node) {
-    struct Node *value = malloc(sizeof(struct Node));
+    struct KaNode *value = malloc(sizeof(struct KaNode));
     switch (node->type) {
       case EXPR:
-        tail->next = eval(node->chld, env);
+        tail->next = ka_eval(node->chld, env);
         break;
       case IDF:
-        value = builtin_get(node, env);
+        value = ka_get(node, env);
         tail->next = value->type ? value : node;
         break;
       default:
@@ -86,28 +48,28 @@ struct Node *eval(struct Node *node, struct Node **env) {
 
   head = head->next;
   if (head && head->type == IDF) {
-    return builtin_get(head, env)->fn(head->next, env);
+    return ka_get(head, env)->fn(head->next, env);
   }
 
   return head;
 }
 
-struct Node *parse(char *text) {
+struct KaNode *ka_parse(char *text) {
   int length = strlen(text);
-  struct Node *head = malloc(sizeof(struct Node));
-  struct Node *tail = head;
+  struct KaNode *head = malloc(sizeof(struct KaNode));
+  struct KaNode *tail = head;
 
   while (bol) {
     if (bol) bol = 0;  // Beginning of line creates new expression
-    tail->next = malloc(sizeof(struct Node));
+    tail->next = malloc(sizeof(struct KaNode));
     tail->next->type = EXPR;
-    tail->next->chld = parse(text);
+    tail->next->chld = ka_parse(text);
     tail = tail->next;
   }
 
   while (pos < length) {
     int start = pos;
-    struct Node *node = malloc(sizeof(struct Node));
+    struct KaNode *node = malloc(sizeof(struct KaNode));
 
     switch (text[pos]) {
       case ' ':
@@ -118,7 +80,7 @@ struct Node *parse(char *text) {
       case '(': case '[': case '{':
         pos++;
         node->type = EXPR;
-        node->chld = parse(text);
+        node->chld = ka_parse(text);
         break;
       case '\n':
       case ';':
@@ -168,47 +130,14 @@ struct Node *parse(char *text) {
   return head->next;
 }
 
-int main(int argc, char **argv) {
-  struct Node *env = malloc(sizeof(struct Node));
+void ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
+  struct KaNode *def = malloc(sizeof(struct KaNode));
+  def->next = *env;
+  def->key = key;
+  def->fn = fn;
+  *env = def;
+}
 
-  struct Node *def = malloc(sizeof(struct Node));
-  def->next = env;
-  def->key = "=";
-  def->fn = builtin_set;
-  env = def;
-
-  def = malloc(sizeof(struct Node));
-  def->next = env;
-  def->key = "+";
-  def->fn = builtin_sum;
-  env = def;
-
-  def = malloc(sizeof(struct Node));
-  def->next = env;
-  def->key = "puts";
-  def->fn = builtin_puts;
-  env = def;
-
-  if (argc == 1) {
-    char input[1024];
-    while (strcmp(input, "exit\n") != 0) {
-      printf("kamby> ");
-      fflush(stdout);
-      fgets(input, 1024, stdin);
-      eval(parse(input), &env);
-      pos = -1;
-      bol = 1;
-    }
-  } else if (argc == 2) {
-    FILE *file = fopen(argv[1], "r");
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    rewind(file);
-    char *text = malloc(size);
-    fread(text, size, 1, file);
-    eval(parse(text), &env);
-    fclose(file);
-  }
-
-  return 0;
+void ka_init(struct KaNode **env) {
+  ka_fn("=", ka_set, env);
 }
