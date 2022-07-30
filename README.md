@@ -34,7 +34,8 @@ list = [one two three]
 ```
 
 ## Known issues / TODO
-- 
+- Set variables always create a new register. Need to handle variable updates
+- Conditionals and loops not implemented yet
 
 ## License
 MIT

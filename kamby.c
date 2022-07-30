@@ -4,9 +4,6 @@
 
 #include "kamby.h"
 
-int pos = 0;
-int bol = 1;
-
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(sizeof(struct KaNode));
   memcpy(reg, node->next, sizeof(struct KaNode));
@@ -62,68 +59,69 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   return head;
 }
 
-struct KaNode *ka_parse(char *text) {
+struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   int length = strlen(text);
   struct KaNode *head = malloc(sizeof(struct KaNode));
   struct KaNode *tail = head;
 
-  while (bol) {
-    if (bol) bol = 0;  // Beginning of line creates new expression
+  while (!(*pos)->type) {
+    if (!(*pos)->type) (*pos)->type = EXPR;
     tail->next = malloc(sizeof(struct KaNode));
     tail->next->type = EXPR;
-    tail->next->chld = ka_parse(text);
+    tail->next->chld = ka_parse(text, pos);
     tail = tail->next;
   }
 
-  while (pos < length) {
-    int start = pos;
+  while ((*pos)->num < length) {
+    int start = (*pos)->num;
     struct KaNode *node = malloc(sizeof(struct KaNode));
 
-    switch (text[pos]) {
+    switch (text[(*pos)->num]) {
       case ' ':
         break;
       case '#':
-        while (text[pos + 1] != '\n') pos++;
+        while (text[(*pos)->num + 1] != '\n') (*pos)->num++;
         break;
       case '(': case '[': case '{':
-        pos++;
+        (*pos)->num++;
         node->type = EXPR;
-        node->chld = ka_parse(text);
+        node->chld = ka_parse(text, pos);
         break;
       case '\n':
       case ';':
-        pos++;
-        bol = 1;
+        (*pos)->num++;
+        (*pos)->type = NONE;
       case ')': case ']': case '}':
         length = 0;
         continue;
       case '\'':
       case '"':
-        while (text[++pos] != text[start]);
+        while (text[++(*pos)->num] != text[start]);
         node->type = STR;
-        node->str = malloc(pos - start - 1);
-        strncpy(node->str, text + start + 1, pos - start - 1);
+        node->str = malloc((*pos)->num - start - 1);
+        strncpy(node->str, text + start + 1, (*pos)->num - start - 1);
         break;
       default:
-        if (isdigit(text[pos])) {
-          while (isdigit(text[pos + 1])) pos++;
+        if (isdigit(text[(*pos)->num])) {
+          while (isdigit(text[(*pos)->num + 1])) (*pos)->num++;
           node->type = NUM;
           node->num = atoi(text + start);
-        } else if (isgraph(text[pos])) {
-          while (isgraph(text[pos]) && text[pos] != ';' &&
-              text[pos] != '(' && text[pos] != ')' &&
-              text[pos] != '{' && text[pos] != '}' &&
-              text[pos] != '[' && text[pos] != ']') pos++;
+        } else if (isgraph(text[(*pos)->num])) {
+          while (isgraph(text[(*pos)->num]) && text[(*pos)->num] != ';' &&
+              text[(*pos)->num] != '(' && text[(*pos)->num] != ')' &&
+              text[(*pos)->num] != '{' && text[(*pos)->num] != '}' &&
+              text[(*pos)->num] != '[' && text[(*pos)->num] != ']')
+            (*pos)->num++;
           node->type = IDF;
-          node->str = malloc(pos - start);
-          strncpy(node->str, text + start, pos - start);
+          node->str = malloc((*pos)->num - start);
+          strncpy(node->str, text + start, (*pos)->num - start);
           // (2 + 4) -> (+ 2 4) ... (true == true) -> (== true true)
           if (head->next == tail && !node->str[2] && ispunct(text[start])) {
             node->next = head->next;
             head->next = node;
             continue;
           }
-          pos--;
+          (*pos)->num--;
         }
     };
 
@@ -132,7 +130,7 @@ struct KaNode *ka_parse(char *text) {
       tail = tail->next;
     }
 
-    pos++;
+    (*pos)->num++;
   };
   
   return head->next;
