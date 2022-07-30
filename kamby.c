@@ -25,6 +25,14 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   return result;
 }
 
+struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
+  struct KaNode *reg = malloc(sizeof(struct KaNode));
+  reg->next = *env;
+  reg->key = key;
+  reg->fn = fn;
+  return *env = reg;
+}
+
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *head = malloc(sizeof(struct KaNode));
   struct KaNode *tail = head;
@@ -128,14 +136,6 @@ struct KaNode *ka_parse(char *text) {
   };
   
   return head->next;
-}
-
-void ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
-  struct KaNode *def = malloc(sizeof(struct KaNode));
-  def->next = *env;
-  def->key = key;
-  def->fn = fn;
-  *env = def;
 }
 
 void ka_init(struct KaNode **env) {
