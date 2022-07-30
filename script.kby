@@ -1,6 +1,0 @@
-name = "Henrique"
-message = "Good morning"
-2 + 3
-puts "Hello, World!"
-puts 'Single "quote" message'
-puts ">>" name ":" message

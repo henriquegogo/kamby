@@ -13,11 +13,11 @@ struct Node {
     char *str;
     struct Node *chld;
   };
-  struct Node *(*fn)(struct Node, struct Node);
+  struct Node *(*fn)();
   struct Node *next;
 };
 
-int pos = -1;
+int pos = 0;
 int bol = 1;
 
 struct Node *builtin_set(struct Node *node, struct Node **env) {
@@ -25,7 +25,8 @@ struct Node *builtin_set(struct Node *node, struct Node **env) {
   memcpy(reg, node->next, sizeof(struct Node));
   reg->key = node->str;
   reg->next = *env;
-  return *env = reg;
+  *env = reg;
+  return node->next;
 }
 
 struct Node *builtin_get(struct Node *node, struct Node **env) {
@@ -34,11 +35,14 @@ struct Node *builtin_get(struct Node *node, struct Node **env) {
   return reg;
 }
 
-long builtin_sum(struct Node *node, struct Node **env) {
-  return node->num + node->next->num;
+struct Node *builtin_sum(struct Node *node, struct Node **env) {
+  struct Node *value = malloc(sizeof(struct Node));
+  value->type = node->type;
+  value->num = node->num + node->next->num;
+  return value;
 }
 
-void builtin_puts(struct Node *node, struct Node **env) {
+struct Node *builtin_puts(struct Node *node, struct Node **env) {
   while (node) {
     struct Node *value = malloc(sizeof(struct Node));
     switch (node->type) {
@@ -46,8 +50,7 @@ void builtin_puts(struct Node *node, struct Node **env) {
         printf("%lu ", node->num);
         break;
       case IDF:
-        value = builtin_get(node, env);
-        printf("%s ", value->str);
+        printf("%s (PRINT INTERNAL) ", builtin_get(node, env)->str);
         break;
       case STR:
         printf("%s ", node->str);
@@ -57,45 +60,31 @@ void builtin_puts(struct Node *node, struct Node **env) {
     node = node->next;
   }
   printf("\b\n");
+  return malloc(sizeof(struct Node));
 }
 
-char ident[1024];
 struct Node *eval(struct Node *node, struct Node **env) {
-  char *fn = malloc(256);
-  if (node && node->type == IDF) {
-    fn = node->str;
-    node = node->next;
-  }
-
-  if (strcmp(fn, "+") == 0) printf("%lu\n", builtin_sum(node, env));
-  else if (strcmp(fn, "=") == 0) builtin_set(node, env);
-  else if (strcmp(fn, "puts") == 0) builtin_puts(node, env);
+  struct Node *head = malloc(sizeof(struct Node));
+  struct Node *tail = head;
 
   while (node) {
-    switch (node->type) {
-      case NUM:
-        printf("%sNUM: %lu\n", ident, node->num);
-        break;
-      case IDF:
-        printf("%sIDF: %s\n", ident, node->str);
-        break;
-      case STR:
-        printf("%sSTR: %s\n", ident, node->str);
-        break;
-      case EXPR:
-        printf("%sEXPR:\n", ident);
-        strcat(ident, "..");
-        eval(node->chld, env);
-        strcpy(ident, ident + 2);
-        break;
-      default:
-        printf("%sNONE\n", ident);
+    if (node->type == EXPR) {
+      tail->next = eval(node->chld, env);
+    } else if (node->type == IDF) {
+      tail->next = node;
+    } else {
+      tail->next = node;
     }
-
+    tail = tail->next;
     node = node->next;
   }
 
-  return NULL;
+  head = head->next;
+  if (head && head->type == IDF) {
+    return builtin_get(head, env)->fn(head->next, env);
+  }
+
+  return head;
 }
 
 struct Node *parse(char *text) {
@@ -103,9 +92,8 @@ struct Node *parse(char *text) {
   struct Node *head = malloc(sizeof(struct Node));
   struct Node *tail = head;
 
-  while (pos < 0 || bol) {
-    if (pos < 0) pos++;     // First action is create an wrapper expression
-    else if (bol) bol = 0;  // Beginning of line creates new expression
+  while (bol) {
+    if (bol) bol = 0;  // Beginning of line creates new expression
     tail->next = malloc(sizeof(struct Node));
     tail->next->type = EXPR;
     tail->next->chld = parse(text);
@@ -128,6 +116,7 @@ struct Node *parse(char *text) {
         node->chld = parse(text);
         break;
       case '\n':
+      case ';':
         pos++;
         bol = 1;
       case ')': case ']': case '}':
@@ -146,7 +135,7 @@ struct Node *parse(char *text) {
           node->type = NUM;
           node->num = atoi(text + start);
         } else if (isgraph(text[pos])) {
-          while (isgraph(text[pos]) &&
+          while (isgraph(text[pos]) && text[pos] != ';' &&
               text[pos] != '(' && text[pos] != ')' &&
               text[pos] != '{' && text[pos] != '}' &&
               text[pos] != '[' && text[pos] != ']') pos++;
@@ -165,7 +154,7 @@ struct Node *parse(char *text) {
 
     if (node->type) {
       tail->next = node;
-      tail = node;
+      tail = tail->next;
     }
 
     pos++;
@@ -176,6 +165,24 @@ struct Node *parse(char *text) {
 
 int main(int argc, char **argv) {
   struct Node *env = malloc(sizeof(struct Node));
+
+  struct Node *def = malloc(sizeof(struct Node));
+  def->next = env;
+  def->key = "=";
+  def->fn = builtin_set;
+  env = def;
+
+  def = malloc(sizeof(struct Node));
+  def->next = env;
+  def->key = "+";
+  def->fn = builtin_sum;
+  env = def;
+
+  def = malloc(sizeof(struct Node));
+  def->next = env;
+  def->key = "puts";
+  def->fn = builtin_puts;
+  env = def;
 
   if (argc == 1) {
     char input[1024];
