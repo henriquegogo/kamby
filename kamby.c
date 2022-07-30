@@ -31,8 +31,11 @@ struct Node *builtin_set(struct Node *node, struct Node **env) {
 
 struct Node *builtin_get(struct Node *node, struct Node **env) {
   struct Node *reg = *env;
-  while (reg && strcmp(node->str, reg->key) != 0) reg = reg->next;
-  return reg;
+  while (reg->next && strcmp(node->str, reg->key) != 0) reg = reg->next;
+  struct Node *result = malloc(sizeof(struct Node));
+  memcpy(result, reg, sizeof(struct Node));
+  result->next = NULL;
+  return result;
 }
 
 struct Node *builtin_sum(struct Node *node, struct Node **env) {
@@ -49,9 +52,6 @@ struct Node *builtin_puts(struct Node *node, struct Node **env) {
       case NUM:
         printf("%lu ", node->num);
         break;
-      case IDF:
-        printf("%s (PRINT INTERNAL) ", builtin_get(node, env)->str);
-        break;
       case STR:
         printf("%s ", node->str);
         break;
@@ -66,14 +66,19 @@ struct Node *builtin_puts(struct Node *node, struct Node **env) {
 struct Node *eval(struct Node *node, struct Node **env) {
   struct Node *head = malloc(sizeof(struct Node));
   struct Node *tail = head;
-
+  
   while (node) {
-    if (node->type == EXPR) {
-      tail->next = eval(node->chld, env);
-    } else if (node->type == IDF) {
-      tail->next = node;
-    } else {
-      tail->next = node;
+    struct Node *value = malloc(sizeof(struct Node));
+    switch (node->type) {
+      case EXPR:
+        tail->next = eval(node->chld, env);
+        break;
+      case IDF:
+        value = builtin_get(node, env);
+        tail->next = value->type ? value : node;
+        break;
+      default:
+        tail->next = node;
     }
     tail = tail->next;
     node = node->next;
