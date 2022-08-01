@@ -1,4 +1,6 @@
-typedef enum { KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_LIST } KaType;
+typedef enum {
+  KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_BLCK, KA_LIST
+} KaType;
 
 struct KaNode {
   KaType type;

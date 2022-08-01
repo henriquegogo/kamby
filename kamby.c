@@ -169,6 +169,10 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
 
+  // Trim initial breaklines
+  while ((*pos)->num < length && text[(*pos)->num] == '\n') (*pos)->num++;
+
+  // Every line will be wrapped by and expression
   while (!(*pos)->type) {
     if (!(*pos)->type) (*pos)->type = KA_EXPR;
     tail->next = malloc(KANODE_SIZE);
@@ -187,14 +191,14 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
       case '#':
         while (text[(*pos)->num + 1] != '\n') (*pos)->num++;
         break;
+      case '{':
+        (*pos)->type = KA_NONE;
+        node->type = KA_BLCK;
       case '(':
+        if (!node->type) node->type = KA_EXPR;
+      case '[':
+        if (!node->type) node->type = KA_LIST;
         (*pos)->num++;
-        node->type = KA_EXPR;
-        node->chld = ka_parse(text, pos);
-        break;
-      case '[': case '{':
-        (*pos)->num++;
-        node->type = KA_LIST;
         node->chld = ka_parse(text, pos);
         break;
       case '\n':
