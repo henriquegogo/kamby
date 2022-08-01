@@ -14,7 +14,6 @@ struct KaNode *builtin_sum(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
   while (node) {
-    struct KaNode *value = malloc(sizeof(struct KaNode));
     switch (node->type) {
       case NUM:
         printf("%lu ", node->num);

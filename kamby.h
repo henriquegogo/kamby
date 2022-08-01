@@ -12,6 +12,8 @@ struct KaNode {
   struct KaNode *next;
 };
 
+struct KaNode *ka_del(struct KaNode *node, struct KaNode **env);
+
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env);
