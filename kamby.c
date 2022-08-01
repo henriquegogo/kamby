@@ -4,10 +4,27 @@
 
 #include "kamby.h"
 
+struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *reg = *env;
+  if (!node->key); // Node is not a registered variable. Do nothing.
+  else if (strcmp(node->key, reg->key) == 0) *env = (*env)->next;
+  else {
+    while (reg->next) {
+      if (strcmp(node->key, reg->next->key) == 0) {
+        reg->next = reg->next->next;
+        break;
+      }
+      reg = reg->next;
+    }
+  }
+  return malloc(sizeof(struct KaNode));
+}
+
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
+  ka_del(node, env); // If setting an existing register, delete and create new.
   struct KaNode *reg = malloc(sizeof(struct KaNode));
   memcpy(reg, node->next, sizeof(struct KaNode));
-  reg->key = node->str;
+  reg->key = node->key ? node->key : node->str;
   reg->next = *env;
   *env = reg;
   return node->next;
@@ -138,4 +155,5 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 
 void ka_init(struct KaNode **env) {
   ka_fn("=", ka_set, env);
+  ka_fn("del", ka_del, env);
 }

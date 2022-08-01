@@ -9,7 +9,9 @@ Kamby has some conventions to make the syntax more friendly:
 
 ## Built-in commands
 ### Actions
-- Any implemented yet
+- key = 'value'
+- del key
+- puts key 'or text'
 
 ### Operators
 ```
@@ -34,7 +36,6 @@ list = [one two three]
 ```
 
 ## Known issues / TODO
-- Set variables always create a new register. Need to handle variable updates
 - Conditionals and loops not implemented yet
 
 ## License
