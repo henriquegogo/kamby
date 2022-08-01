@@ -149,10 +149,12 @@ struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
 
 struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
   struct KaNode *local = *env;
-  if (node->num) {                                        // 1st condition
-    return ka_eval(node->next->chld, &local);             // 1st block
-  } else if (node->next->next->num) {                     // 2nd condition
-    return ka_eval(node->next->next->next->chld, &local); // 2nd block
+  while (node) {
+    if (node->num) {
+      node = node->next;
+      return node->type == KA_BLCK ? ka_eval(node->chld, &local) : node;
+    }
+    node = node->next->next;
   }
   return malloc(KANODE_SIZE);
 }
@@ -291,5 +293,6 @@ struct KaNode *ka_init() {
   ka_fn("=", ka_getset, &env);
   ka_fn("del", ka_del, &env);
   ka_fn("if", ka_if, &env);
+  ka_fn("?", ka_if, &env);
   return env;
 }
