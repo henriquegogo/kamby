@@ -4,21 +4,82 @@
 
 #include "kamby.h"
 
-struct KaNode *ka_math(struct KaNode *node, struct KaNode **env) {
-  long a = node->num;
-  struct KaNode *op = node->next;
-  long b = node->next->next->num;
-  
-  struct KaNode *output = malloc(sizeof(struct KaNode));
-  output->type = KA_NUM;
-  output->num = strcmp(op->str, "+") == 0 ? a + b :
-    strcmp(op->str, "-") == 0 ? a - b :
-    strcmp(op->str, "*") == 0 ? a * b :
-    strcmp(op->str, "/") == 0 ? a / b : 0;
+#define KANODE_SIZE sizeof(struct KaNode)
 
+// Atom constructors
+struct KaNode *ka_num(long num) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_NUM;
+  output->num = num;
   return output;
 }
 
+struct KaNode *ka_str(char *str) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_STR;
+  output->str = str;
+  return output;
+}
+
+// Operators
+struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_STR) {
+    struct KaNode *output = ka_str(node->str);
+    strcat(output->str, node->next->str);
+    return output;
+  }
+  return ka_num(node->num + node->next->num);
+}
+
+struct KaNode *ka_sub(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num - node->next->num);
+}
+
+struct KaNode *ka_mul(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num * node->next->num);
+}
+
+struct KaNode *ka_div(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num / node->next->num);
+}
+
+struct KaNode *ka_and(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num && node->next->num);
+}
+
+struct KaNode *ka_or(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num || node->next->num);
+}
+
+struct KaNode *ka_eq(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_STR)
+    return ka_num(strcmp(node->str, node->next->str) == 0);
+  return ka_num(node->num == node->next->num);
+}
+
+struct KaNode *ka_not(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_STR)
+    return ka_num(strcmp(node->str, node->next->str) != 0);
+  return ka_num(node->num != node->next->num);
+}
+
+struct KaNode *ka_lt(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num < node->next->num);
+}
+
+struct KaNode *ka_lte(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num <= node->next->num);
+}
+
+struct KaNode *ka_gt(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num > node->next->num);
+}
+
+struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num >= node->next->num);
+}
+
+// Definitions and memory control
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key); // Node is not a registered variable. Do nothing.
@@ -32,13 +93,13 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
       reg = reg->next;
     }
   }
-  return malloc(sizeof(struct KaNode));
+  return malloc(KANODE_SIZE);
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   ka_del(node, env); // If setting an existing register, delete and create new.
-  struct KaNode *reg = malloc(sizeof(struct KaNode));
-  memcpy(reg, node->next, sizeof(struct KaNode));
+  struct KaNode *reg = malloc(KANODE_SIZE);
+  memcpy(reg, node->next, KANODE_SIZE);
   // node->key exists if was returned from registers. If not, is a new register.
   reg->key = node->key ? node->key : node->str;
   reg->next = *env;
@@ -49,26 +110,36 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   while (reg->next && strcmp(node->str, reg->key) != 0) reg = reg->next;
-  struct KaNode *output = malloc(sizeof(struct KaNode));
-  memcpy(output, reg, sizeof(struct KaNode));
+  struct KaNode *output = malloc(KANODE_SIZE);
+  memcpy(output, reg, KANODE_SIZE);
   output->next = NULL;
   return output;
 }
 
 struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
-  struct KaNode *reg = malloc(sizeof(struct KaNode));
+  struct KaNode *reg = malloc(KANODE_SIZE);
   reg->next = *env;
   reg->key = key;
   reg->fn = fn;
   return *env = reg;
 }
 
+struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
+  if (node->num) {
+    return ka_eval(node->next->chld, env);
+  } else if (node->next->next->num) {
+    return ka_eval(node->next->next->next->chld, env);
+  }
+  return malloc(KANODE_SIZE);
+}
+
+// Parser and interpreter
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *head = malloc(sizeof(struct KaNode));
+  struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
   
   while (node) {
-    struct KaNode *value = malloc(sizeof(struct KaNode));
+    struct KaNode *value = malloc(KANODE_SIZE);
     switch (node->type) {
       case KA_EXPR:
         tail->next = ka_eval(node->chld, env);
@@ -94,12 +165,12 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   int length = strlen(text);
-  struct KaNode *head = malloc(sizeof(struct KaNode));
+  struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
 
   while (!(*pos)->type) {
     if (!(*pos)->type) (*pos)->type = KA_EXPR;
-    tail->next = malloc(sizeof(struct KaNode));
+    tail->next = malloc(KANODE_SIZE);
     tail->next->type = KA_EXPR;
     tail->next->chld = ka_parse(text, pos);
     tail = tail->next;
@@ -107,7 +178,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 
   while ((*pos)->num < length) {
     int start = (*pos)->num;
-    struct KaNode *node = malloc(sizeof(struct KaNode));
+    struct KaNode *node = malloc(KANODE_SIZE);
 
     switch (text[(*pos)->num]) {
       case ' ':
@@ -115,9 +186,14 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
       case '#':
         while (text[(*pos)->num + 1] != '\n') (*pos)->num++;
         break;
-      case '(': case '[': case '{':
+      case '(':
         (*pos)->num++;
         node->type = KA_EXPR;
+        node->chld = ka_parse(text, pos);
+        break;
+      case '[': case '{':
+        (*pos)->num++;
+        node->type = KA_LIST;
         node->chld = ka_parse(text, pos);
         break;
       case '\n':
@@ -170,9 +246,21 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 }
 
 struct KaNode *ka_init() {
-  struct KaNode *env = malloc(sizeof(struct KaNode));
+  struct KaNode *env = malloc(KANODE_SIZE);
+  ka_fn("+", ka_add, &env);
+  ka_fn("-", ka_sub, &env);
+  ka_fn("*", ka_mul, &env);
+  ka_fn("/", ka_div, &env);
+  ka_fn("&&", ka_and, &env);
+  ka_fn("||", ka_or, &env);
+  ka_fn("==", ka_eq, &env);
+  ka_fn("!=", ka_not, &env);
+  ka_fn("<", ka_lt, &env);
+  ka_fn("<=", ka_lte, &env);
+  ka_fn(">", ka_gt, &env);
+  ka_fn(">=", ka_gte, &env);
   ka_fn("=", ka_set, &env);
   ka_fn("del", ka_del, &env);
-  ka_fn("calc", ka_math, &env);
+  ka_fn("if", ka_if, &env);
   return env;
 }

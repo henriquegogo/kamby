@@ -1,4 +1,4 @@
-typedef enum { KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR } KaType;
+typedef enum { KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_LIST } KaType;
 
 struct KaNode {
   KaType type;
@@ -11,12 +11,6 @@ struct KaNode {
   struct KaNode *(*fn)();
   struct KaNode *next;
 };
-
-struct KaNode *ka_del(struct KaNode *node, struct KaNode **env);
-
-struct KaNode *ka_set(struct KaNode *node, struct KaNode **env);
-
-struct KaNode *ka_get(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env);
 

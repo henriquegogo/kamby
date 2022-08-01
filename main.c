@@ -5,13 +5,6 @@
 
 #include "kamby.h"
 
-struct KaNode *builtin_sum(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *value = malloc(sizeof(struct KaNode));
-  value->type = node->type;
-  value->num = node->num + node->next->num;
-  return value;
-}
-
 struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
   while (node) {
     switch (node->type) {
@@ -33,7 +26,6 @@ int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = malloc(sizeof(struct KaNode));
 
-  ka_fn("+", builtin_sum, &env);
   ka_fn("puts", builtin_puts, &env);
 
   if (argc == 1) {
