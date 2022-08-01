@@ -17,11 +17,12 @@ struct KaNode *ka_num(long num) {
 struct KaNode *ka_str(char *str) {
   struct KaNode *output = malloc(KANODE_SIZE);
   output->type = KA_STR;
-  output->str = str;
+  output->str = malloc(strlen(str));
+  strcpy(output->str, str);
   return output;
 }
 
-// Operators
+// Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR) {
     struct KaNode *output = ka_str(node->str);
