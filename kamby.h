@@ -1,4 +1,4 @@
-typedef enum { NONE, NUM, IDF, STR, EXPR } KaType;
+typedef enum { KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR } KaType;
 
 struct KaNode {
   KaType type;
@@ -24,4 +24,4 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_parse(char *text, struct KaNode **pos);
 
-void ka_init(struct KaNode **env);
+struct KaNode *ka_init();

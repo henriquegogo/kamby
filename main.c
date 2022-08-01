@@ -15,10 +15,10 @@ struct KaNode *builtin_sum(struct KaNode *node, struct KaNode **env) {
 struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
   while (node) {
     switch (node->type) {
-      case NUM:
+      case KA_NUM:
         printf("%lu ", node->num);
         break;
-      case STR:
+      case KA_STR:
         printf("%s ", node->str);
         break;
       default:;
@@ -30,10 +30,8 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
 }
 
 int main(int argc, char **argv) {
+  struct KaNode *env = ka_init();
   struct KaNode *pos = malloc(sizeof(struct KaNode));
-  struct KaNode *env = malloc(sizeof(struct KaNode));
-
-  ka_init(&env);
 
   ka_fn("+", builtin_sum, &env);
   ka_fn("puts", builtin_puts, &env);
