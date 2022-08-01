@@ -32,7 +32,7 @@ puts message
 
 puts (2 + (2 * 2))
 
-list = [one two three]
+list = [1 2 3 message]
 ```
 
 ## Known issues / TODO

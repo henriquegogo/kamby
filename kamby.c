@@ -4,6 +4,21 @@
 
 #include "kamby.h"
 
+struct KaNode *ka_math(struct KaNode *node, struct KaNode **env) {
+  long a = node->num;
+  struct KaNode *op = node->next;
+  long b = node->next->next->num;
+  
+  struct KaNode *output = malloc(sizeof(struct KaNode));
+  output->type = KA_NUM;
+  output->num = strcmp(op->str, "+") == 0 ? a + b :
+    strcmp(op->str, "-") == 0 ? a - b :
+    strcmp(op->str, "*") == 0 ? a * b :
+    strcmp(op->str, "/") == 0 ? a / b : 0;
+
+  return output;
+}
+
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key); // Node is not a registered variable. Do nothing.
@@ -24,6 +39,7 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   ka_del(node, env); // If setting an existing register, delete and create new.
   struct KaNode *reg = malloc(sizeof(struct KaNode));
   memcpy(reg, node->next, sizeof(struct KaNode));
+  // node->key exists if was returned from registers. If not, is a new register.
   reg->key = node->key ? node->key : node->str;
   reg->next = *env;
   *env = reg;
@@ -33,10 +49,10 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   while (reg->next && strcmp(node->str, reg->key) != 0) reg = reg->next;
-  struct KaNode *result = malloc(sizeof(struct KaNode));
-  memcpy(result, reg, sizeof(struct KaNode));
-  result->next = NULL;
-  return result;
+  struct KaNode *output = malloc(sizeof(struct KaNode));
+  memcpy(output, reg, sizeof(struct KaNode));
+  output->next = NULL;
+  return output;
 }
 
 struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
@@ -54,10 +70,10 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   while (node) {
     struct KaNode *value = malloc(sizeof(struct KaNode));
     switch (node->type) {
-      case EXPR:
+      case KA_EXPR:
         tail->next = ka_eval(node->chld, env);
         break;
-      case IDF:
+      case KA_IDF:
         value = ka_get(node, env);
         tail->next = value->type ? value : node;
         break;
@@ -69,7 +85,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   }
 
   head = head->next;
-  if (head && head->type == IDF) {
+  if (head && head->type == KA_IDF) {
     return ka_get(head, env)->fn(head->next, env);
   }
 
@@ -82,9 +98,9 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   struct KaNode *tail = head;
 
   while (!(*pos)->type) {
-    if (!(*pos)->type) (*pos)->type = EXPR;
+    if (!(*pos)->type) (*pos)->type = KA_EXPR;
     tail->next = malloc(sizeof(struct KaNode));
-    tail->next->type = EXPR;
+    tail->next->type = KA_EXPR;
     tail->next->chld = ka_parse(text, pos);
     tail = tail->next;
   }
@@ -101,27 +117,27 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
         break;
       case '(': case '[': case '{':
         (*pos)->num++;
-        node->type = EXPR;
+        node->type = KA_EXPR;
         node->chld = ka_parse(text, pos);
         break;
       case '\n':
       case ';':
         (*pos)->num++;
-        (*pos)->type = NONE;
+        (*pos)->type = KA_NONE;
       case ')': case ']': case '}':
         length = 0;
         continue;
       case '\'':
       case '"':
         while (text[++(*pos)->num] != text[start]);
-        node->type = STR;
+        node->type = KA_STR;
         node->str = malloc((*pos)->num - start - 1);
         strncpy(node->str, text + start + 1, (*pos)->num - start - 1);
         break;
       default:
         if (isdigit(text[(*pos)->num])) {
           while (isdigit(text[(*pos)->num + 1])) (*pos)->num++;
-          node->type = NUM;
+          node->type = KA_NUM;
           node->num = atoi(text + start);
         } else if (isgraph(text[(*pos)->num])) {
           while (isgraph(text[(*pos)->num]) && text[(*pos)->num] != ';' &&
@@ -129,7 +145,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
               text[(*pos)->num] != '{' && text[(*pos)->num] != '}' &&
               text[(*pos)->num] != '[' && text[(*pos)->num] != ']')
             (*pos)->num++;
-          node->type = IDF;
+          node->type = KA_IDF;
           node->str = malloc((*pos)->num - start);
           strncpy(node->str, text + start, (*pos)->num - start);
           // (2 + 4) -> (+ 2 4) ... (true == true) -> (== true true)
@@ -153,7 +169,10 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   return head->next;
 }
 
-void ka_init(struct KaNode **env) {
-  ka_fn("=", ka_set, env);
-  ka_fn("del", ka_del, env);
+struct KaNode *ka_init() {
+  struct KaNode *env = malloc(sizeof(struct KaNode));
+  ka_fn("=", ka_set, &env);
+  ka_fn("del", ka_del, &env);
+  ka_fn("calc", ka_math, &env);
+  return env;
 }
