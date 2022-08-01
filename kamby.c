@@ -169,16 +169,16 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
 
-  // Trim initial breaklines
-  while ((*pos)->num < length && text[(*pos)->num] == '\n') (*pos)->num++;
-
   // Every line will be wrapped by and expression
   while (!(*pos)->type) {
     if (!(*pos)->type) (*pos)->type = KA_EXPR;
-    tail->next = malloc(KANODE_SIZE);
-    tail->next->type = KA_EXPR;
-    tail->next->chld = ka_parse(text, pos);
-    tail = tail->next;
+    struct KaNode *expr = malloc(KANODE_SIZE);
+    expr->chld = ka_parse(text, pos);
+    if (expr->chld) {
+      expr->type = KA_EXPR;
+      tail->next = expr;
+      tail = tail->next;
+    }
   }
 
   while ((*pos)->num < length) {
