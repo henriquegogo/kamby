@@ -1,10 +1,16 @@
-puts 'Hello, world!'
-name = "Henrique"
-puts "My name is:" name
-puts "Sum:" (1 + (2 + 3))
-puts "END"
+message := 'Hello, World!'    # Define new variable
+puts 'Message:' message       # Return 'Hello, World!'
+message = 'Bye, bye'          # Edit variable value
+puts 'Edited:' message        # Return 'Bye, bye'
+message := 'Hello again!'     # Append 'message' in stack
+puts 'Appended:' message      # Return 'Hello again!'
+puts 'Last removed'
+del message                   # Remove last 'message' in stack
+puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
+puts "Sum:" (1 + (2 + 3))     # Math expressions
+
 if (1) {
-    puts 'yes'
-    puts 'go'
+    message := 'Local scope'  # Append 'message' only for block scope
+    puts 'Local:' message
 } else { puts 'no' }
-puts [1 2 3 'example']
+puts 'Global:' message

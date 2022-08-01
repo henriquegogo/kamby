@@ -9,8 +9,9 @@ Kamby has some conventions to make the syntax more friendly:
 
 ## Built-in commands
 ### Actions
-- key = 'value'
-- del key
+- key := 'value' (Append 'key' in stack)
+- key = 'value'  (Edit last 'key' in stack)
+- del key        (Remove last 'key' from stack)
 - puts key 'or text'
 
 ### Operators

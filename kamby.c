@@ -98,13 +98,35 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
-  ka_del(node, env); // If setting an existing register, delete and create new.
   struct KaNode *reg = malloc(KANODE_SIZE);
   memcpy(reg, node->next, KANODE_SIZE);
   // node->key exists if was returned from registers. If not, is a new register.
   reg->key = node->key ? node->key : node->str;
   reg->next = *env;
   *env = reg;
+  return node->next;
+}
+
+struct KaNode *ka_getset(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *reg = *env;
+  if (!node->key) return ka_set(node, env);
+  while (reg) {
+    if (strcmp(node->key, reg->key) == 0) {
+      reg->type = node->next->type;
+      switch (reg->type) {
+        case KA_EXPR: case KA_BLCK: case KA_LIST:
+          memcpy(reg->chld, node->next->chld, KANODE_SIZE);
+          break;
+        case KA_STR: case KA_IDF:
+          strcpy(reg->str, node->next->str);
+          break;
+        default:
+          reg->num = node->next->num;
+      }
+      break;
+    }
+    reg = reg->next;
+  }
   return node->next;
 }
 
@@ -126,10 +148,11 @@ struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
 }
 
 struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
-  if (node->num) {
-    return ka_eval(node->next->chld, env);
-  } else if (node->next->next->num) {
-    return ka_eval(node->next->next->next->chld, env);
+  struct KaNode *local = *env;
+  if (node->num) {                                        // 1st condition
+    return ka_eval(node->next->chld, &local);             // 1st block
+  } else if (node->next->next->num) {                     // 2nd condition
+    return ka_eval(node->next->next->next->chld, &local); // 2nd block
   }
   return malloc(KANODE_SIZE);
 }
@@ -169,7 +192,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
 
-  // Every line will be wrapped by and expression
+  // Every line will be wrapped by an expression
   while (!(*pos)->type) {
     if (!(*pos)->type) (*pos)->type = KA_EXPR;
     struct KaNode *expr = malloc(KANODE_SIZE);
@@ -264,7 +287,8 @@ struct KaNode *ka_init() {
   ka_fn("<=", ka_lte, &env);
   ka_fn(">", ka_gt, &env);
   ka_fn(">=", ka_gte, &env);
-  ka_fn("=", ka_set, &env);
+  ka_fn(":=", ka_set, &env);
+  ka_fn("=", ka_getset, &env);
   ka_fn("del", ka_del, &env);
   ka_fn("if", ka_if, &env);
   return env;
