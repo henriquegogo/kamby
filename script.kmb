@@ -12,5 +12,10 @@ puts "Sum:" (1 + (2 + 3))     # Math expressions
 if (1) {
     message := 'Local scope'  # Append 'message' only for block scope
     puts 'Local:' message
-} else { puts 'no' }
+} (message) {
+    puts 'Else if'
+} else {
+    puts 'Final else'
+}
+puts (0 ? 'yes' : { 'no' })
 puts 'Global:' message
