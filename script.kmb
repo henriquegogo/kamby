@@ -3,3 +3,4 @@ name = "Henrique"
 puts "My name is:" name
 puts "Sum:" (1 + (2 + 3))
 puts "END"
+if (1) { puts 'yes' } else { puts 'no' }
