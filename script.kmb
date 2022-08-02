@@ -19,3 +19,9 @@ if (1) {
 }
 puts (0 ? 'yes' : { 'no' })
 puts 'Global:' message
+
+# count = 0
+# while {count < 5} {
+#     puts 'Count:' count
+#     count = (count + 1)
+# }

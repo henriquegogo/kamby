@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
     fread(text, size, 1, file);
     struct KaNode *ast = ka_parse(text, &pos);
     ka_tree(ast);
+    printf("\n");
     ka_eval(ast, &env);
     fclose(file);
   }
