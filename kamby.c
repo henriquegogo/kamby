@@ -191,11 +191,14 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   }
 
   head = head->next;
-  if (head && head->type == KA_IDF) {
-    return ka_get(head, env)->fn(head->next, env);
+  switch (head->type) {
+    case KA_IDF:
+      return ka_get(head, env)->fn(head->next, env);
+    case KA_BLCK:
+      return ka_eval(head->chld, env);
+    default:
+      return head;
   }
-
-  return head;
 }
 
 struct KaNode *ka_parse(char *text, struct KaNode **pos) {

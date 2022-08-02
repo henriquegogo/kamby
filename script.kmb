@@ -20,6 +20,9 @@ if (1) {
 puts (0 ? 'yes' : { 'no' })
 puts 'Global:' message
 
+say = { puts 'Proto function' }
+say
+
 # count = 0
 # while {count < 5} {
 #     puts 'Count:' count
