@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = malloc(sizeof(struct KaNode));
 
-  ka_fn("puts", builtin_puts, &env);
+  ka_def(ka_fn("puts", builtin_puts), &env);
 
   if (argc == 1) {
     char input[1024];

@@ -18,9 +18,17 @@ struct KaNode *ka_num(long num);
 
 struct KaNode *ka_str(char *str);
 
-struct KaNode *ka_chain(struct KaNode *node, struct KaNode *next);
+struct KaNode *ka_idf(char *str, struct KaNode *next);
 
-struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env);
+struct KaNode *ka_fn(char *key, struct KaNode *(*fn)());
+
+struct KaNode *ka_def(struct KaNode *node, struct KaNode **env);
+
+struct KaNode *ka_set(struct KaNode *node, struct KaNode **env);
+
+struct KaNode *ka_get(struct KaNode *node, struct KaNode **env);
+
+struct KaNode *ka_del(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env);
 
