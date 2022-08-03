@@ -22,9 +22,13 @@ struct KaNode *ka_str(char *str) {
   return output;
 }
 
-struct KaNode *ka_chain(struct KaNode *node, struct KaNode *next) {
-  node->next = next;
-  return node;
+struct KaNode *ka_idf(char *str, struct KaNode *next) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_IDF;
+  output->str = malloc(strlen(str));
+  strcpy(output->str, str);
+  output->next = next;
+  return output;
 }
 
 // Math and Logical operators
@@ -315,7 +319,7 @@ struct KaNode *ka_init() {
   ka_fn("?", ka_if, &env);
   ka_fn("while", ka_while, &env);
 
-  ka_set(ka_chain(ka_str("false"), ka_num(0)), &env);
+  ka_set(ka_idf("false", ka_num(0)), &env);
 
   return env;
 }
