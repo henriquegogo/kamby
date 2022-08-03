@@ -9,7 +9,7 @@ del message                   # Remove last 'message' in stack
 puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
 puts "Sum:" (1 + (2 + 3))     # Math expressions
 
-if true {
+if false {
     message := 'Local scope'  # Append 'message' only for block scope
     puts 'Local:' message
 } message {
