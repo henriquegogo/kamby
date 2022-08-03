@@ -68,10 +68,12 @@ int main(int argc, char **argv) {
 
   if (argc == 1) {
     char input[1024];
-    while (strcmp(input, "exit\n") != 0) {
+    while (1) {
       printf("kamby> ");
       fflush(stdout);
       fgets(input, 1024, stdin);
+      if (input[0] == '\n') continue;
+      else if (strcmp(input, "exit\n") == 0) break;
       pos = malloc(sizeof(struct KaNode));
       ka_eval(ka_parse(input, &pos), &env);
     }
