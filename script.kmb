@@ -29,3 +29,7 @@ while {count < 3} {
     puts 'COUNT:' count
 }
 puts "END:" count
+
+for {i = 3} {i < 5} {i = (i + 1)} {
+    puts 'I:' i
+}

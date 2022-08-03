@@ -175,6 +175,16 @@ struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   return malloc(KANODE_SIZE);
 }
 
+struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *local = *env;
+  for (ka_eval(node->chld, &local);
+      ka_eval(node->next->chld, &local)->num;
+      ka_eval(node->next->next->chld, &local)) {
+    ka_eval(node->next->next->next->chld, &local);
+  }
+  return malloc(KANODE_SIZE);
+}
+
 // Parser and interpreter
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *head = malloc(KANODE_SIZE);
@@ -318,6 +328,7 @@ struct KaNode *ka_init() {
   ka_def(ka_idf("if", ka_fn(ka_if)), &env);
   ka_def(ka_idf("?", ka_fn(ka_if)), &env);
   ka_def(ka_idf("while", ka_fn(ka_while)), &env);
+  ka_def(ka_idf("for", ka_fn(ka_for)), &env);
 
   ka_def(ka_idf("false", ka_num(0)), &env);
 
