@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = malloc(sizeof(struct KaNode));
 
-  ka_def(ka_fn("puts", builtin_puts), &env);
+  ka_def(ka_idf("puts", ka_fn(builtin_puts)), &env);
 
   if (argc == 1) {
     char input[1024];
@@ -83,8 +83,7 @@ int main(int argc, char **argv) {
     char *text = malloc(size);
     fread(text, size, 1, file);
     struct KaNode *ast = ka_parse(text, &pos);
-    ka_tree(ast);
-    printf("\n");
+    //ka_tree(ast);
     ka_eval(ast, &env);
     fclose(file);
   }

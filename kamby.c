@@ -31,13 +31,9 @@ struct KaNode *ka_idf(char *str, struct KaNode *next) {
   return output;
 }
 
-struct KaNode *ka_fn(char *key, struct KaNode *(*fn)()) {
+struct KaNode *ka_fn(struct KaNode *(*fn)()) {
   struct KaNode *output = malloc(KANODE_SIZE);
-  output->type = KA_IDF;
-  output->key = malloc(strlen(key));
-  strcpy(output->key, key);
-  output->next = malloc(KANODE_SIZE);
-  output->next->fn = fn;
+  output->fn = fn;
   return output;
 }
 
@@ -303,25 +299,25 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 struct KaNode *ka_init() {
   struct KaNode *env = malloc(KANODE_SIZE);
 
-  ka_def(ka_fn("+", ka_add), &env);
-  ka_def(ka_fn("-", ka_sub), &env);
-  ka_def(ka_fn("*", ka_mul), &env);
-  ka_def(ka_fn("/", ka_div), &env);
-  ka_def(ka_fn("&&", ka_and), &env);
-  ka_def(ka_fn("||", ka_or), &env);
-  ka_def(ka_fn("==", ka_eq), &env);
-  ka_def(ka_fn("!=", ka_not), &env);
-  ka_def(ka_fn("<", ka_lt), &env);
-  ka_def(ka_fn("<=", ka_lte), &env);
-  ka_def(ka_fn(">", ka_gt), &env);
-  ka_def(ka_fn(">=", ka_gte), &env);
-  ka_def(ka_fn("def", ka_def), &env);
-  ka_def(ka_fn(":=", ka_def), &env);
-  ka_def(ka_fn("=", ka_set), &env);
-  ka_def(ka_fn("del", ka_del), &env);
-  ka_def(ka_fn("if", ka_if), &env);
-  ka_def(ka_fn("?", ka_if), &env);
-  ka_def(ka_fn("while", ka_while), &env);
+  ka_def(ka_idf("+", ka_fn(ka_add)), &env);
+  ka_def(ka_idf("-", ka_fn(ka_sub)), &env);
+  ka_def(ka_idf("*", ka_fn(ka_mul)), &env);
+  ka_def(ka_idf("/", ka_fn(ka_div)), &env);
+  ka_def(ka_idf("&&", ka_fn(ka_and)), &env);
+  ka_def(ka_idf("||", ka_fn(ka_or)), &env);
+  ka_def(ka_idf("==", ka_fn(ka_eq)), &env);
+  ka_def(ka_idf("!=", ka_fn(ka_not)), &env);
+  ka_def(ka_idf("<", ka_fn(ka_lt)), &env);
+  ka_def(ka_idf("<=", ka_fn(ka_lte)), &env);
+  ka_def(ka_idf(">", ka_fn(ka_gt)), &env);
+  ka_def(ka_idf(">=", ka_fn(ka_gte)), &env);
+  ka_def(ka_idf("def", ka_fn(ka_def)), &env);
+  ka_def(ka_idf(":=", ka_fn(ka_def)), &env);
+  ka_def(ka_idf("=", ka_fn(ka_set)), &env);
+  ka_def(ka_idf("del", ka_fn(ka_del)), &env);
+  ka_def(ka_idf("if", ka_fn(ka_if)), &env);
+  ka_def(ka_idf("?", ka_fn(ka_if)), &env);
+  ka_def(ka_idf("while", ka_fn(ka_while)), &env);
 
   ka_def(ka_idf("false", ka_num(0)), &env);
 
