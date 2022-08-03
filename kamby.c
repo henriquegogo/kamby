@@ -22,6 +22,11 @@ struct KaNode *ka_str(char *str) {
   return output;
 }
 
+struct KaNode *ka_chain(struct KaNode *node, struct KaNode *next) {
+  node->next = next;
+  return node;
+}
+
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR) {
@@ -137,12 +142,6 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   memcpy(output, reg, KANODE_SIZE);
   output->next = NULL;
   return output;
-}
-
-struct KaNode *ka_def(char *key, struct KaNode *node, struct KaNode **env) {
-  struct KaNode *data = ka_str(key);
-  data->next = node;
-  return ka_set(data, env);
 }
 
 struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
@@ -308,6 +307,7 @@ struct KaNode *ka_init() {
   ka_fn("<=", ka_lte, &env);
   ka_fn(">", ka_gt, &env);
   ka_fn(">=", ka_gte, &env);
+  ka_fn("def", ka_set, &env);
   ka_fn(":=", ka_set, &env);
   ka_fn("=", ka_getset, &env);
   ka_fn("del", ka_del, &env);
@@ -315,8 +315,7 @@ struct KaNode *ka_init() {
   ka_fn("?", ka_if, &env);
   ka_fn("while", ka_while, &env);
 
-  ka_def("true", ka_num(1), &env);
-  ka_def("false", ka_num(0), &env);
+  ka_set(ka_chain(ka_str("false"), ka_num(0)), &env);
 
   return env;
 }
