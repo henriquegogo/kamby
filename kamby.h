@@ -1,3 +1,6 @@
+#ifndef KAMBY_H
+#define KAMBY_H
+
 typedef enum {
   KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_BLCK, KA_LIST
 } KaType;
@@ -35,3 +38,5 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env);
 struct KaNode *ka_parse(char *text, struct KaNode **pos);
 
 struct KaNode *ka_init();
+
+#endif
