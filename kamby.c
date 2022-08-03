@@ -214,11 +214,8 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     case KA_IDF:
       return ka_get(head, env)->fn(head->next, env);
     case KA_BLCK:
-      // If block call has param and is a block, eval it
-      if (head->next && head->next->type == KA_BLCK) {
-        ka_eval(head->next->chld, &local);
-      // If param is atom, set args
-      } else if (head->next) {
+      if (head->next) {
+        if (head->next->type == KA_BLCK) head->next = head->next->chld;
         ka_def(ka_idf("args", ka_eval(head->next, &local)), &local);
       }
       return ka_eval(head->chld, &local);
