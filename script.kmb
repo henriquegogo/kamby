@@ -24,8 +24,8 @@ say = { puts 'Proto function' }
 say
 
 count = 0
-# while {count < 5} {
-#     puts 'Count:' count
-#     count = (count + 1)
-# }
-puts count
+while {count < 3} {
+    count = (count + 1)
+    puts 'COUNT:' count
+}
+puts "END:" count
