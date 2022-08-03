@@ -53,7 +53,8 @@ void ka_tree(struct KaNode *node) {
       case KA_IDF:
         printf("%sIDF: %s\n", ident, node->str);
         break;
-      default:;
+      default:
+        printf("%sNONE\n", ident);
     }
     node = node->next;
   }

@@ -9,10 +9,10 @@ del message                   # Remove last 'message' in stack
 puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
 puts "Sum:" (1 + (2 + 3))     # Math expressions
 
-if (1) {
+if true {
     message := 'Local scope'  # Append 'message' only for block scope
     puts 'Local:' message
-} (message) {
+} message {
     puts 'Else if'
 } else {
     puts 'Final else'
@@ -23,8 +23,9 @@ puts 'Global:' message
 say = { puts 'Proto function' }
 say
 
-# count = 0
+count = 0
 # while {count < 5} {
 #     puts 'Count:' count
 #     count = (count + 1)
 # }
+puts count
