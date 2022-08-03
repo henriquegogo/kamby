@@ -170,7 +170,6 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   struct KaNode *local = *env;
-  // TODO: changes in &local is not being reflected
   while (ka_eval(node->chld, &local)->num) {
     ka_eval(node->next->chld, &local);
   }
@@ -186,15 +185,17 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     struct KaNode *value = malloc(KANODE_SIZE);
     switch (node->type) {
       case KA_EXPR:
-        tail->next = ka_eval(node->chld, env);
+        memcpy(value, node->chld, KANODE_SIZE);
+        value = ka_eval(value, env);
         break;
       case KA_IDF:
         value = ka_get(node, env);
-        tail->next = value->type ? value : node;
+        if (!value->type) memcpy(value, node, KANODE_SIZE);
         break;
       default:
-        tail->next = node;
+        memcpy(value, node, KANODE_SIZE);
     }
+    tail->next = value;
     tail = tail->next;
     node = node->next;
   }
