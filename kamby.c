@@ -139,6 +139,12 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   return output;
 }
 
+struct KaNode *ka_def(char *key, struct KaNode *node, struct KaNode **env) {
+  struct KaNode *data = ka_str(key);
+  data->next = node;
+  return ka_set(data, env);
+}
+
 struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
   reg->next = *env;
@@ -289,6 +295,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 
 struct KaNode *ka_init() {
   struct KaNode *env = malloc(KANODE_SIZE);
+
   ka_fn("+", ka_add, &env);
   ka_fn("-", ka_sub, &env);
   ka_fn("*", ka_mul, &env);
@@ -307,5 +314,9 @@ struct KaNode *ka_init() {
   ka_fn("if", ka_if, &env);
   ka_fn("?", ka_if, &env);
   ka_fn("while", ka_while, &env);
+
+  ka_def("true", ka_num(1), &env);
+  ka_def("false", ka_num(0), &env);
+
   return env;
 }
