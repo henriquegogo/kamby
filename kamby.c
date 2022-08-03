@@ -189,6 +189,7 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
+  struct KaNode *local = *env;
   
   while (node) {
     struct KaNode *value = malloc(KANODE_SIZE);
@@ -199,8 +200,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         break;
       case KA_IDF:
         value = ka_get(node, env);
-        if (!value->type) memcpy(value, node, KANODE_SIZE);
-        break;
+        if (value->type) break;
       default:
         memcpy(value, node, KANODE_SIZE);
     }
@@ -214,7 +214,14 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     case KA_IDF:
       return ka_get(head, env)->fn(head->next, env);
     case KA_BLCK:
-      return ka_eval(head->chld, env);
+      // If block call has param and is a block, eval it
+      if (head->next && head->next->type == KA_BLCK) {
+        ka_eval(head->next->chld, &local);
+      // If param is atom, set args
+      } else if (head->next) {
+        ka_def(ka_idf("args", ka_eval(head->next, &local)), &local);
+      }
+      return ka_eval(head->chld, &local);
     default:
       return head;
   }
