@@ -31,6 +31,16 @@ struct KaNode *ka_idf(char *str, struct KaNode *next) {
   return output;
 }
 
+struct KaNode *ka_fn(char *key, struct KaNode *(*fn)()) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_IDF;
+  output->key = malloc(strlen(key));
+  strcpy(output->key, key);
+  output->next = malloc(KANODE_SIZE);
+  output->next->fn = fn;
+  return output;
+}
+
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR) {
@@ -90,23 +100,7 @@ struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
 }
 
 // Definitions and memory control
-struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *reg = *env;
-  if (!node->key); // Node is not a registered variable. Do nothing.
-  else if (strcmp(node->key, reg->key) == 0) *env = (*env)->next;
-  else {
-    while (reg->next) {
-      if (strcmp(node->key, reg->next->key) == 0) {
-        reg->next = reg->next->next;
-        break;
-      }
-      reg = reg->next;
-    }
-  }
-  return malloc(KANODE_SIZE);
-}
-
-struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
+struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
   memcpy(reg, node->next, KANODE_SIZE);
   // node->key exists if was returned from registers. If not, is a new register.
@@ -116,9 +110,9 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   return node->next;
 }
 
-struct KaNode *ka_getset(struct KaNode *node, struct KaNode **env) {
+struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
-  if (!node->key) return ka_set(node, env);
+  if (!node->key) return ka_def(node, env);
   while (reg) {
     if (strcmp(node->key, reg->key) == 0) {
       reg->type = node->next->type;
@@ -148,14 +142,23 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   return output;
 }
 
-struct KaNode *ka_fn(char *key, struct KaNode *(*fn)(), struct KaNode **env) {
-  struct KaNode *reg = malloc(KANODE_SIZE);
-  reg->next = *env;
-  reg->key = key;
-  reg->fn = fn;
-  return *env = reg;
+struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *reg = *env;
+  if (!node->key); // Node is not a registered variable. Do nothing.
+  else if (strcmp(node->key, reg->key) == 0) *env = (*env)->next;
+  else {
+    while (reg->next) {
+      if (strcmp(node->key, reg->next->key) == 0) {
+        reg->next = reg->next->next;
+        break;
+      }
+      reg = reg->next;
+    }
+  }
+  return malloc(KANODE_SIZE);
 }
 
+// Conditions and loops
 struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
   struct KaNode *local = *env;
   while (node) {
@@ -300,27 +303,27 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 struct KaNode *ka_init() {
   struct KaNode *env = malloc(KANODE_SIZE);
 
-  ka_fn("+", ka_add, &env);
-  ka_fn("-", ka_sub, &env);
-  ka_fn("*", ka_mul, &env);
-  ka_fn("/", ka_div, &env);
-  ka_fn("&&", ka_and, &env);
-  ka_fn("||", ka_or, &env);
-  ka_fn("==", ka_eq, &env);
-  ka_fn("!=", ka_not, &env);
-  ka_fn("<", ka_lt, &env);
-  ka_fn("<=", ka_lte, &env);
-  ka_fn(">", ka_gt, &env);
-  ka_fn(">=", ka_gte, &env);
-  ka_fn("def", ka_set, &env);
-  ka_fn(":=", ka_set, &env);
-  ka_fn("=", ka_getset, &env);
-  ka_fn("del", ka_del, &env);
-  ka_fn("if", ka_if, &env);
-  ka_fn("?", ka_if, &env);
-  ka_fn("while", ka_while, &env);
+  ka_def(ka_fn("+", ka_add), &env);
+  ka_def(ka_fn("-", ka_sub), &env);
+  ka_def(ka_fn("*", ka_mul), &env);
+  ka_def(ka_fn("/", ka_div), &env);
+  ka_def(ka_fn("&&", ka_and), &env);
+  ka_def(ka_fn("||", ka_or), &env);
+  ka_def(ka_fn("==", ka_eq), &env);
+  ka_def(ka_fn("!=", ka_not), &env);
+  ka_def(ka_fn("<", ka_lt), &env);
+  ka_def(ka_fn("<=", ka_lte), &env);
+  ka_def(ka_fn(">", ka_gt), &env);
+  ka_def(ka_fn(">=", ka_gte), &env);
+  ka_def(ka_fn("def", ka_def), &env);
+  ka_def(ka_fn(":=", ka_def), &env);
+  ka_def(ka_fn("=", ka_set), &env);
+  ka_def(ka_fn("del", ka_del), &env);
+  ka_def(ka_fn("if", ka_if), &env);
+  ka_def(ka_fn("?", ka_if), &env);
+  ka_def(ka_fn("while", ka_while), &env);
 
-  ka_set(ka_idf("false", ka_num(0)), &env);
+  ka_def(ka_idf("false", ka_num(0)), &env);
 
   return env;
 }
