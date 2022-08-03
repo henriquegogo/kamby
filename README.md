@@ -13,6 +13,8 @@ Kamby has some conventions to make the syntax more friendly:
 - key = 'value'  (Edit last 'key' in stack)
 - del key        (Remove last 'key' from stack)
 - puts key 'or text'
+- if (condition) { 'first' } (else_condition) { 'second' }
+- while {condition} { 'Do this' }
 
 ### Operators
 ```
@@ -28,16 +30,25 @@ make
 
 ## Example
 ```ruby
-message = "Hello, world"
-puts message
+message = 'Hello, World!'
+puts 'Message:' message
+puts "Sum:" (1 + (2 + 3))
 
-puts (2 + (2 * 2))
+if false {
+    puts 'Initial condition'
+} else {
+    puts 'Last condition'
+}
 
-list = [1 2 3 message]
+count = 0
+while {count < 3} {
+    count = (count + 1)
+    puts 'Number:' count
+}
 ```
 
 ## Known issues / TODO
-- Conditionals and loops not implemented yet
+- Lists not implemented
 
 ## License
 MIT
