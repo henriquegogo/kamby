@@ -39,6 +39,6 @@ for {i = 3} {i < 5} {i = (i + 1)} {
 list = ['first' 'second' 'third']
 puts 'LIST:' (list last)
 list + 'fourth'
-puts 'LIST APPENDED:' (list 3)
+puts 'LIST APPENDED:' (list 4)
 list = (list + ['five' 'last one'])
-puts (list 4)
+puts (list (len list))

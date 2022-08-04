@@ -163,11 +163,27 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
   memcpy(output, node->chld, KANODE_SIZE);
   if (node->next) {
-    for (int i = 0; output->next && i < node->next->num; i++)
+    for (int i = 1; output->next && i <= node->next->num; i++)
       memcpy(output, output->next, KANODE_SIZE);
     output->next = NULL;
   }
   return output;
+}
+
+struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
+  int i = 0;
+  switch (node->type) {
+    case KA_NUM:
+      return node;
+    case KA_STR:
+      return ka_num(strlen(node->str));
+    default:
+      while (node->chld) {
+        i++;
+        node->chld = node->chld->next;
+      }
+      return ka_num(i);
+  }
 }
 
 // Conditions and loops
@@ -353,6 +369,7 @@ struct KaNode *ka_init() {
   ka_def(ka_idf("?", ka_fn(ka_if)), &env);
   ka_def(ka_idf("while", ka_fn(ka_while)), &env);
   ka_def(ka_idf("for", ka_fn(ka_for)), &env);
+  ka_def(ka_idf("len", ka_fn(ka_len)), &env);
 
   ka_def(ka_idf("true", ka_num(1)), &env);
   ka_def(ka_idf("false", ka_num(0)), &env);
