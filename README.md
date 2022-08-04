@@ -45,10 +45,14 @@ while {count < 3} {
     count = (count + 1)
     puts 'Number:' count
 }
+
+list = ['first' 'second' 'third']
+list = (list + 'fourth')
+puts (list 3)
 ```
 
 ## Known issues / TODO
-- Lists not implemented
+- 
 
 ## License
 MIT

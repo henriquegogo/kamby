@@ -35,3 +35,10 @@ puts "END:" count
 for {i = 3} {i < 5} {i = (i + 1)} {
     puts 'I:' i
 }
+
+list = ['first' 'second' 'third']
+puts 'LIST:' (list last)
+list = (list + 'fourth')
+puts 'LIST APPENDED:' (list 3)
+list = (list + ['five' 'last one'])
+puts (list 4)
