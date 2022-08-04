@@ -159,6 +159,19 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   return malloc(KANODE_SIZE);
 }
 
+struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
+  int i;
+  switch (node->type) {
+    case KA_NUM:
+      return node;
+    case KA_STR:
+      return ka_num(strlen(node->str));
+    default:
+      for (i = 0; node->chld; i++) node->chld = node->chld->next;
+      return ka_num(i);
+  }
+}
+
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
   memcpy(output, node->chld, KANODE_SIZE);
@@ -168,22 +181,6 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
     output->next = NULL;
   }
   return output;
-}
-
-struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
-  int i = 0;
-  switch (node->type) {
-    case KA_NUM:
-      return node;
-    case KA_STR:
-      return ka_num(strlen(node->str));
-    default:
-      while (node->chld) {
-        i++;
-        node->chld = node->chld->next;
-      }
-      return ka_num(i);
-  }
 }
 
 // Conditions and loops
