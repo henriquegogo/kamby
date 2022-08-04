@@ -48,9 +48,9 @@ if ('two' == "two") { puts 'OK' }
 - list = ['Any' 'item' 9 5 3 'any' ['type']]
 
 #### Blocks
-Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "args" inside block scope.
+Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "arg" inside block scope.
 ```ruby
-def say { puts args }
+def say { puts arg }
 say "Hello"                     # Run { puts "Hello" }
 say { message := "Scoped var" }
 ```
@@ -59,10 +59,10 @@ say { message := "Scoped var" }
 ```ruby
 list = [9 8 7 6]  # Creates a list
 list + 5          # Append 5 to list
-list 1            # Get first item
+list . 1          # Get first item
 len list          # Return list size
-list (len list)   # Get last item
-list 99999999     # Big numbers will return last item
+list . (len list) # Get last item
+list . 99999999   # Big numbers will return last item
 ```
 
 ## How to run
@@ -90,13 +90,12 @@ while {count < 3} {
 }
 
 list = ['first' 'second' 'third']
-list = (list + 'fourth')
-puts (list 3)
+list + 'fourth'
+puts (list . 4)    # Return 'fourth'
 ```
 
 ## Known issues / TODO
 - VM / Bytecode
-- More lists methods
 - Objects
 
 ## License

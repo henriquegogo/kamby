@@ -20,9 +20,9 @@ if true {
 puts (0 ? 'yes' : { 'no' })
 puts 'Global:' message
 
-def say { puts "Function said:" message args }
-say { args := "Gogs"; message := 'Something' }
-say "Henrique" "Soares"
+def say { puts "Function said:" message ((arg . 2) || arg) }
+say { arg := "Gogs"; message := 'Something' }
+say ["Henrique" "Soares"]
 puts "Global again:" message
 
 count = 0
@@ -32,13 +32,13 @@ while {count < 3} {
 }
 puts "END:" count
 
-for {i = 3} {i < 5} {i = (i + 1)} {
+for {i := 3} {i < 5} {i = (i + 1)} {
     puts 'I:' i
 }
 
 list = ['first' 'second' 'third']
-puts 'LIST:' (list last)
+puts 'LIST:' (list . last)         # "last" will be cast to big number
 list + 'fourth'
-puts 'LIST APPENDED:' (list 4)
+puts 'LIST APPENDED:' (list . 4)
 list = (list + ['five' 'last one'])
-puts (list (len list))
+puts (list . (len list))
