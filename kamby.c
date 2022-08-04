@@ -7,7 +7,7 @@
 #define KANODE_SIZE sizeof(struct KaNode)
 
 // Atom constructors
-struct KaNode *ka_num(long num) {
+struct KaNode *ka_num(long long num) {
   struct KaNode *output = malloc(KANODE_SIZE);
   output->type = KA_NUM;
   output->num = num;
@@ -354,6 +354,7 @@ struct KaNode *ka_init() {
   ka_def(ka_idf("while", ka_fn(ka_while)), &env);
   ka_def(ka_idf("for", ka_fn(ka_for)), &env);
 
+  ka_def(ka_idf("true", ka_num(1)), &env);
   ka_def(ka_idf("false", ka_num(0)), &env);
 
   return env;

@@ -9,7 +9,7 @@ struct KaNode {
   KaType type;
   char *key;
   union {
-    long num;
+    long long num;
     char *str;
     struct KaNode *chld;
   };
@@ -17,7 +17,7 @@ struct KaNode {
   struct KaNode *next;
 };
 
-struct KaNode *ka_num(long num);
+struct KaNode *ka_num(long long num);
 
 struct KaNode *ka_str(char *str);
 
