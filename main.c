@@ -9,7 +9,7 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
   while (node) {
     switch (node->type) {
       case KA_NUM:
-        printf("%lu ", node->num);
+        printf("%lld ", node->num);
         break;
       case KA_STR:
         printf("%s ", node->str);
@@ -45,7 +45,7 @@ void ka_tree(struct KaNode *node) {
         strcpy(ident, ident + 2);
         break;
       case KA_NUM:
-        printf("%sNUM: %lu\n", ident, node->num);
+        printf("%sNUM: %lld\n", ident, node->num);
         break;
       case KA_STR:
         printf("%sSTR: %s\n", ident, node->str);
