@@ -37,73 +37,6 @@ struct KaNode *ka_fn(struct KaNode *(*fn)()) {
   return output;
 }
 
-// Math and Logical operators
-struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
-  if (node->type == KA_LIST) {
-    struct KaNode *tail = node->chld;
-    while (tail->next) tail = tail->next;
-    tail->next = node->next->type == KA_LIST ? node->next->chld : node->next;
-    return node;
-  } else if (node->type == KA_STR && node->next->type == KA_STR) {
-    struct KaNode *output = ka_str(node->str);
-    strcat(output->str, node->next->str);
-    return output;
-  }
-  return ka_num(node->num + node->next->num);
-}
-
-struct KaNode *ka_sub(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num - node->next->num);
-}
-
-struct KaNode *ka_mul(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num * node->next->num);
-}
-
-struct KaNode *ka_div(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num / node->next->num);
-}
-
-struct KaNode *ka_and(struct KaNode *node, struct KaNode **env) {
-  if (node->type != KA_NUM && ka_num(node->num && node->next->num))
-    return node->next;
-  return ka_num(node->num && node->next->num);
-}
-
-struct KaNode *ka_or(struct KaNode *node, struct KaNode **env) {
-  if (node->type != KA_NUM && ka_num(node->num || node->next->num))
-    return node->num ? node : node->next;
-  return ka_num(node->num || node->next->num);
-}
-
-struct KaNode *ka_eq(struct KaNode *node, struct KaNode **env) {
-  if (node->type == KA_STR)
-    return ka_num(strcmp(node->str, node->next->str) == 0);
-  return ka_num(node->num == node->next->num);
-}
-
-struct KaNode *ka_not(struct KaNode *node, struct KaNode **env) {
-  if (node->type == KA_STR)
-    return ka_num(strcmp(node->str, node->next->str) != 0);
-  return ka_num(node->num != node->next->num);
-}
-
-struct KaNode *ka_lt(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num < node->next->num);
-}
-
-struct KaNode *ka_lte(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num <= node->next->num);
-}
-
-struct KaNode *ka_gt(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num > node->next->num);
-}
-
-struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
-  return ka_num(node->num >= node->next->num);
-}
-
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
@@ -179,8 +112,16 @@ struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
+  // Substring
+  if (node->type == KA_STR) {
+    output = ka_str(&node->str[node->next->num - 1]);
+    if (node->next->next) output->str[node->next->next->num] = '\0';
+    else output->str[1] = '\0';
+    return output;
+  }
+  // Handle list
   memcpy(output, node->chld, KANODE_SIZE);
-  for (int i = 1; output->next && i < node->next->num; i++)
+  for (int i = 0; output->next && i < node->next->num - 1; i++)
     memcpy(output, output->next, KANODE_SIZE);
   output->next = NULL;
   return output;
@@ -214,6 +155,73 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
     ka_eval(node->next->next->next->chld, &local);
   }
   return malloc(KANODE_SIZE);
+}
+
+// Math and Logical operators
+struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_LIST) {
+    struct KaNode *tail = node->chld;
+    while (tail->next) tail = tail->next;
+    tail->next = node->next->type == KA_LIST ? node->next->chld : node->next;
+    return node;
+  } else if (node->type == KA_STR && node->next->type == KA_STR) {
+    struct KaNode *output = ka_str(node->str);
+    strcat(output->str, node->next->str);
+    return output;
+  }
+  return ka_num(node->num + node->next->num);
+}
+
+struct KaNode *ka_sub(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num - node->next->num);
+}
+
+struct KaNode *ka_mul(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num * node->next->num);
+}
+
+struct KaNode *ka_div(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num / node->next->num);
+}
+
+struct KaNode *ka_and(struct KaNode *node, struct KaNode **env) {
+  if (node->type != KA_NUM && ka_num(node->num && node->next->num))
+    return node->next;
+  return ka_num(node->num && node->next->num);
+}
+
+struct KaNode *ka_or(struct KaNode *node, struct KaNode **env) {
+  if (node->type != KA_NUM && ka_num(node->num || node->next->num))
+    return node->num ? node : node->next;
+  return ka_num(node->num || node->next->num);
+}
+
+struct KaNode *ka_eq(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_STR)
+    return ka_num(strcmp(node->str, node->next->str) == 0);
+  return ka_num(node->num == node->next->num);
+}
+
+struct KaNode *ka_not(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_STR)
+    return ka_num(strcmp(node->str, node->next->str) != 0);
+  return ka_num(node->num != node->next->num);
+}
+
+struct KaNode *ka_lt(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num < node->next->num);
+}
+
+struct KaNode *ka_lte(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num <= node->next->num);
+}
+
+struct KaNode *ka_gt(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num > node->next->num);
+}
+
+struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
+  return ka_num(node->num >= node->next->num);
 }
 
 // Parser and interpreter
@@ -346,31 +354,32 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 struct KaNode *ka_init() {
   struct KaNode *env = malloc(KANODE_SIZE);
 
-  ka_def(ka_idf("+", ka_fn(ka_add)), &env);
-  ka_def(ka_idf("-", ka_fn(ka_sub)), &env);
-  ka_def(ka_idf("*", ka_fn(ka_mul)), &env);
-  ka_def(ka_idf("/", ka_fn(ka_div)), &env);
-  ka_def(ka_idf("&&", ka_fn(ka_and)), &env);
-  ka_def(ka_idf("||", ka_fn(ka_or)), &env);
-  ka_def(ka_idf("==", ka_fn(ka_eq)), &env);
-  ka_def(ka_idf("!=", ka_fn(ka_not)), &env);
-  ka_def(ka_idf("<", ka_fn(ka_lt)), &env);
-  ka_def(ka_idf("<=", ka_fn(ka_lte)), &env);
-  ka_def(ka_idf(">", ka_fn(ka_gt)), &env);
-  ka_def(ka_idf(">=", ka_fn(ka_gte)), &env);
-  ka_def(ka_idf("def", ka_fn(ka_def)), &env);
-  ka_def(ka_idf(":=", ka_fn(ka_def)), &env);
-  ka_def(ka_idf("=", ka_fn(ka_set)), &env);
-  ka_def(ka_idf("del", ka_fn(ka_del)), &env);
+  ka_def(ka_idf("def",ka_fn(ka_def)),&env);
+  ka_def(ka_idf(":=", ka_fn(ka_def)),&env);
+  ka_def(ka_idf("=",  ka_fn(ka_set)),&env);
+  ka_def(ka_idf("del",ka_fn(ka_del)),&env);
   ka_def(ka_idf("if", ka_fn(ka_if)), &env);
-  ka_def(ka_idf("?", ka_fn(ka_if)), &env);
+  ka_def(ka_idf("?",  ka_fn(ka_if)), &env);
   ka_def(ka_idf("while", ka_fn(ka_while)), &env);
-  ka_def(ka_idf("for", ka_fn(ka_for)), &env);
-  ka_def(ka_idf(".", ka_fn(ka_item)), &env);
-  ka_def(ka_idf("len", ka_fn(ka_len)), &env);
+  ka_def(ka_idf("for",ka_fn(ka_for)), &env);
+  ka_def(ka_idf("len",ka_fn(ka_len)), &env);
+  ka_def(ka_idf(".",  ka_fn(ka_item)),&env);
+
+  ka_def(ka_idf("+", ka_fn(ka_add)),&env);
+  ka_def(ka_idf("-", ka_fn(ka_sub)),&env);
+  ka_def(ka_idf("*", ka_fn(ka_mul)),&env);
+  ka_def(ka_idf("/", ka_fn(ka_div)),&env);
+  ka_def(ka_idf("&&",ka_fn(ka_and)),&env);
+  ka_def(ka_idf("||",ka_fn(ka_or)), &env);
+  ka_def(ka_idf("==",ka_fn(ka_eq)), &env);
+  ka_def(ka_idf("!=",ka_fn(ka_not)),&env);
+  ka_def(ka_idf("<", ka_fn(ka_lt)), &env);
+  ka_def(ka_idf("<=",ka_fn(ka_lte)),&env);
+  ka_def(ka_idf(">", ka_fn(ka_gt)), &env);
+  ka_def(ka_idf(">=",ka_fn(ka_gte)),&env);
 
   ka_def(ka_idf("true", ka_num(1)), &env);
-  ka_def(ka_idf("false", ka_num(0)), &env);
+  ka_def(ka_idf("false", ka_num(0)),&env);
 
   return env;
 }
