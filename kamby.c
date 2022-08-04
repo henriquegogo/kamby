@@ -39,7 +39,12 @@ struct KaNode *ka_fn(struct KaNode *(*fn)()) {
 
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
-  if (node->type == KA_STR) {
+  if (node->type == KA_LIST) {
+    struct KaNode *tail = node->chld;
+    while (tail->next) tail = tail->next;
+    tail->next = node->next->type == KA_LIST ? node->next->chld : node->next;
+    return node;
+  } else if (node->type == KA_STR && node->next->type == KA_STR) {
     struct KaNode *output = ka_str(node->str);
     strcat(output->str, node->next->str);
     return output;
@@ -219,6 +224,11 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         ka_def(ka_idf("args", ka_eval(head->next, &local)), &local);
       }
       return ka_eval(head->chld, &local);
+    case KA_LIST:
+      for (int i = 0; head->chld->next && i < head->next->num; i++)
+        head->chld = head->chld->next;
+      head->chld->next = NULL;
+      return head->chld;
     default:
       return head;
   }
