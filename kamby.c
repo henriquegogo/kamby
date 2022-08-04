@@ -159,15 +159,16 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   return malloc(KANODE_SIZE);
 }
 
+// List methods
 struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
-  int i;
+  int i = 0;
   switch (node->type) {
     case KA_NUM:
       return node;
     case KA_STR:
       return ka_num(strlen(node->str));
     default:
-      for (i = 0; node->chld; i++) node->chld = node->chld->next;
+      for (; node->chld; i++) node->chld = node->chld->next;
       return ka_num(i);
   }
 }
@@ -176,7 +177,7 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
   memcpy(output, node->chld, KANODE_SIZE);
   if (node->next) {
-    for (int i = 1; output->next && i <= node->next->num; i++)
+    for (int i = 1; output->next && i < node->next->num; i++)
       memcpy(output, output->next, KANODE_SIZE);
     output->next = NULL;
   }
@@ -198,9 +199,8 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   struct KaNode *local = *env;
-  while (ka_eval(node->chld, &local)->num) {
+  while (ka_eval(node->chld, &local)->num)
     ka_eval(node->next->chld, &local);
-  }
   return malloc(KANODE_SIZE);
 }
 
