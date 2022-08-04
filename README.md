@@ -16,6 +16,7 @@ Kamby has some conventions to make the syntax more friendly:
 - if (condition) { 'first' } (else_condition) { 'second' }
 - while {condition} { 'Do this' }
 - for {initialization} {condition} {increment} { 'Do this' }
+- len [9 8 7 6]   (Return number of items)
 - puts key 'or text'
 
 ### Operators
@@ -45,6 +46,24 @@ if ('two' == "two") { puts 'OK' }
 - expression = ( "Eval immediately" )
 - block = { "Eval when called" }
 - list = ['Any' 'item' 9 5 3 'any' ['type']]
+
+#### Blocks
+Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "args" inside block scope.
+```ruby
+def say { puts args }
+say "Hello"                     # Run { puts "Hello" }
+say { message := "Scoped var" }
+```
+
+#### Lists
+```ruby
+list = [9 8 7 6]  # Creates a list
+list + 5          # Append 5 to list
+list 1            # Get first item
+len list          # Return list size
+list (len list)   # Get last item
+list 99999999     # Big numbers will return last item
+```
 
 ## How to run
 ```sh
