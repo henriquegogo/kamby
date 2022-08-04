@@ -65,10 +65,14 @@ struct KaNode *ka_div(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_and(struct KaNode *node, struct KaNode **env) {
+  if (node->type != KA_NUM && ka_num(node->num && node->next->num))
+    return node->next;
   return ka_num(node->num && node->next->num);
 }
 
 struct KaNode *ka_or(struct KaNode *node, struct KaNode **env) {
+  if (node->type != KA_NUM && ka_num(node->num || node->next->num))
+    return node->num ? node : node->next;
   return ka_num(node->num || node->next->num);
 }
 
@@ -176,11 +180,9 @@ struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
   memcpy(output, node->chld, KANODE_SIZE);
-  if (node->next) {
-    for (int i = 1; output->next && i < node->next->num; i++)
-      memcpy(output, output->next, KANODE_SIZE);
-    output->next = NULL;
-  }
+  for (int i = 1; output->next && i < node->next->num; i++)
+    memcpy(output, output->next, KANODE_SIZE);
+  output->next = NULL;
   return output;
 }
 
@@ -247,11 +249,9 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     case KA_BLCK:
       if (head->next) {
         if (head->next->type == KA_BLCK) head->next = head->next->chld;
-        ka_def(ka_idf("args", ka_eval(head->next, &local)), &local);
+        ka_def(ka_idf("arg", ka_eval(head->next, &local)), &local);
       }
       return ka_eval(head->chld, &local);
-    case KA_LIST:
-      return ka_item(head, env);
     default:
       return head;
   }
@@ -366,6 +366,7 @@ struct KaNode *ka_init() {
   ka_def(ka_idf("?", ka_fn(ka_if)), &env);
   ka_def(ka_idf("while", ka_fn(ka_while)), &env);
   ka_def(ka_idf("for", ka_fn(ka_for)), &env);
+  ka_def(ka_idf(".", ka_fn(ka_item)), &env);
   ka_def(ka_idf("len", ka_fn(ka_len)), &env);
 
   ka_def(ka_idf("true", ka_num(1)), &env);
