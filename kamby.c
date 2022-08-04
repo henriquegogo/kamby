@@ -196,6 +196,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *tail = head;
   struct KaNode *local = *env;
   
+  // Eval expressions and get variables
   while (node) {
     struct KaNode *value = malloc(KANODE_SIZE);
     switch (node->type) {
@@ -214,6 +215,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     node = node->next;
   }
 
+  // Check first item from expression and do some action based on this
   head = head->next;
   switch (head->type) {
     case KA_IDF:
@@ -225,10 +227,12 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
       }
       return ka_eval(head->chld, &local);
     case KA_LIST:
-      for (int i = 0; head->chld->next && i < head->next->num; i++)
-        head->chld = head->chld->next;
-      head->chld->next = NULL;
-      return head->chld;
+      if (head->next) {
+        for (int i = 0; head->chld->next && i < head->next->num; i++)
+          head->chld = head->chld->next;
+        head->chld->next = NULL;
+        return head->chld;
+      }
     default:
       return head;
   }

@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
       else if (strcmp(input, "exit\n") == 0) break;
       pos = malloc(sizeof(struct KaNode));
       ka_eval(ka_parse(input, &pos), &env);
+      input[0] = '\0';
     }
   } else if (argc == 2) {
     FILE *file = fopen(argv[1], "r");
