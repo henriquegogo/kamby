@@ -20,9 +20,15 @@ static:
 clean:
 	test -e $(BINNAME) && rm $(BINNAME) || true
 	test -e $(LIBNAME) && rm $(LIBNAME) || true
+	test -e tests && rm tests || true
 
-test: bin
+script: bin
 	@./$(BINNAME) ./script.kmb
+	@make clean >> /dev/null
+
+test: lib
+	$(CC) -o tests tests.c -L`pwd` -lkamby
+	@LD_LIBRARY_PATH=`pwd` ./tests
 	@make clean >> /dev/null
 
 prompt: bin
