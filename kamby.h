@@ -12,8 +12,8 @@ struct KaNode {
     long long num;
     char *str;
     struct KaNode *chld;
+    struct KaNode *(*fn)();
   };
-  struct KaNode *(*fn)();
   struct KaNode *next;
 };
 

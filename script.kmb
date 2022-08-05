@@ -20,8 +20,8 @@ if true {
 puts (0 ? 'yes' : { 'no' })
 puts 'Global:' message
 
-def say { puts "Function said:" message ((arg . 2) || arg) }
-say { arg := "Gogs"; message := 'Something' }
+def say { puts "Function said:" message (arg . 2) }
+say { ["for sure" "or not"]; message := 'Something' }
 say ["Henrique" "Soares"]
 puts "Global again:" message
 
