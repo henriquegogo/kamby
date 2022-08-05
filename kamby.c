@@ -26,7 +26,7 @@ struct KaNode *ka_str(char *str) {
 struct KaNode *ka_idf(char *str) {
   struct KaNode *output = malloc(KANODE_SIZE);
   output->type = KA_IDF;
-  output->str = malloc(strlen(str));
+  output->key = output->str = malloc(strlen(str));
   strcpy(output->str, str);
   return output;
 }
