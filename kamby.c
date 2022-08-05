@@ -235,6 +235,14 @@ struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
   return ka_num(node->num >= node->next->num);
 }
 
+struct KaNode *ka_incr(struct KaNode *node, struct KaNode **env) {
+  return ka_set(ka_link(node, ka_add(node, env), 0), env);
+}
+
+struct KaNode *ka_decr(struct KaNode *node, struct KaNode **env) {
+  return ka_set(ka_link(node, ka_sub(node, env), 0), env);
+}
+
 // Parser and interpreter
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *head = malloc(KANODE_SIZE);
@@ -376,18 +384,20 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("len"),ka_fn(ka_len),0),&env);
   ka_def(ka_link(ka_idf("."),  ka_fn(ka_item), 0),&env);
 
-  ka_def(ka_link(ka_idf("+"), ka_fn(ka_add),0),&env);
-  ka_def(ka_link(ka_idf("-"), ka_fn(ka_sub),0),&env);
-  ka_def(ka_link(ka_idf("*"), ka_fn(ka_mul),0),&env);
-  ka_def(ka_link(ka_idf("/"), ka_fn(ka_div),0),&env);
-  ka_def(ka_link(ka_idf("&&"),ka_fn(ka_and),0),&env);
-  ka_def(ka_link(ka_idf("||"),ka_fn(ka_or), 0),&env);
-  ka_def(ka_link(ka_idf("=="),ka_fn(ka_eq), 0),&env);
-  ka_def(ka_link(ka_idf("!="),ka_fn(ka_not),0),&env);
-  ka_def(ka_link(ka_idf("<"), ka_fn(ka_lt), 0),&env);
-  ka_def(ka_link(ka_idf("<="),ka_fn(ka_lte),0),&env);
-  ka_def(ka_link(ka_idf(">"), ka_fn(ka_gt), 0),&env);
-  ka_def(ka_link(ka_idf(">="),ka_fn(ka_gte),0),&env);
+  ka_def(ka_link(ka_idf("+"), ka_fn(ka_add),0), &env);
+  ka_def(ka_link(ka_idf("-"), ka_fn(ka_sub),0), &env);
+  ka_def(ka_link(ka_idf("*"), ka_fn(ka_mul),0), &env);
+  ka_def(ka_link(ka_idf("/"), ka_fn(ka_div),0), &env);
+  ka_def(ka_link(ka_idf("&&"),ka_fn(ka_and),0), &env);
+  ka_def(ka_link(ka_idf("||"),ka_fn(ka_or), 0), &env);
+  ka_def(ka_link(ka_idf("=="),ka_fn(ka_eq), 0), &env);
+  ka_def(ka_link(ka_idf("!="),ka_fn(ka_not),0), &env);
+  ka_def(ka_link(ka_idf("<"), ka_fn(ka_lt), 0), &env);
+  ka_def(ka_link(ka_idf("<="),ka_fn(ka_lte),0), &env);
+  ka_def(ka_link(ka_idf(">"), ka_fn(ka_gt), 0), &env);
+  ka_def(ka_link(ka_idf(">="),ka_fn(ka_gte),0), &env);
+  ka_def(ka_link(ka_idf("+="),ka_fn(ka_incr),0),&env);
+  ka_def(ka_link(ka_idf("-="),ka_fn(ka_decr),0),&env);
 
   ka_def(ka_link(ka_idf("true"), ka_num(1), 0),&env);
   ka_def(ka_link(ka_idf("false"),ka_num(0), 0),&env);

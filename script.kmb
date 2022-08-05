@@ -27,12 +27,12 @@ puts "Global again:" message
 
 count = 0
 while {count < 3} {
-    count = (count + 1)
+    count += 1
     puts 'COUNT:' count
 }
 puts "END:" count
 
-for {i := 3} {i < 5} {i = (i + 1)} {
+for {i := 3} {i < 5} {i += 1} {
     puts 'I:' i
 }
 
