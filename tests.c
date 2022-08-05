@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -7,6 +8,30 @@
 void test_init() {
   printf("- Initialization\n");
   assert(ka_init());
+}
+
+void test_parser() {
+  printf("- Parser\n");
+  struct KaNode *pos = malloc(sizeof(struct KaNode));
+  struct KaNode *ast = ka_parse("4 + 5; puts 'message'", &pos);
+  assert(ast->type == KA_EXPR);
+  assert(strcmp(ast->chld->str, "+") == 0);
+  assert(ast->chld->next->num == 4);
+  assert(ast->chld->next->next->num == 5);
+  assert(ast->next->type == KA_EXPR);
+  assert(ast->next->chld->type == KA_IDF);
+  assert(strcmp(ast->next->chld->str, "puts") == 0);
+  assert(ast->next->chld->next->type == KA_STR);
+  assert(strcmp(ast->next->chld->next->str, "message") == 0);
+}
+
+void test_evaluation() {
+  printf("- Evaluation\n");
+  struct KaNode *env = ka_init();
+  struct KaNode *ast = ka_expr(ka_link(
+    ka_idf("+"), ka_num(4),  ka_num(5),
+  0));
+  assert(ka_eval(ast, &env)->num == 9);
 }
 
 void test_constructors() {
@@ -37,24 +62,14 @@ void test_definitions() {
   assert(ka_get(ka_idf("number"), &env)->num == 789);
 }
 
-void test_math() {
-  printf("- TODO: Mathematics\n");
-  assert(1);
-}
-
-void test_logical_operators() {
-  printf("- TODO: Logical operators\n");
-  assert(1);
-}
-
 int main() {
   printf("TESTING...\n");
 
   test_init();
+  test_parser();
+  test_evaluation();
   test_constructors();
   test_definitions();
-  test_math();
-  test_logical_operators();
 
   printf("ALL TESTS PASSED!\n");
 
