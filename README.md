@@ -23,6 +23,7 @@ Kamby has some conventions to make the syntax more friendly:
 ```
 + - * /
 && || == != >= <= > <
++= -=
 ```
 
 #### Special operators
@@ -85,7 +86,7 @@ if false {
 
 count = 0
 while {count < 3} {
-    count = (count + 1)
+    count += 1
     puts 'Number:' count
 }
 
