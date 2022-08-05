@@ -27,6 +27,8 @@ struct KaNode *ka_fn(struct KaNode *(*fn)());
 
 struct KaNode *ka_link(struct KaNode *node, ...);
 
+struct KaNode *ka_expr(struct KaNode *node);
+
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env);

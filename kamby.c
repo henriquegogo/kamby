@@ -49,6 +49,13 @@ struct KaNode *ka_link(struct KaNode *node, ...) {
   return node;
 }
 
+struct KaNode *ka_expr(struct KaNode *node) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_EXPR;
+  output->chld = node;
+  return output;
+}
+
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
