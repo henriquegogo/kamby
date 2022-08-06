@@ -149,7 +149,10 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   if (next->type == KA_NUM)
     for (int i = 0; chld->next && i < next->num - 1; i++) chld = chld->next;
   else
-    while (chld && strcmp(chld->key, next->str) != 0) chld = chld->next;
+    while (chld) {
+      if (chld->key && strcmp(chld->key, next->str) == 0) break;
+      chld = chld->next;
+    }
   if (chld) memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
