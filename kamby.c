@@ -135,22 +135,22 @@ struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *next = node->next;
   struct KaNode *output = malloc(KANODE_SIZE);
   // Substring
   if (node->type == KA_STR) {
-    output = ka_str(&node->str[next->num - 1]);
-    if (next->next) output->str[next->next->num] = '\0';
+    output = ka_str(&node->str[node->next->num - 1]);
+    if (node->next->next) output->str[node->next->next->num] = '\0';
     else output->str[1] = '\0';
     return output;
   }
   // Handle list and hashmap
   struct KaNode *chld = node->chld;
-  if (next->type == KA_NUM)
-    for (int i = 0; chld->next && i < next->num - 1; i++) chld = chld->next;
+  if (node->next->type == KA_NUM)
+    for (int i = 0; chld->next && i < node->next->num - 1; i++)
+      chld = chld->next;
   else
     while (chld) {
-      if (chld->key && strcmp(chld->key, next->str) == 0) break;
+      if (chld->key && strcmp(chld->key, node->next->str) == 0) break;
       chld = chld->next;
     }
   if (chld) memcpy(output, chld, KANODE_SIZE);

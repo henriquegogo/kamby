@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     char *text = malloc(size);
     fread(text, size, 1, file);
     struct KaNode *ast = ka_parse(text, &pos);
-    builtin_tree(ast);
+    //builtin_tree(ast);
     ka_eval(ast, &env);
     fclose(file);
   }
