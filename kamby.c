@@ -26,7 +26,9 @@ struct KaNode *ka_str(char *str) {
 struct KaNode *ka_idf(char *str) {
   struct KaNode *output = malloc(KANODE_SIZE);
   output->type = KA_IDF;
-  output->key = output->str = malloc(strlen(str));
+  output->key = malloc(strlen(str));
+  output->str = malloc(strlen(str));
+  strcpy(output->key, str);
   strcpy(output->str, str);
   return output;
 }
@@ -59,8 +61,10 @@ struct KaNode *ka_expr(struct KaNode *node) {
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
+  char *key = node->key ? node->key : node->str;
+  node->next->key = malloc(sizeof(key));
+  strcpy(node->next->key, key);
   memcpy(reg, node->next, KANODE_SIZE);
-  reg->key = node->key ? node->key : node->str;
   reg->next = *env;
   *env = reg;
   return node->next;
@@ -86,6 +90,8 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
     }
     reg = reg->next;
   }
+  node->next->key = malloc(sizeof(node->key));
+  strcpy(node->next->key, node->key);
   return node->next;
 }
 
@@ -129,18 +135,22 @@ struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *next = node->next;
   struct KaNode *output = malloc(KANODE_SIZE);
   // Substring
   if (node->type == KA_STR) {
-    output = ka_str(&node->str[node->next->num - 1]);
-    if (node->next->next) output->str[node->next->next->num] = '\0';
+    output = ka_str(&node->str[next->num - 1]);
+    if (next->next) output->str[next->next->num] = '\0';
     else output->str[1] = '\0';
     return output;
   }
-  // Handle list
-  memcpy(output, node->chld, KANODE_SIZE);
-  for (int i = 0; output->next && i < node->next->num - 1; i++)
-    memcpy(output, output->next, KANODE_SIZE);
+  // Handle list and hashmap
+  struct KaNode *chld = node->chld;
+  if (next->type == KA_NUM)
+    for (int i = 0; chld->next && i < next->num - 1; i++) chld = chld->next;
+  else
+    while (chld && strcmp(chld->key, next->str) != 0) chld = chld->next;
+  if (chld) memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
 }
@@ -264,6 +274,10 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         memcpy(value, node->chld, KANODE_SIZE);
         value = ka_eval(value, env);
         break;
+      case KA_LIST:
+        node->chld = ka_eval(node->chld, &local);
+        memcpy(value, node, KANODE_SIZE);
+        break;
       case KA_IDF:
         value = ka_get(node, env);
         if (value->type) break;
@@ -319,12 +333,12 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
         while (text[(*pos)->num + 1] != '\n') (*pos)->num++;
         break;
       case '{':
-        (*pos)->type = KA_NONE;
         node->type = KA_BLCK;
-      case '(':
-        if (!node->type) node->type = KA_EXPR;
       case '[':
         if (!node->type) node->type = KA_LIST;
+        (*pos)->type = KA_NONE;
+      case '(':
+        if (!node->type) node->type = KA_EXPR;
         (*pos)->num++;
         node->chld = ka_parse(text, pos);
         break;
