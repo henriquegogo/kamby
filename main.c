@@ -23,41 +23,42 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
 }
 
 char ident[256];
-void ka_tree(struct KaNode *node) {
+struct KaNode *builtin_tree(struct KaNode *node) {
   while (node) {
     switch (node->type) {
       case KA_EXPR:
         printf("%sEXPR:\n", ident);
         strcat(ident, "..");
-        ka_tree(node->chld);
+        builtin_tree(node->chld);
         strcpy(ident, ident + 2);
         break;
       case KA_BLCK:
         printf("%sBLCK:\n", ident);
         strcat(ident, "..");
-        ka_tree(node->chld);
+        builtin_tree(node->chld);
         strcpy(ident, ident + 2);
         break;
       case KA_LIST:
         printf("%sLIST:\n", ident);
         strcat(ident, "..");
-        ka_tree(node->chld);
+        builtin_tree(node->chld);
         strcpy(ident, ident + 2);
         break;
       case KA_NUM:
-        printf("%sNUM: %lld\n", ident, node->num);
+        printf("%sNUM %s: %lld\n", ident, node->key, node->num);
         break;
       case KA_STR:
-        printf("%sSTR: %s\n", ident, node->str);
+        printf("%sSTR %s: %s\n", ident, node->key, node->str);
         break;
       case KA_IDF:
-        printf("%sIDF: %s\n", ident, node->str);
+        printf("%sIDF %s: %s\n", ident, node->key, node->str);
         break;
       default:
         printf("%sNONE\n", ident);
     }
     node = node->next;
   }
+  return malloc(sizeof(struct KaNode));
 }
 
 int main(int argc, char **argv) {
@@ -65,6 +66,7 @@ int main(int argc, char **argv) {
   struct KaNode *pos = malloc(sizeof(struct KaNode));
 
   ka_def(ka_link(ka_idf("puts"), ka_fn(builtin_puts), 0), &env);
+  ka_def(ka_link(ka_idf("tree"), ka_fn(builtin_tree), 0), &env);
 
   if (argc == 1) {
     char input[1024];
@@ -86,7 +88,7 @@ int main(int argc, char **argv) {
     char *text = malloc(size);
     fread(text, size, 1, file);
     struct KaNode *ast = ka_parse(text, &pos);
-    //ka_tree(ast);
+    builtin_tree(ast);
     ka_eval(ast, &env);
     fclose(file);
   }

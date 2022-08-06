@@ -37,8 +37,18 @@ for {i := 3} {i < 5} {i += 1} {
 }
 
 list = ['first' 'second' 'third']
-puts 'LIST:' (list . last)         # "last" will be cast to big number
+puts 'LIST:' (list . 9999)
 list + 'fourth'
 puts 'LIST APPENDED:' (list . 4)
 list = (list + ['five' 'last one'])
+tree list
 puts (list . (len list))
+
+obj = [
+    name := "Henrique"
+    age := 38
+    'test'
+]
+tree obj
+puts 'Age:' (obj . 'age')
+puts '3rd item:' (obj . 3)
