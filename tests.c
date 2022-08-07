@@ -15,9 +15,10 @@ void test_parser() {
   struct KaNode *pos = malloc(sizeof(struct KaNode));
   struct KaNode *ast = ka_parse("4 + 5; puts 'message'", &pos);
   assert(ast->type == KA_EXPR);
-  assert(strcmp(ast->chld->str, "+") == 0);
-  assert(ast->chld->next->num == 4);
-  assert(ast->chld->next->next->num == 5);
+  assert(ast->chld->type == KA_EXPR);
+  assert(strcmp(ast->chld->chld->str, "+") == 0);
+  assert(ast->chld->chld->next->num == 4);
+  assert(ast->chld->chld->next->next->num == 5);
   assert(ast->next->type == KA_EXPR);
   assert(ast->next->chld->type == KA_IDF);
   assert(strcmp(ast->next->chld->str, "puts") == 0);

@@ -164,6 +164,7 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
   while (node) {
     if (node->num) {
       node = node->next;
+      node->next = NULL;
       return node->type == KA_BLCK ? ka_eval(node->chld, &local) : node;
     }
     node = node->next->next;
@@ -373,12 +374,6 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
           node->type = KA_IDF;
           node->str = malloc((*pos)->num - start);
           strncpy(node->str, text + start, (*pos)->num - start);
-          // (2 + 4) -> (+ 2 4) ... (true == true) -> (== true true)
-          if (head->next == tail && !node->str[2] && ispunct(text[start])) {
-            node->next = head->next;
-            head->next = node;
-            continue;
-          }
           (*pos)->num--;
         }
     };
@@ -390,6 +385,21 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
 
     (*pos)->num++;
   };
+
+  // Change a->punct->b to punct->a->b and wrap in an expression
+  tail = head;
+  while (tail && tail->next && tail->next->next && tail->next->next->next) {
+    struct KaNode *a = tail->next;
+    struct KaNode *op = tail->next->next;
+    struct KaNode *b = tail->next->next->next;
+    struct KaNode *next = tail->next->next->next->next;
+    if (op->type == KA_IDF && !op->str[2] && ispunct(op->str[0])) {
+      tail->next = ka_expr(ka_link(op, a, b, 0));
+      tail->next->next = next;
+      continue;
+    }
+    tail = tail->next;
+  }
   
   return head->next;
 }
@@ -402,7 +412,6 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("="),  ka_fn(ka_set),0),&env);
   ka_def(ka_link(ka_idf("del"),ka_fn(ka_del),0),&env);
   ka_def(ka_link(ka_idf("if"), ka_fn(ka_if), 0),&env);
-  ka_def(ka_link(ka_idf("?"),  ka_fn(ka_if), 0),&env);
   ka_def(ka_link(ka_idf("while"), ka_fn(ka_while), 0), &env);
   ka_def(ka_link(ka_idf("for"),ka_fn(ka_for),0),&env);
   ka_def(ka_link(ka_idf("len"),ka_fn(ka_len),0),&env);
