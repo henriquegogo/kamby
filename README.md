@@ -5,7 +5,7 @@ Kamby Programming Language is a Lisp dialect with some conventions to create a l
 Internaly the implementation follows some basic concepts like S-expressions and car/cdr as any Lisp language.
 Kamby has some conventions to make the syntax more friendly:
 - Anything starting with a new line and finishing in end of line is considered an expression
-- If second item is formed by 2 or less punctuation characters, this identifier will be moved to the first item of list (in Lisp, this will be considered as 'car'). Ex.: (2 + 2) => (+ 2 2) ... (something == anything) => (== something anything)
+- An item formed by 2 or less punctuation characters, will create an expression formed by (punct previous next). Ex.: 2 + 2 => (+ 2 2) ... something == anything => (== something anything)
 - Blocks will be evaluated if is the first item of expression.
 
 ### Actions
@@ -31,14 +31,14 @@ Operator "+" will sum two numbers, concatenate two strings, append a node to lis
 ```ruby
 puts (1 + 2)             # 3
 puts ("Kamby" + "Lang")  # KambyLang
-list = [1 2] + 3         # [1 2 3]
+[1 2] + 3                # [1 2 3]
 list = [1 2] + [3 4]     # [1 2 3 4]
 ```
 
 Operators "==" and "!=" can be used to compare numbers and strings.
 ```ruby
-if (4 != 2) { puts 'NOT OK' }
-if ('two' == "two") { puts 'OK' }
+if 4 != 2 { puts 'NOT OK' }
+if 'two' == "two" { puts 'OK' }
 ```
 
 ### Types
@@ -76,7 +76,7 @@ make
 ```ruby
 message = 'Hello, World!'
 puts 'Message:' message
-puts "Sum:" (1 + (2 + 3))
+puts "Sum:" 1 + 2 + 3
 
 if false {
     puts 'Initial condition'
@@ -97,7 +97,7 @@ puts (list . 4)    # Return 'fourth'
 
 ## Known issues / TODO
 - VM / Bytecode
-- Objects
+- Scoped changes - Object/List
 
 ## License
 MIT

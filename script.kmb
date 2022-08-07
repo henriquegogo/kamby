@@ -7,7 +7,7 @@ puts 'Appended:' message      # Return 'Hello again!'
 puts 'Last removed'
 del message                   # Remove last 'message' in stack
 puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
-puts "Sum:" (1 + (2 + 3))     # Math expressions
+puts "Sum:" 1 + 2 + 3         # Math expressions
 
 if true {
     message := 'Local scope'  # Append 'message' only for block scope
@@ -17,7 +17,7 @@ if true {
 } else {
     puts 'Final else'
 }
-puts (0 ? 'yes' : { 'no' })
+puts (if false 'yes' else 'no')
 puts 'Global:' message
 
 def say { puts "Function said:" message (arg . 2) }
@@ -39,10 +39,10 @@ for {i := 3} {i < 5} {i += 1} {
 list = ['first' 'second' 'third']
 puts 'LIST:' (list . 9999)
 list + 'fourth'
-puts 'LIST APPENDED:' (list . 4)
+puts 'LIST APPENDED:' list . 4
 list = (list + ['five' 'last one'])
 tree list
-puts (list . (len list))
+puts list . (len list)
 
 obj = [
     name := "Henrique"
@@ -50,5 +50,5 @@ obj = [
     'test'
 ]
 tree obj
-puts 'Age:' (obj . 'age')
-puts '3rd item:' (obj . 3)
+puts 'Age:' obj . 'age'
+puts '3rd item:' obj . 3
