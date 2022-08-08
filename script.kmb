@@ -21,7 +21,7 @@ puts (if false 'yes' else 'no')
 puts 'Global:' message
 
 def say { puts "Function said:" message (arg . 2) }
-say { ["for sure" "or not"]; message := 'Something' }
+say { message := 'Something'; ["for sure" "or not"] }
 say ["Henrique" "Soares"]
 puts "Global again:" message
 
