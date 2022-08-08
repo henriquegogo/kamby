@@ -306,6 +306,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
       }
       return ka_eval(head->chld, &local);
     default:
+      while (head->next) head = head->next;
       return head;
   }
 }
