@@ -47,8 +47,8 @@ puts list . (len list)
 obj = [
     name := "Henrique"
     age := 38
-    'test'
 ]
 tree obj
 puts 'Age:' obj . 'age'
-puts '3rd item:' obj . 3
+obj :: { age = 40 }
+puts 'Age edited:' obj . 'age'

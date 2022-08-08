@@ -58,6 +58,13 @@ struct KaNode *ka_expr(struct KaNode *node) {
   return output;
 }
 
+struct KaNode *ka_list(struct KaNode *node) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  output->type = KA_LIST;
+  output->chld = node;
+  return output;
+}
+
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
@@ -156,6 +163,15 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   if (chld) memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
+}
+
+struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *local = node->chld;
+  while (local->next) local = local->next;
+  local->next = *env;
+  ka_eval(node->next, &node->chld);
+  local->next = NULL;
+  return node;
 }
 
 // Conditions and loops
@@ -416,6 +432,7 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("for"),ka_fn(ka_for),0),&env);
   ka_def(ka_link(ka_idf("len"),ka_fn(ka_len),0),&env);
   ka_def(ka_link(ka_idf("."),  ka_fn(ka_item), 0),&env);
+  ka_def(ka_link(ka_idf("::"), ka_fn(ka_call), 0),&env);
 
   ka_def(ka_link(ka_idf("+"), ka_fn(ka_add),0), &env);
   ka_def(ka_link(ka_idf("-"), ka_fn(ka_sub),0), &env);

@@ -54,7 +54,7 @@ struct KaNode *builtin_tree(struct KaNode *node) {
         printf("%sIDF %s: %s\n", ident, node->key, node->str);
         break;
       default:
-        printf("%sNONE\n", ident);
+        printf("%sNONE %s: %s\n", ident, node->key, node->str);
     }
     node = node->next;
   }

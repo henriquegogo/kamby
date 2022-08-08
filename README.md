@@ -66,6 +66,19 @@ list . (len list) # Get last item
 list . 99999999   # Big numbers will return last item
 ```
 
+#### Objects
+```ruby
+# Objects are list of attributions
+obj = [
+    name := 'My name'
+    age := 20
+]
+obj :: {        # The '::' operator will apply 'obj' as the context to block
+    name = 'Your name'
+}
+puts obj . 'name'
+```
+
 ## How to run
 ```sh
 make
