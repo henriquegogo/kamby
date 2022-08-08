@@ -58,13 +58,6 @@ struct KaNode *ka_expr(struct KaNode *node) {
   return output;
 }
 
-struct KaNode *ka_list(struct KaNode *node) {
-  struct KaNode *output = malloc(KANODE_SIZE);
-  output->type = KA_LIST;
-  output->chld = node;
-  return output;
-}
-
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = malloc(KANODE_SIZE);
@@ -150,28 +143,21 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
     else output->str[1] = '\0';
     return output;
   }
-  // Handle list and hashmap
+  // List
   struct KaNode *chld = node->chld;
-  if (node->next->type == KA_NUM)
-    for (int i = 0; chld->next && i < node->next->num - 1; i++)
-      chld = chld->next;
-  else
-    while (chld) {
-      if (chld->key && strcmp(chld->key, node->next->str) == 0) break;
-      chld = chld->next;
-    }
-  if (chld) memcpy(output, chld, KANODE_SIZE);
+  for (int i = 0; chld->next && i < node->next->num - 1; i++) chld = chld->next;
+  memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
 }
 
 struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *local = node->chld;
-  while (local->next) local = local->next;
-  local->next = *env;
-  ka_eval(node->next, &node->chld);
-  local->next = NULL;
-  return node;
+  struct KaNode *tail = node->chld;
+  while (tail->next) tail = tail->next;
+  tail->next = *env;
+  struct KaNode *output = ka_eval(node->next, &node->chld);
+  tail->next = NULL;
+  return output;
 }
 
 // Conditions and loops
