@@ -110,7 +110,7 @@ puts (list . 4)    # Return 'fourth'
 
 ## Known issues / TODO
 - VM / Bytecode
-- Scoped changes - Object/List
+- Blocks are running when defined
 
 ## License
 MIT
