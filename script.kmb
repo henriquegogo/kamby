@@ -49,6 +49,6 @@ obj = [
     age := 38
 ]
 tree obj
-puts 'Age:' obj . 'age'
+puts 'Age:' obj :: {age}
 obj :: { age = 40 }
-puts 'Age edited:' obj . 'age'
+puts 'Age edited:' obj :: {age}

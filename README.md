@@ -76,7 +76,7 @@ obj = [
 obj :: {        # The '::' operator will apply 'obj' as the context to block
     name = 'Your name'
 }
-puts obj . 'name'
+puts obj :: {name}
 ```
 
 ## How to run
