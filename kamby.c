@@ -136,11 +136,10 @@ struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
-  // Substring
+  // String
   if (node->type == KA_STR) {
     output = ka_str(&node->str[node->next->num - 1]);
-    if (node->next->next) output->str[node->next->next->num] = '\0';
-    else output->str[1] = '\0';
+    output->str[1] = '\0';
     return output;
   }
   // List
