@@ -298,17 +298,19 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   head = head->next;
   switch (head->type) {
     case KA_IDF:
-      return ka_get(head, env)->fn(head->next, env);
+      node = ka_get(head, env);
+      if (node->fn) return node->fn(head->next, env);
+      else break;
     case KA_BLCK:
       if (head->next) {
         if (head->next->type == KA_BLCK) head->next = head->next->chld;
         ka_def(ka_link(ka_idf("arg"), ka_eval(head->next, &local), 0), &local);
       }
       return ka_eval(head->chld, &local);
-    default:
-      while (head->next) head = head->next;
-      return head;
+    default:;
   }
+  while (head->next) head = head->next;
+  return head;
 }
 
 struct KaNode *ka_parse(char *text, struct KaNode **pos) {
