@@ -97,7 +97,8 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
-  while (reg->next && strcmp(node->str, reg->key) != 0) reg = reg->next;
+  while (reg->next && reg->key && strcmp(node->str, reg->key) != 0)
+    reg = reg->next;
   struct KaNode *output = malloc(KANODE_SIZE);
   memcpy(output, reg, KANODE_SIZE);
   output->next = NULL;
