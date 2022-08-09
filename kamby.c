@@ -92,10 +92,10 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
-  while (reg->next && strcmp(node->str, reg->key ? reg->key : "") != 0)
+  while (reg && strcmp(node->str, reg->key ? reg->key : "") != 0)
     reg = reg->next;
   struct KaNode *output = malloc(KANODE_SIZE);
-  memcpy(output, reg, KANODE_SIZE);
+  if (reg) memcpy(output, reg, KANODE_SIZE);
   output->next = NULL;
   return output;
 }
@@ -139,9 +139,9 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
     return output;
   }
   // List
-  struct KaNode *chld = node->chld;
-  for (int i = 0; chld->next && i < node->next->num - 1; i++) chld = chld->next;
-  memcpy(output, chld, KANODE_SIZE);
+  struct KaNode *chld = node->next->num ? node->chld : output;
+  for (int i = 0; chld && i < node->next->num - 1; i++) chld = chld->next;
+  if (chld) memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
 }
