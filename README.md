@@ -63,7 +63,6 @@ list += 5         # Append 5 to list
 list . 1          # Get first item
 len list          # Return list size
 list . (len list) # Get last item
-list . 99999999   # Big numbers will return last item
 ```
 
 #### Objects
