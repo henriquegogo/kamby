@@ -74,19 +74,10 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key && node->type == KA_IDF) return ka_def(node, env);
   while (reg && strcmp(node->key, reg->key) != 0) reg = reg->next;
-  node->next->key = malloc(sizeof(node->key));
-  strcpy(node->next->key, node->key);
-  reg->type = node->next->type;
-  switch (reg->type) {
-    case KA_EXPR: case KA_BLCK: case KA_LIST:
-      memcpy(reg->chld, node->next->chld, KANODE_SIZE);
-      break;
-    case KA_STR: case KA_IDF:
-      strcpy(reg->str, node->next->str);
-      break;
-    default:
-      reg->num = node->next->num;
-  }
+  node->next->key = reg->key;
+  node->next->next = reg->next;
+  memcpy(reg, node->next, KANODE_SIZE);
+  node->next->next = NULL;
   return node->next;
 }
 
@@ -141,6 +132,11 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   // List
   struct KaNode *chld = node->next->num ? node->chld : output;
   for (int i = 0; chld && i < node->next->num - 1; i++) chld = chld->next;
+  if (node->next->next) {
+    node->next->next->next = chld->next;
+    memcpy(chld, node->next->next, KANODE_SIZE);
+    return node;
+  }
   if (chld) memcpy(output, chld, KANODE_SIZE);
   output->next = NULL;
   return output;
