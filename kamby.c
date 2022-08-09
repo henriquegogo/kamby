@@ -192,12 +192,7 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
 
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
-  if (node->type == KA_LIST) {
-    struct KaNode *tail = node->chld;
-    while (tail->next) tail = tail->next;
-    tail->next = node->next->type == KA_LIST ? node->next->chld : node->next;
-    return node;
-  } else if (node->type == KA_STR && node->next->type == KA_STR) {
+  if (node->type == KA_STR && node->next->type == KA_STR) {
     struct KaNode *output = ka_str(node->str);
     strcat(output->str, node->next->str);
     return output;
@@ -258,6 +253,12 @@ struct KaNode *ka_gte(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_incr(struct KaNode *node, struct KaNode **env) {
+  if (node->type == KA_LIST) {
+    struct KaNode *tail = node->chld;
+    while (tail->next) tail = tail->next;
+    tail->next = node->next->type == KA_LIST ? node->next->chld : node->next;
+    return node;
+  }
   return ka_set(ka_link(node, ka_add(node, env), 0), env);
 }
 
@@ -306,10 +307,11 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         if (head->next->type == KA_BLCK) head->next = head->next->chld;
         ka_def(ka_link(ka_idf("arg"), ka_eval(head->next, &local), 0), &local);
       }
-      return ka_eval(head->chld, &local);
+      tail = ka_eval(head->chld, &local);
+      while (tail->next) tail = tail->next;
+      return tail;
     default:;
   }
-  while (head->next) head = head->next;
   return head;
 }
 
