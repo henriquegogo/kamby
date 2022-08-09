@@ -1,3 +1,5 @@
+#!./kamby
+
 message := 'Hello, World!'    # Define new variable
 puts 'Message:' message       # Return 'Hello, World!'
 message = 'Bye, bye'          # Edit variable value
@@ -21,7 +23,6 @@ puts (if false 'yes' else 'no')
 puts 'Global:' message
 
 def say { puts "Function said:" message (arg . 2) }
-say { message := 'Something'; ["for sure" "or not"] }
 say ["Henrique" "Soares"]
 puts "Global again:" message
 
@@ -37,10 +38,12 @@ for {i := 3} {i < 5} {i += 1} {
 }
 
 list = ['first' 'second' 'third']
-puts 'LIST:' (list . 9999)
-list + 'fourth'
+tree list
+puts 'LIST:' (list . 2)
+list += 'fourth'
+tree list
 puts 'LIST APPENDED:' list . 4
-list = (list + ['five' 'last one'])
+list += ['five' 'last one']
 tree list
 puts list . (len list)
 

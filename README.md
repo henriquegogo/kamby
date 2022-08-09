@@ -29,10 +29,10 @@ Kamby has some conventions to make the syntax more friendly:
 #### Special operators
 Operator "+" will sum two numbers, concatenate two strings, append a node to list or merge two lists.
 ```ruby
-puts (1 + 2)             # 3
-puts ("Kamby" + "Lang")  # KambyLang
-[1 2] + 3                # [1 2 3]
-list = [1 2] + [3 4]     # [1 2 3 4]
+puts 1 + 2               # 3
+puts "Kamby" + "Lang"    # KambyLang
+[1 2] += 3               # [1 2 3]
+list = ([1 2] += [3 4])  # [1 2 3 4]
 ```
 
 Operators "==" and "!=" can be used to compare numbers and strings.
@@ -59,7 +59,7 @@ say { message := "Scoped var" }
 #### Lists
 ```ruby
 list = [9 8 7 6]  # Creates a list
-list + 5          # Append 5 to list
+list += 5         # Append 5 to list
 list . 1          # Get first item
 len list          # Return list size
 list . (len list) # Get last item
@@ -104,8 +104,8 @@ while {count < 3} {
 }
 
 list = ['first' 'second' 'third']
-list + 'fourth'
-puts (list . 4)    # Return 'fourth'
+list += 'fourth'
+puts list . 4    # Return 'fourth'
 ```
 
 ## Known issues / TODO
