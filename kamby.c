@@ -303,10 +303,8 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
       if (node->fn) return node->fn(head->next, env);
       else break;
     case KA_BLCK:
-      if (head->next) {
-        if (head->next->type == KA_BLCK) head->next = head->next->chld;
+      if (head->next)
         ka_def(ka_link(ka_idf("arg"), ka_eval(head->next, &local), 0), &local);
-      }
       tail = ka_eval(head->chld, &local);
       while (tail->next) tail = tail->next;
       return tail;

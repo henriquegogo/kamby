@@ -22,9 +22,9 @@ if true {
 puts (if false 'yes' else 'no')
 puts 'Global:' message
 
-def say { puts "Function said:" message (arg . 2) }
-say ["Henrique" "Soares"]
-puts "Global again:" message
+def say { puts "Function said:" surname firstname arg }
+say [firstname := "Henrique"; surname := "Soares"]
+say "Gogs"
 
 count = 0
 while {count < 3} {
