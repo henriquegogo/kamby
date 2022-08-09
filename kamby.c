@@ -96,13 +96,9 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   if (!node->key); // Node is not a registered variable. Do nothing.
   else if (strcmp(node->key, reg->key) == 0) *env = (*env)->next;
   else {
-    while (reg->next) {
-      if (strcmp(node->key, reg->next->key) == 0) {
-        reg->next = reg->next->next;
-        break;
-      }
+    while (reg->next && strcmp(node->key, reg->next->key) != 0)
       reg = reg->next;
-    }
+    if (reg->next) reg->next = reg->next->next;
   }
   return malloc(KANODE_SIZE);
 }
@@ -132,7 +128,7 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
   // List
   struct KaNode *chld = node->next->num ? node->chld : output;
   for (int i = 0; chld && i < node->next->num - 1; i++) chld = chld->next;
-  if (node->next->next) {
+  if (node->next->next) {                 // If 3rd arg, change value
     node->next->next->next = chld->next;
     memcpy(chld, node->next->next, KANODE_SIZE);
     return node;
@@ -327,8 +323,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
     struct KaNode *node = malloc(KANODE_SIZE);
 
     switch (text[(*pos)->num]) {
-      case ' ':
-        break;
+      case ' ': break;
       case '#':
         while (text[(*pos)->num + 1] != '\n') (*pos)->num++;
         break;
@@ -342,15 +337,13 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
         (*pos)->num++;
         node->chld = ka_parse(text, pos);
         break;
-      case '\n':
-      case ';':
+      case '\n': case ';':
         (*pos)->num++;
         (*pos)->type = KA_NONE;
       case ')': case ']': case '}':
         length = 0;
         continue;
-      case '\'':
-      case '"':
+      case '\'': case '"':
         while (text[++(*pos)->num] != text[start]);
         node->type = KA_STR;
         node->str = malloc((*pos)->num - start - 1);
