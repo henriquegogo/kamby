@@ -23,25 +23,26 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
 }
 
 char ident[256];
-struct KaNode *builtin_tree(struct KaNode *node) {
+struct KaNode *builtin_tree(struct KaNode *node, struct KaNode **env) {
+  if (!node) node = *env;
   while (node) {
     switch (node->type) {
       case KA_EXPR:
-        printf("%sEXPR:\n", ident);
+        printf("%sEXPR %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld);
+        builtin_tree(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_BLCK:
-        printf("%sBLCK:\n", ident);
+        printf("%sBLCK %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld);
+        builtin_tree(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_LIST:
-        printf("%sLIST:\n", ident);
+        printf("%sLIST %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld);
+        builtin_tree(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_NUM:
