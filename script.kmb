@@ -11,14 +11,19 @@ del message                   # Remove last 'message' in stack
 puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
 puts "Sum:" 1 + 2 + 3         # Math expressions
 
+user := "GOGS"
 if true {
     message := 'Local scope'  # Append 'message' only for block scope
+    puts user
+    del user
+    puts user 'should be deleted'
     puts 'Local:' message
 } message {
     puts 'Else if'
 } else {
     puts 'Final else'
 }
+puts user 'should be deleted'
 puts (if false 'yes' else 'no')
 puts 'Global:' message
 
@@ -46,18 +51,3 @@ puts 'LIST APPENDED:' list . 4
 list += ['five' 'last one']
 tree list
 puts list . (len list)
-
-obj = [
-    name := "Henrique"
-    age := 38
-    children := 38
-]
-tree obj
-puts 'Age:' obj :: {age}
-obj :: { age = 40 }
-obj :: { number := 999 }
-puts 'Age edited:' obj :: {age}
-tree obj
-obj :: { del age }
-obj :: { del name }
-tree obj
