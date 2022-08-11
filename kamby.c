@@ -95,8 +95,7 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = malloc(KANODE_SIZE);
   limiter->next = *env;
-  *env = limiter;
-  struct KaNode *reg = *env;
+  struct KaNode *reg = *env = limiter;
   if (!node->key); // Node is not a registered variable. Do nothing.
   else {
     while (strcmp(node->key, reg->next->key ? reg->next->key : "") != 0)
@@ -146,8 +145,7 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = malloc(KANODE_SIZE);
   limiter->next = *env;
-  *env = limiter;
-  struct KaNode *local = *env;
+  struct KaNode *local = *env = limiter;
   while (node) {
     if (node->num) {
       node = node->next;
@@ -163,8 +161,7 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = malloc(KANODE_SIZE);
   limiter->next = *env;
-  *env = limiter;
-  struct KaNode *local = *env;
+  struct KaNode *local = *env = limiter;
   while (ka_eval(node->chld, &local)->num)
     ka_eval(node->next->chld, &local);
   *env = (*env)->next;
@@ -174,8 +171,7 @@ struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = malloc(KANODE_SIZE);
   limiter->next = *env;
-  *env = limiter;
-  struct KaNode *local = *env;
+  struct KaNode *local = *env = limiter;
   for (ka_eval(node->chld, &local);
       ka_eval(node->next->chld, &local)->num;
       ka_eval(node->next->next->chld, &local)) {
