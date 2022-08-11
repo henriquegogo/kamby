@@ -65,15 +65,16 @@ struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   node->next->key = malloc(sizeof(key));
   strcpy(node->next->key, key);
   memcpy(reg, node->next, KANODE_SIZE);
-  reg->next = *env;
-  *env = reg;
+  reg->next = (*env)->next;
+  (*env)->next = reg;
   return node->next;
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key && node->type == KA_IDF) return ka_def(node, env);
-  while (reg && strcmp(node->key, reg->key) != 0) reg = reg->next;
+  while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0)
+    reg = reg->next;
   node->next->key = reg->key;
   node->next->next = reg->next;
   memcpy(reg, node->next, KANODE_SIZE);
@@ -93,12 +94,11 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
-  if (!node->key); // Node is not a registered variable. Do nothing.
-  else if (strcmp(node->key, reg->key) == 0) *env = (*env)->next;
-  else {
+  if (node->key) {
     while (reg->next && strcmp(node->key, reg->next->key) != 0)
       reg = reg->next;
-    if (reg->next) reg->next = reg->next->next;
+    if (reg->next && reg->next->next->type) reg->next = reg->next->next;
+    else reg->next = NULL;
   }
   return malloc(KANODE_SIZE);
 }
@@ -139,10 +139,12 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *tail = node->chld;
+  struct KaNode *local = malloc(KANODE_SIZE);
+  local->next = node->chld;
+  struct KaNode *tail = local;
   while (tail->next) tail = tail->next;
   tail->next = *env;
-  struct KaNode *output = ka_eval(node->next, &node->chld);
+  struct KaNode *output = ka_eval(node->next, &local);
   tail->next = NULL;
   return output;
 }
