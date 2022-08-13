@@ -16,7 +16,6 @@ Kamby has some conventions to make the syntax more friendly:
 - if (condition) { 'first' } (else_condition) { 'second' }
 - while {condition} { 'Do this' }
 - for {initialization} {condition} {increment} { 'Do this' }
-- len [9 8 7 6]   (Return number of items)
 - puts key 'or text'
 
 ### Operators
@@ -51,7 +50,7 @@ if 'two' == "two" { puts 'OK' }
 #### Blocks
 Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "arg" inside block scope.
 ```ruby
-def say { puts arg }
+def say { puts (.) }
 say "Hello"                     # Run { puts "Hello" }
 say { message := "Scoped var" }
 ```
@@ -102,12 +101,12 @@ while {count < 3} {
 
 list = ['first' 'second' 'third']
 list += 'fourth'
-puts list . 4    # Return 'fourth'
+puts list :: {. 4}    # Return 'fourth'
 ```
 
 ## Known issues / TODO
 - VM / Bytecode
-- Blocks are running when defined
+- Change list items without keys (by index)
 
 ## License
 MIT
