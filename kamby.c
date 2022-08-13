@@ -279,7 +279,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
       else break;
     case KA_BLCK:
       if (head->next)
-        ka_def(ka_link(ka_idf("arg"), ka_eval(head->next, &local), 0), &local);
+        ka_def(ka_link(ka_idf(""), ka_eval(head->next, &local), 0), &local);
       tail = ka_eval(head->chld, &local);
       while (tail->next) tail = tail->next;
       return tail;
