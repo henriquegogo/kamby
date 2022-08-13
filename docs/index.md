@@ -1,37 +1,113 @@
-## Welcome to GitHub Pages
+# Kamby Language
+Kamby Programming Language is a Lisp dialect with some conventions to create a lange more intuitive and compact.
 
-You can use the [editor on GitHub](https://github.com/henriquegogo/kamby/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## Lisp? But it doesn't look like
+Internaly the implementation follows some basic concepts like S-expressions and car/cdr as any Lisp language.
+Kamby has some conventions to make the syntax more friendly:
+- Anything starting with a new line and finishing in end of line is considered an expression
+- An item formed by 2 or less punctuation characters, will create an expression formed by (punct previous next). Ex.: 2 + 2 => (+ 2 2) ... something == anything => (== something anything)
+- Blocks will be evaluated if is the first item of expression.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Actions
+- def key 'value' (Append 'key' in stack)
+- key := 'value'  (Append 'key' in stack - syntax sugar for 'def')
+- key = 'value'   (Edit last 'key' in stack)
+- del key         (Remove last 'key' from stack)
+- if (condition) { 'first' } (else_condition) { 'second' }
+- while {condition} { 'Do this' }
+- for {initialization} {condition} {increment} { 'Do this' }
+- len [9 8 7 6]   (Return number of items)
+- puts key 'or text'
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+### Operators
+```
++ - * /
+&& || == != >= <= > <
++= -=
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+#### Special operators
+Operator "+" will sum two numbers, concatenate two strings, append a node to list or merge two lists.
+```ruby
+puts 1 + 2               # 3
+puts "Kamby" + "Lang"    # KambyLang
+[1 2] += 3               # [1 2 3]
+list = ([1 2] += [3 4])  # [1 2 3 4]
+```
 
-### Jekyll Themes
+Operators "==" and "!=" can be used to compare numbers and strings.
+```ruby
+if 4 != 2 { puts 'NOT OK' }
+if 'two' == "two" { puts 'OK' }
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/henriquegogo/kamby/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+### Types
+- number = 123
+- string = "Text"
+- expression = ( "Eval immediately" )
+- block = { "Eval when called" }
+- list = ['Any' 'item' 9 5 3 'any' ['type']]
 
-### Support or Contact
+#### Blocks
+Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "arg" inside block scope.
+```ruby
+def say { puts arg }
+say "Hello"                     # Run { puts "Hello" }
+say { message := "Scoped var" }
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+#### Lists
+```ruby
+list = [9 8 7 6]  # Creates a list
+list += 5         # Append 5 to list
+list :: {. 1}     # Get first item
+```
+
+#### Objects
+```ruby
+# Objects are list of attributions
+obj = [
+    name := 'My name'
+    age := 20
+]
+obj :: {        # The '::' operator will apply 'obj' as the context to block
+    name = 'Your name'
+}
+puts obj :: {name}
+```
+
+## How to run
+```sh
+make
+./kamby
+```
+
+## Example
+```ruby
+message = 'Hello, World!'
+puts 'Message:' message
+puts "Sum:" 1 + 2 + 3
+
+if false {
+    puts 'Initial condition'
+} else {
+    puts 'Last condition'
+}
+
+count = 0
+while {count < 3} {
+    count += 1
+    puts 'Number:' count
+}
+
+list = ['first' 'second' 'third']
+list += 'fourth'
+puts list . 4    # Return 'fourth'
+```
+
+## Known issues / TODO
+- VM / Bytecode
+- Blocks are running when defined
+
+## License
+MIT
