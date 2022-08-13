@@ -60,10 +60,7 @@ say { message := "Scoped var" }
 ```ruby
 list = [9 8 7 6]  # Creates a list
 list += 5         # Append 5 to list
-list . 1          # Get first item
-. list 1 99       # Edit first item to 99 - UGLY!
-len list          # Return list size
-list . (len list) # Get last item
+list :: {. 1}     # Get first item
 ```
 
 #### Objects
