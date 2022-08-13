@@ -13,7 +13,7 @@ void test_init() {
 void test_parser() {
   printf("- Parser\n");
   struct KaNode *pos = malloc(sizeof(struct KaNode));
-  struct KaNode *ast = ka_parse("4 + 5; puts 'message'", &pos);
+  struct KaNode *ast = ka_parser("4 + 5; puts 'message'", &pos);
   assert(ast->type == KA_EXPR);
   assert(ast->chld->type == KA_EXPR);
   assert(strcmp(ast->chld->chld->str, "+") == 0);

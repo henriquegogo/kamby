@@ -288,7 +288,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   return head;
 }
 
-struct KaNode *ka_parse(char *text, struct KaNode **pos) {
+struct KaNode *ka_parser(char *text, struct KaNode **pos) {
   int length = strlen(text);
   struct KaNode *head = malloc(KANODE_SIZE);
   struct KaNode *tail = head;
@@ -297,7 +297,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
   while (!(*pos)->type) {
     if (!(*pos)->type) (*pos)->type = KA_EXPR;
     struct KaNode *expr = malloc(KANODE_SIZE);
-    expr->chld = ka_parse(text, pos);
+    expr->chld = ka_parser(text, pos);
     if (expr->chld) {
       expr->type = KA_EXPR;
       tail->next = expr;
@@ -322,7 +322,7 @@ struct KaNode *ka_parse(char *text, struct KaNode **pos) {
       case '(':
         if (!node->type) node->type = KA_EXPR;
         (*pos)->num++;
-        node->chld = ka_parse(text, pos);
+        node->chld = ka_parser(text, pos);
         break;
       case '\n': case ';':
         (*pos)->num++;
@@ -390,7 +390,7 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("if"), ka_fn(ka_if), 0),&env);
   ka_def(ka_link(ka_idf("while"), ka_fn(ka_while), 0), &env);
   ka_def(ka_link(ka_idf("for"),ka_fn(ka_for),0),&env);
-  ka_def(ka_link(ka_idf("."),  ka_fn(ka_stack), 0),&env);
+  ka_def(ka_link(ka_idf("."),  ka_fn(ka_stack),0),&env);
   ka_def(ka_link(ka_idf("::"), ka_fn(ka_call), 0),&env);
 
   ka_def(ka_link(ka_idf("+"), ka_fn(ka_add),0), &env);
