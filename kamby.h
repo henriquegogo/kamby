@@ -43,7 +43,7 @@ struct KaNode *ka_item(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env);
 
-struct KaNode *ka_parse(char *text, struct KaNode **pos);
+struct KaNode *ka_parser(char *text, struct KaNode **pos);
 
 struct KaNode *ka_init();
 

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
       if (input[0] == '\n') continue;
       else if (strcmp(input, "exit\n") == 0) break;
       pos = malloc(sizeof(struct KaNode));
-      ka_eval(ka_parse(input, &pos), &env);
+      ka_eval(ka_parser(input, &pos), &env);
       input[0] = '\0';
     }
   } else if (argc == 2) {
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     rewind(file);
     char *text = malloc(size);
     fread(text, size, 1, file);
-    struct KaNode *ast = ka_parse(text, &pos);
+    struct KaNode *ast = ka_parser(text, &pos);
     //builtin_tree(ast);
     ka_eval(ast, &env);
     fclose(file);
