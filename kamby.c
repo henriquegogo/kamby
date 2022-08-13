@@ -106,38 +106,22 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   return malloc(KANODE_SIZE);
 }
 
-// List methods
-struct KaNode *ka_len(struct KaNode *node, struct KaNode **env) {
-  int i = 0;
-  switch (node->type) {
-    case KA_NUM:
-      return node;
-    case KA_STR:
-      return ka_num(strlen(node->str));
-    default:
-      for (; node->chld; i++) node->chld = node->chld->next;
-      return ka_num(i);
-  }
+// Context methods
+struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *output = malloc(KANODE_SIZE);
+  struct KaNode *reg = *env;
+  for (int i = 0; reg && node && i < node->num - 1; i++) reg = reg->next;
+  if (reg) memcpy(output, reg, KANODE_SIZE);
+  output->next = NULL;
+  return output;
 }
 
-struct KaNode *ka_item(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *output = malloc(KANODE_SIZE);
-  // String
-  if (node->type == KA_STR) {
-    output = ka_str(&node->str[node->next->num - 1]);
-    output->str[1] = '\0';
-    return output;
-  }
-  // List
-  struct KaNode *chld = node->next->num ? node->chld : output;
-  for (int i = 0; chld && i < node->next->num - 1; i++) chld = chld->next;
-  if (node->next->next) {                 // If 3rd arg, change value
-    node->next->next->next = chld->next;
-    memcpy(chld, node->next->next, KANODE_SIZE);
-    return node;
-  }
-  if (chld) memcpy(output, chld, KANODE_SIZE);
-  output->next = NULL;
+struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
+  struct KaNode *tail = node->chld;
+  while (tail->next) tail = tail->next;
+  tail->next = *env;
+  struct KaNode *output = ka_eval(node->next, &node->chld);
+  tail->next = NULL;
   return output;
 }
 
@@ -406,8 +390,8 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("if"), ka_fn(ka_if), 0),&env);
   ka_def(ka_link(ka_idf("while"), ka_fn(ka_while), 0), &env);
   ka_def(ka_link(ka_idf("for"),ka_fn(ka_for),0),&env);
-  ka_def(ka_link(ka_idf("len"),ka_fn(ka_len),0),&env);
-  ka_def(ka_link(ka_idf("."),  ka_fn(ka_item), 0),&env);
+  ka_def(ka_link(ka_idf("."),  ka_fn(ka_stack), 0),&env);
+  ka_def(ka_link(ka_idf("::"), ka_fn(ka_call), 0),&env);
 
   ka_def(ka_link(ka_idf("+"), ka_fn(ka_add),0), &env);
   ka_def(ka_link(ka_idf("-"), ka_fn(ka_sub),0), &env);
