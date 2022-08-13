@@ -27,7 +27,7 @@ puts user 'should be deleted'
 puts (if false 'yes' else 'no')
 puts 'Global:' message
 
-def say { puts "Function said:" surname firstname arg }
+def say { puts "Function said:" surname firstname (.) }
 say [firstname := "Henrique"; surname := "Soares"]
 say "Gogs"
 
@@ -44,10 +44,9 @@ for {i := 3} {i < 5} {i += 1} {
 
 list = ['first' 'second' 'third']
 tree list
-puts 'LIST:' (list . 2)
+puts 'LIST:' list :: {. 2}
 list += 'fourth'
 tree list
-puts 'LIST APPENDED:' list . 4
+puts 'LIST APPENDED:' list :: {. 4}
 list += ['five' 'last one']
 tree list
-puts list . (len list)
