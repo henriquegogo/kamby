@@ -51,7 +51,7 @@ if 'two' == "two" { puts 'OK' }
 #### Blocks
 Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "arg" inside block scope.
 ```ruby
-def say { puts arg }
+def say { puts (.) }
 say "Hello"                     # Run { puts "Hello" }
 say { message := "Scoped var" }
 ```
@@ -107,7 +107,7 @@ puts list . 4    # Return 'fourth'
 
 ## Known issues / TODO
 - VM / Bytecode
-- Blocks are running when defined
+- Change list items without keys (by index)
 
 ## License
 MIT

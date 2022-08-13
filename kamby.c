@@ -67,7 +67,7 @@ struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   memcpy(reg, node->next, KANODE_SIZE);
   reg->next = *env;
   *env = reg;
-  return node->next;
+  return node->next->type == KA_BLCK ? malloc(KANODE_SIZE) : node->next;
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
