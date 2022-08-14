@@ -8,22 +8,8 @@ Kamby has some conventions to make the syntax more friendly:
 - An item formed by 2 or less punctuation characters, will create an expression formed by (punct previous next). Ex.: 2 + 2 => (+ 2 2) ... something == anything => (== something anything)
 - Blocks will be evaluated if is the first item of expression.
 
-### Actions
-- def key 'value' (Append 'key' in stack)
-- key := 'value'  (Append 'key' in stack - syntax sugar for 'def')
-- key = 'value'   (Edit last 'key' in stack)
-- del key         (Remove last 'key' from stack)
-- if (condition) { 'first' } (else_condition) { 'second' }
-- while {condition} { 'Do this' }
-- for {initialization} {condition} {increment} { 'Do this' }
-- puts key 'or text'
-
-### Operators
-```
-+ - * /
-&& || == != >= <= > <
-+= -=
-```
+## Documentation
+https://kamby.org
 
 ## Known issues / TODO
 - VM / Bytecode
