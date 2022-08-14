@@ -12,7 +12,7 @@ void test_init() {
 
 void test_parser() {
   printf("- Parser\n");
-  struct KaNode *pos = malloc(sizeof(struct KaNode));
+  struct KaNode *pos = malloc(KANODE_SIZE);
   struct KaNode *ast = ka_parser("4 + 5; puts 'message'", &pos);
   assert(ast->type == KA_EXPR);
   assert(ast->chld->type == KA_EXPR);
@@ -29,9 +29,11 @@ void test_parser() {
 void test_evaluation() {
   printf("- Evaluation\n");
   struct KaNode *env = ka_init();
-  struct KaNode *ast = ka_expr(ka_link(
+  struct KaNode *ast = malloc(KANODE_SIZE);
+  ast->type = KA_EXPR;
+  ast->chld = ka_link(
     ka_idf("+"), ka_num(4),  ka_num(5),
-  0));
+  0);
   assert(ka_eval(ast, &env)->num == 9);
 }
 

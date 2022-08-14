@@ -5,8 +5,6 @@
 
 #include "kamby.h"
 
-#define KANODE_SIZE sizeof(struct KaNode)
-
 // Constructors
 struct KaNode *ka_num(long long num) {
   struct KaNode *output = malloc(KANODE_SIZE);
@@ -49,13 +47,6 @@ struct KaNode *ka_link(struct KaNode *node, ...) {
   }
   va_end(args);
   return node;
-}
-
-struct KaNode *ka_expr(struct KaNode *node) {
-  struct KaNode *output = malloc(KANODE_SIZE);
-  output->type = KA_EXPR;
-  output->chld = node;
-  return output;
 }
 
 // Definitions and memory control
@@ -366,7 +357,9 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
     struct KaNode *b = tail->next->next->next;
     struct KaNode *next = tail->next->next->next->next;
     if (op->type == KA_IDF && !op->str[2] && ispunct(op->str[0])) {
-      tail->next = ka_expr(ka_link(op, a, b, 0));
+      tail->next = malloc(KANODE_SIZE);
+      tail->next->type = KA_EXPR;
+      tail->next->chld = ka_link(op, a, b, 0);
       tail->next->next = next;
       continue;
     }
