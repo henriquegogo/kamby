@@ -13,19 +13,17 @@ puts "Sum:" 1 + 2 + 3         # Math expressions
 
 user := "GOGS"
 if true {
-    message := 'Local scope'  # Append 'message' only for block scope
     puts user
     del user
     puts user 'should be deleted'
-    puts 'Local:' message
 } message {
     puts 'Else if'
 } else {
     puts 'Final else'
 }
+
 puts user 'should be deleted'
 puts (if false 'yes' else 'no')
-puts 'Global:' message
 
 def say { puts "Function said:" surname firstname (.) }
 say [firstname := "Henrique"; surname := "Soares"]
@@ -62,6 +60,7 @@ puts l2 :: {. 7}
 obj = [name := 'Gogs'; age := 37; children := 3]
 obj :: {name = 'Henrique'}
 obj :: {children = 4}
+puts "children:" obj :: {children}
 obj :: {del children}
 tree obj
 obj :: {del name}

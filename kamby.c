@@ -99,8 +99,7 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   if (node->key) {
     while (strcmp(node->key, reg->next->key ? reg->next->key : "") != 0)
       reg = reg->next;
-    if (reg->next && !reg->next->next->type) reg->next = NULL;
-    else if (reg->next) reg->next = reg->next->next;
+    if (reg->next) reg->next = reg->next->next;
   }
   *env = (*env)->next;
   return malloc(KANODE_SIZE);
@@ -128,18 +127,14 @@ struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
 
 // Conditions and loops
 struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *limiter = malloc(KANODE_SIZE);
-  limiter->next = *env;
-  struct KaNode *local = *env = limiter;
   while (node) {
     if (node->num) {
       node = node->next;
       node->next = NULL;
-      return node->type == KA_BLCK ? ka_eval(node->chld, &local) : node;
+      return node->type == KA_BLCK ? ka_eval(node->chld, env) : node;
     }
     node = node->next->next;
   }
-  *env = (*env)->next;
   return malloc(KANODE_SIZE);
 }
 
