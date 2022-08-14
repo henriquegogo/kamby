@@ -43,10 +43,26 @@ for {i := 3} {i < 5} {i += 1} {
 }
 
 list = ['first' 'second' 'third']
-tree list
 puts 'LIST:' list :: {. 2}
 list += 'fourth'
-tree list
 puts 'LIST APPENDED:' list :: {. 4}
 list += ['five' 'last one']
 tree list
+
+test := "Test"
+(.) = 'Little thing'
+puts 'Last:' (. 1)
+
+l2 = ['shamone' 'two' 'three']
+puts l2 :: {. 0}
+puts l2 :: {. 1}
+puts l2 :: {. 3}
+puts l2 :: {. 7}
+
+obj = [name := 'Gogs'; age := 37; children := 3]
+obj :: {name = 'Henrique'}
+obj :: {children = 4}
+obj :: {del children}
+tree obj
+obj :: {del name}
+obj :: {tree}
