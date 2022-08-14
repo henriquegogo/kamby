@@ -13,6 +13,7 @@ Kamby has some conventions to make the syntax more friendly:
 - key := 'value'  (Append 'key' in stack - syntax sugar for 'def')
 - key = 'value'   (Edit last 'key' in stack)
 - del key         (Remove last 'key' from stack)
+- . 1             (Get item from stack by index - start by 1)
 - if (condition) { 'first' } (else_condition) { 'second' }
 - while {condition} { 'Do this' }
 - for {initialization} {condition} {increment} { 'Do this' }
@@ -50,7 +51,7 @@ if 'two' == "two" { puts 'OK' }
 #### Blocks
 Blocks are similar to expressions but will be evaluated only when called as first item of an expression. Others items will be added as "arg" inside block scope.
 ```ruby
-def say { puts (.) }
+def say { puts (.) }            # Will print first item from stack - arg
 say "Hello"                     # Run { puts "Hello" }
 say { message := "Scoped var" }
 ```
@@ -103,10 +104,6 @@ list = ['first' 'second' 'third']
 list += 'fourth'
 puts list :: {. 4}    # Return 'fourth'
 ```
-
-## Known issues / TODO
-- VM / Bytecode
-- Change list items without keys (by index)
 
 ## License
 MIT

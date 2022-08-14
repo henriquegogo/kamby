@@ -57,7 +57,7 @@ struct KaNode *builtin_tree(struct KaNode *node, struct KaNode **env) {
       default:
         printf("%sNONE %s: %s\n", ident, node->key, node->str);
     }
-    node = node->next;
+    node = node->next && node->next->type ? node->next : NULL;
   }
   return malloc(sizeof(struct KaNode));
 }
