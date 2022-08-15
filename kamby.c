@@ -1,9 +1,12 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "kamby.h"
+
+unsigned long long uuid = 0;
 
 // Constructors
 struct KaNode *ka_num(long long num) {
@@ -101,7 +104,10 @@ struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = malloc(KANODE_SIZE);
   struct KaNode *reg = *env;
   for (int i = 0; reg->type && node && i < node->num - 1; i++) reg = reg->next;
-  if (reg && (!node || node->num)) memcpy(output, reg, KANODE_SIZE);
+  if (reg && (!node || node->num)) {
+    if (!reg->key) sprintf(reg->key = malloc(sizeof(uuid)), "#%lld", uuid++);
+    memcpy(output, reg, KANODE_SIZE);
+  }
   output->next = NULL;
   return output;
 }

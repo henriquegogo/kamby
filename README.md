@@ -13,7 +13,6 @@ https://kamby.org
 
 ## Known issues / TODO
 - VM / Bytecode
-- Change list items without keys (by index)
 - Delete first item from object (using call context)
 
 ## License
