@@ -37,10 +37,6 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env);
 
-struct KaNode *ka_len(struct KaNode *node, struct KaNode **env);
-
-struct KaNode *ka_item(struct KaNode *node, struct KaNode **env);
-
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env);
 
 struct KaNode *ka_parser(char *text, struct KaNode **pos);

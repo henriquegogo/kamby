@@ -41,9 +41,11 @@ for {i := 3} {i < 5} {i += 1} {
 }
 
 list = ['first' 'second' 'third']
-puts 'LIST:' list :: {. 2}
 list += 'fourth'
 puts 'LIST APPENDED:' list :: {. 4}
+puts 'LIST:' list :: {. 2}
+list :: {(. 4) = '4th'}
+list :: {(. 2) = '2nd'}
 list += ['five' 'last one']
 tree list
 
