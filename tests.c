@@ -5,6 +5,11 @@
 
 #include "kamby.h"
 
+struct KaNode **zeropos(struct KaNode **pos) {
+  *pos = malloc(KANODE_SIZE);
+  return pos;
+}
+
 void test_init() {
   printf("- Initialization\n");
   assert(ka_init());
@@ -31,9 +36,7 @@ void test_evaluation() {
   struct KaNode *env = ka_init();
   struct KaNode *ast = malloc(KANODE_SIZE);
   ast->type = KA_EXPR;
-  ast->chld = ka_link(
-    ka_idf("+"), ka_num(4),  ka_num(5),
-  0);
+  ast->chld = ka_link( ka_idf("+"), ka_num(4),  ka_num(5), 0);
   assert(ka_eval(ast, &env)->num == 9);
 }
 
@@ -49,17 +52,11 @@ void test_constructors() {
 void test_definitions() {
   printf("- Definitions and memory control\n");
   struct KaNode *env = ka_init();
-  assert(ka_def(ka_link(
-    ka_str("number"), ka_num(987),
-  0), &env));
+  assert(ka_def(ka_link( ka_str("number"), ka_num(987), 0), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 987);
-  assert(ka_set(ka_link(
-    ka_idf("number"), ka_num(789),
-  0), &env));
+  assert(ka_set(ka_link( ka_idf("number"), ka_num(789), 0), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 789);
-  assert(ka_def(ka_link(
-    ka_idf("number"), ka_num(456),
-  0), &env));
+  assert(ka_def(ka_link( ka_idf("number"), ka_num(456), 0), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 456);
   assert(ka_del(ka_idf("number"), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 789);
@@ -71,13 +68,10 @@ void test_stack() {
   struct KaNode *env = ka_init();
   ka_def(ka_link( ka_str("num1"), ka_num(987), 0), &env);
   ka_def(ka_link( ka_str("num2"), ka_num(789), 0), &env);
-  assert(ka_eval(ka_parser(".", &pos), &env)->num == 789);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser(". 1", &pos), &env)->num == 789);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser(". 2", &pos), &env)->num == 987);
-  pos = malloc(KANODE_SIZE);
-  assert(!ka_eval(ka_parser(". 3", &pos), &env)->num);
+  assert(ka_eval(ka_parser(".", zeropos(&pos)), &env)->num == 789);
+  assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
+  assert(ka_eval(ka_parser(". 2", zeropos(&pos)), &env)->num == 987);
+  assert(!ka_eval(ka_parser(". 3", zeropos(&pos)), &env)->num);
 }
 
 void test_call() {
@@ -86,29 +80,18 @@ void test_call() {
   struct KaNode *env = ka_init();
   ka_def(ka_link( ka_str("num1"), ka_num(987), 0), &env);
   ka_eval(ka_parser("list = [12 23 34]", &pos), &env);
-  pos = malloc(KANODE_SIZE);
-  ka_eval(ka_parser("obj = [name := 'me'; age := 20]", &pos), &env);
+  ka_eval(ka_parser("obj = [name := 'me'; age := 20]", zeropos(&pos)), &env);
   ka_def(ka_link( ka_str("num2"), ka_num(789), 0), &env);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("list :: {.}", &pos), &env)->num == 12);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("list :: {. 1}", &pos), &env)->num == 12);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("list :: {. 2}", &pos), &env)->num == 23);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("list :: {. 3}", &pos), &env)->num == 34);
-  pos = malloc(KANODE_SIZE);
-  assert(!ka_eval(ka_parser("list :: {. 4}", &pos), &env)->num);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("obj :: {age}", &pos), &env)->num == 20);
-  pos = malloc(KANODE_SIZE);
-  ka_eval(ka_parser("obj :: {age = 40}", &pos), &env);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser("obj :: {age}", &pos), &env)->num == 40);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser(". 1", &pos), &env)->num == 789);
-  pos = malloc(KANODE_SIZE);
-  assert(ka_eval(ka_parser(". 4", &pos), &env)->num == 987);
+  assert(ka_eval(ka_parser("list :: {.}", zeropos(&pos)), &env)->num == 12);
+  assert(ka_eval(ka_parser("list :: {. 1}", zeropos(&pos)), &env)->num == 12);
+  assert(ka_eval(ka_parser("list :: {. 2}", zeropos(&pos)), &env)->num == 23);
+  assert(ka_eval(ka_parser("list :: {. 3}", zeropos(&pos)), &env)->num == 34);
+  assert(!ka_eval(ka_parser("list :: {. 4}", zeropos(&pos)), &env)->num);
+  assert(ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env)->num == 20);
+  ka_eval(ka_parser("obj :: {age = 40}", zeropos(&pos)), &env);
+  assert(ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env)->num == 40);
+  assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
+  assert(ka_eval(ka_parser(". 4", zeropos(&pos)), &env)->num == 987);
 }
 
 int main() {
