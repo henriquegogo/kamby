@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>Kamby Language</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
@@ -12,7 +13,7 @@
       body { margin: 0; font-family: 'Noto Sans', sans-serif }
       a { color: black; text-decoration: none }
       p { color: #444 }
-      section { position: relative; width: 800px; margin: 0 auto }
+      section { position: relative; max-width: 800px; margin: 0 auto; padding: 0 10px }
       button { background: white; border: 1px solid black; padding: 5px 10px }
       button:hover { cursor: pointer; background: #BBB; }
       h1, h2 { color: #345 }
@@ -30,7 +31,7 @@
   <body>
     <header>
       <style>
-        header { width: 800px; margin: 0 auto; }
+        header { max-width: 800px; margin: 0 auto; }
         header h1, header nav { display: inline-block; margin: 0; line-height: 80px }
         header nav { float: right; font-size: 0.8em; text-transform: uppercase }
         header nav a { display: inline-block; padding: 0 5px }
@@ -59,11 +60,6 @@
         main pre { float: right }
       </style>
       <section>
-        <aside>
-          <h2>What is Kamby?</h2>
-          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and has just 20kb.</p>
-          <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
-        </aside>
         <pre><code class='language-ruby'>
 person = [
   name := 'World'
@@ -73,6 +69,11 @@ person = [
 puts 'Hello,' person :: {name}
 puts 'Happy' person :: {age}
         </code></pre>
+        <aside>
+          <h2>What is Kamby?</h2>
+          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and has just 20kb.</p>
+          <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
+        </aside>
       </section>
     </main>
     <a name="docs">
