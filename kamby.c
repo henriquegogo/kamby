@@ -44,10 +44,7 @@ struct KaNode *ka_link(struct KaNode *node, ...) {
   struct KaNode *tail = node;
   va_list args;
   va_start(args, node);
-  while (tail) {
-    tail->next = va_arg(args, struct KaNode *);
-    tail = tail->next;
-  }
+  while (tail) tail = tail->next = va_arg(args, struct KaNode *);
   va_end(args);
   return node;
 }
