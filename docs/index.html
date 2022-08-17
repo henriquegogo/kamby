@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Kamby Language</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <style>
+      html { scroll-behavior: smooth }
+      body { margin: 0; font-family: 'Noto Sans', sans-serif }
+      a { color: black; text-decoration: none }
+      p { color: #444 }
+      section { position: relative; width: 800px; margin: 0 auto }
+      button { background: white; border: 1px solid black; padding: 5px 10px }
+      button:hover { cursor: pointer; background: #BBB; }
+      h1, h2 { color: #345 }
+      code {
+        display: block;
+        padding: 10px;
+        background: white;
+        border: 1px solid #333;
+        border-right: 2px solid #333;
+        border-bottom: 2px solid #333;
+      }
+      code:first-line { color: #00A }
+    </style>
+  </head>
+  <body>
+    <header>
+      <style>
+        header { width: 800px; margin: 0 auto; }
+        header h1, header nav { display: inline-block; margin: 0; line-height: 80px }
+        header nav { float: right; font-size: 0.8em; text-transform: uppercase }
+        header nav a { display: inline-block; padding: 0 5px }
+        header svg { height: 30px }
+      </style>
+      <h1>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <path d="M379.939,83.701v-53.75C379.939,13.435,365.257,0,347.211,0H164.789c-18.047,0-32.728,13.435-32.728,29.951v53.75
+          L39.795,187.403V512h432.41V187.403L379.939,83.701z M162.478,30.967c0.422-0.246,1.192-0.55,2.311-0.55h182.422
+          c1.119,0,1.889,0.303,2.311,0.55v43.312H162.478V30.967z M224.326,481.583H70.212V198.976l77.057-86.608l77.057,86.608V481.583z
+          M181.158,104.696h176.747l65.203,73.285H246.359L181.158,104.696z M441.788,481.583H254.743V208.398h187.045V481.583z"/>
+        </svg>
+        <a href='/'>Kamby</a>
+      </h1>
+      <nav>
+        <a href='/'>Home</a>
+        <a href='#docs'>Documentation</a>
+        <a href='/'>Try it!</a>
+        <a href='https://github.com/henriquegogo/kamby'>Download</a>
+      </nav>
+    </header>
+    <main>
+      <style>
+        main { background: #BCD; padding: 20px 0 }
+        main aside { display: inline-block; vertical-align: top; width: 65% }
+        main pre { float: right }
+      </style>
+      <section>
+        <aside>
+          <h2>What is Kamby?</h2>
+          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and has just 20kb.</p>
+          <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
+        </aside>
+        <pre><code class='language-ruby'>
+person = [
+  name := 'World'
+  age := 2022
+]
+
+puts 'Hello,' person :: {name}
+puts 'Happy' person :: {age}
+        </code></pre>
+      </section>
+    </main>
+    <a name="docs">
+    <section>
+      <h1>Variables stack</h1>
+      <p>Variables can contain any type of data, including number, strings, lists or even blocks of code.</p>
+      <pre><code class='language-ruby'>
+message := 'Hello, World!'    # Define new variable (alternative: def key value)
+message = 'Bye, bye'          # Edit variable value
+def message 'Hello again!'    # Append new 'message' in stack (alternative syntax)
+del message                   # Remove last 'message' in stack
+message                       # Message has old value 'Bye, bye'
+      </code></pre>
+      <p>Variables are not unique. You can declare multiple values for the same variable name using ":=" and append in the stack. If you want to edit the last declaration, just user simple "=" operator. To remove the last variable with specific name in stack, use "del varname"</p>
+      <p>You can return the value of some stack item using index instead of var name</p>
+      <pre><code class='language-ruby'>
+num1 = 12                     # If num1 was not previously declared, it'll be
+num2 = 23
+.                             # Return last item value from stack. 23
+. 2                           # Return the second item from stack. 12
+      </code></pre>
+    </section>
+    <section>
+      <h1>Expressions, lists and blocks</h1>
+      <p>Basically those three types of lists has the same structure but act different when executed.</p>
+      <pre><code class='language-ruby'>
+# Expressions will be evaluated an return the value
+expression = (1 + 2)
+
+# List items are separated by space. Expressions return will be attribuited to item
+list = ['first item' (1 + 2)]
+
+# Blocks are lists of expressions that can be called after declaration
+block = {
+  message := 'OK'
+}
+      </code></pre>
+      <p>For source code or blocks, each line is considered an expression. To execute a block, just call it as first item of an expression. The arguments are be appended to the internal block variables stack</p>
+      <pre><code class='language-ruby'>
+sum = { (. 1) + (. 2) }
+# or
+def sum { (. 1) + (. 2) }
+sum 2 3
+      </code></pre>
+    </section>
+    <section>
+      <h1>Context</h1>
+      <p>Lists can be sent as a context appended to global variables context.</p>
+      <pre><code class='language-ruby'>
+name := 'Global name'         # Declare a new variable in current stack
+
+person = [
+  name := 'Local name'        # The return of this attribution will be the list item.
+  age := 20
+]
+
+name                          # Return 'Global name'
+
+person :: { name }            # "person" is set as context to block execution.
+                              # "name" returns 'Local name'
+      </code></pre>
+      <p>Using the context call, you can operate lists items like global variables</p>
+      <pre><code class='language-ruby'>
+person :: { name = 'Local' }  # Edit "name" item of "person" list
+person :: { del name }        # Remove named item of "person" list
+person :: { del (. 1) }       # Remove item of "person" list by index
+name                          # Return 'Global name'
+      </code></pre>
+    </section>
+    <section>
+      <h1>Operators</h1>
+      <pre><code class='language-ruby'>
++ - * /
+&& || == != >= <= > <
++= -=
+      </code></pre>
+      <p>Operator "+" will sum two numbers, concatenate two strings, append a node to list or merge two lists.</p>
+      <pre><code class='language-ruby'>
+1 + 2                    # 3
+"Kamby" + "Lang"         # KambyLang
+[1 2] += 3               # [1 2 3]
+list = ([1 2] += [3 4])  # [1 2 3 4]
+      </code></pre>
+    </section>
+    <section>
+      <h1>Behind the scenes</h1>
+      <p>Internaly the implementation follows some basic concepts like S-expressions and car/cdr as any Lisp language.</p>
+      <p>Kamby has some conventions to make the syntax more friendly:</p>
+      <ul>
+        <li>Anything starting with a new line and finishing in end of line is considered an expression</li>
+        <li>An item formed by 2 or less punctuation characters, will create an expression formed by (punct previous next). Ex.: 2 + 2 => (+ 2 2) ... something == anything => (== something anything)</li>
+        <li>Blocks will be evaluated if is the first item of expression.</li>
+      </ul>
+    </section>
+    <section>
+      <h1>License</h1>
+      <p>MIT</p>
+    </section>
+    <footer>
+      <style>
+        footer { padding: 5px 0; font-size: 0.8em; text-align: center; background: #BCD }
+      </style>
+      <section>Made just for fun by <a href="https://twitter.com/henriquegogo">@henriquegogo</a></section>
+    </footer>
+  </body>
+</html>
