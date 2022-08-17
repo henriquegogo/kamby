@@ -25,18 +25,19 @@
         border-right: 2px solid #333;
         border-bottom: 2px solid #333;
       }
-      code:first-line { color: #00A }
+      header { max-width: 800px; margin: 0 auto; }
+      header h1, header nav { display: inline-block; margin: 0; line-height: 80px }
+      header nav { float: right; font-size: 0.8em; text-transform: uppercase }
+      header nav a { display: inline-block; padding: 0 5px }
+      header svg { height: 30px }
+      main { background: #BCD; padding: 20px 0 }
+      main aside { display: inline-block; vertical-align: top; max-width: 500px }
+      main pre { display: inline-block; min-width: 290px }
+      footer { padding: 5px 0; font-size: 0.8em; text-align: center; background: #BCD }
     </style>
   </head>
   <body>
     <header>
-      <style>
-        header { max-width: 800px; margin: 0 auto; }
-        header h1, header nav { display: inline-block; margin: 0; line-height: 80px }
-        header nav { float: right; font-size: 0.8em; text-transform: uppercase }
-        header nav a { display: inline-block; padding: 0 5px }
-        header svg { height: 30px }
-      </style>
       <h1>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
           <path d="M379.939,83.701v-53.75C379.939,13.435,365.257,0,347.211,0H164.789c-18.047,0-32.728,13.435-32.728,29.951v53.75
@@ -47,19 +48,18 @@
         <a href='/'>Kamby</a>
       </h1>
       <nav>
-        <a href='/'>Home</a>
         <a href='#docs'>Documentation</a>
         <a href='/'>Try it!</a>
         <a href='https://github.com/henriquegogo/kamby'>Download</a>
       </nav>
     </header>
     <main>
-      <style>
-        main { background: #BCD; padding: 20px 0 }
-        main aside { display: inline-block; vertical-align: top; width: 65% }
-        main pre { float: right }
-      </style>
       <section>
+        <aside>
+          <h2>What is Kamby?</h2>
+          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and binary has just 20kb.</p>
+          <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
+        </aside>
         <pre><code class='language-ruby'>
 person = [
   name := 'World'
@@ -69,11 +69,6 @@ person = [
 puts 'Hello,' person :: {name}
 puts 'Happy' person :: {age}
         </code></pre>
-        <aside>
-          <h2>What is Kamby?</h2>
-          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and binary has just 20kb.</p>
-          <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
-        </aside>
       </section>
     </main>
     <a name="docs">
@@ -173,9 +168,6 @@ list = ([1 2] += [3 4])  # [1 2 3 4]
       <p>MIT</p>
     </section>
     <footer>
-      <style>
-        footer { padding: 5px 0; font-size: 0.8em; text-align: center; background: #BCD }
-      </style>
       <section>Made just for fun by <a href="https://twitter.com/henriquegogo">@henriquegogo</a></section>
     </footer>
   </body>
