@@ -84,6 +84,8 @@ void test_call() {
   ka_def(ka_link( ka_str("num2"), ka_num(789), 0), &env);
   assert(ka_eval(ka_parser("list :: {.}", zeropos(&pos)), &env)->num == 12);
   assert(ka_eval(ka_parser("list :: {. 1}", zeropos(&pos)), &env)->num == 12);
+  ka_eval(ka_parser("list :: {(. 1) = 99}", zeropos(&pos)), &env);
+  assert(ka_eval(ka_parser("list :: {. 1}", zeropos(&pos)), &env)->num == 99);
   assert(ka_eval(ka_parser("list :: {. 2}", zeropos(&pos)), &env)->num == 23);
   assert(ka_eval(ka_parser("list :: {. 3}", zeropos(&pos)), &env)->num == 34);
   assert(!ka_eval(ka_parser("list :: {. 4}", zeropos(&pos)), &env)->num);
@@ -92,6 +94,20 @@ void test_call() {
   assert(ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env)->num == 40);
   assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
   assert(ka_eval(ka_parser(". 4", zeropos(&pos)), &env)->num == 987);
+}
+
+void test_call_change_values() {
+  printf("- Remove values inside a contextualized block\n");
+  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *env = ka_init();
+  ka_eval(ka_parser("list = [12 23 34]", &pos), &env);
+  //ERROR: ka_eval(ka_parser("list :: {del (. 3)}", &pos), &env);
+  //ERROR: ka_eval(ka_parser("list :: {del (. 2)}", &pos), &env);
+  ka_eval(ka_parser("obj = [name := 'me'; age := 20]", zeropos(&pos)), &env);
+  ka_eval(ka_parser("obj :: {del name}", zeropos(&pos)), &env);
+  ka_eval(ka_parser("obj :: {del age}", zeropos(&pos)), &env);
+  //ERROR: assert(!ka_eval(ka_parser("obj :: {name}", zeropos(&pos)), &env));
+  //ERROR: assert(!ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env));
 }
 
 int main() {
@@ -104,6 +120,7 @@ int main() {
   test_definitions();
   test_stack();
   test_call();
+  test_call_change_values();
 
   printf("ALL TESTS PASSED!\n");
 
