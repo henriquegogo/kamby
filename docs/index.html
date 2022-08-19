@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+    <script src="./kamby.js"></script>
+    <script>const ka_run = Module.cwrap("ka_run", "string", ["string"])</script>
     <style>
       html { scroll-behavior: smooth }
       body { margin: 0; font-family: 'Noto Sans', sans-serif }
@@ -17,7 +19,7 @@
       button { background: white; border: 1px solid black; padding: 5px 10px }
       button:hover { cursor: pointer; background: #BBB; }
       h1, h2 { color: #345 }
-      code {
+      code, textarea {
         display: block;
         padding: 10px;
         background: white;
@@ -61,17 +63,30 @@
           <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
         </aside>
         <pre><code class='language-ruby'>
-person = [
+planet = [
   name := 'World'
-  age := 2022
+  nick := 'Earth'
 ]
 
-puts 'Hello,' person :: {name}
-puts 'Happy' person :: {age}
+'Hello, ' + (planet :: {name})
         </code></pre>
       </section>
     </main>
-    <a name="docs">
+    <a name='try'>
+    <section>
+      <h1>Try it!</h1>
+      <textarea id='tryinput' style='width: calc(100% - 20px); max-width: 400px; height: 150px'>
+planet = [
+  name := 'World'
+  nick := 'Earth'
+]
+
+'Hello, ' + (planet :: {name})
+      </textarea>
+      <button onclick='tryoutput.innerHTML = ka_run(tryinput.value)'>Run</button>
+      <b>Output: </b><span id='tryoutput'></span>
+    </section>
+    <a name='docs'>
     <section>
       <h1>Variables stack</h1>
       <p>Variables can contain any type of data, including number, strings, lists or even blocks of code.</p>
