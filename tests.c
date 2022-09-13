@@ -6,18 +6,20 @@
 #include "kamby.h"
 
 struct KaNode **zeropos(struct KaNode **pos) {
-  *pos = malloc(KANODE_SIZE);
+  *pos = calloc(1, KANODE_SIZE);
   return pos;
 }
 
 void test_init() {
   printf("- Initialization\n");
-  assert(ka_init());
+  struct KaNode *env = ka_init();
+  assert(env);
+  ka_free(env);
 }
 
 void test_parser() {
   printf("- Parser\n");
-  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *pos = calloc(1, KANODE_SIZE);
   struct KaNode *ast = ka_parser("4 + 5; puts 'message'", &pos);
   assert(ast->type == KA_EXPR);
   assert(ast->chld->type == KA_EXPR);
@@ -34,10 +36,12 @@ void test_parser() {
 void test_evaluation() {
   printf("- Evaluation\n");
   struct KaNode *env = ka_init();
-  struct KaNode *ast = malloc(KANODE_SIZE);
+  struct KaNode *ast = calloc(1, KANODE_SIZE);
   ast->type = KA_EXPR;
   ast->chld = ka_link( ka_idf("+"), ka_num(4),  ka_num(5), 0);
   assert(ka_eval(ast, &env)->num == 9);
+  ka_free(ast);
+  ka_free(env);
 }
 
 void test_constructors() {
@@ -60,11 +64,12 @@ void test_definitions() {
   assert(ka_get(ka_idf("number"), &env)->num == 456);
   assert(ka_del(ka_idf("number"), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 789);
+  ka_free(env);
 }
 
 void test_stack() {
   printf("- Getting data from stack\n");
-  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *pos = calloc(1, KANODE_SIZE);
   struct KaNode *env = ka_init();
   ka_def(ka_link( ka_str("num1"), ka_num(987), 0), &env);
   ka_def(ka_link( ka_str("num2"), ka_num(789), 0), &env);
@@ -72,11 +77,12 @@ void test_stack() {
   assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
   assert(ka_eval(ka_parser(". 2", zeropos(&pos)), &env)->num == 987);
   assert(!ka_eval(ka_parser(". 3", zeropos(&pos)), &env)->num);
+  ka_free(env);
 }
 
 void test_call() {
   printf("- Call block passing context\n");
-  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *pos = calloc(1, KANODE_SIZE);
   struct KaNode *env = ka_init();
   ka_def(ka_link( ka_str("num1"), ka_num(987), 0), &env);
   ka_eval(ka_parser("list = [12 23 34]", &pos), &env);
@@ -94,11 +100,12 @@ void test_call() {
   assert(ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env)->num == 40);
   assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
   assert(ka_eval(ka_parser(". 4", zeropos(&pos)), &env)->num == 987);
+  ka_free(env);
 }
 
 void test_call_change_values() {
   printf("- Remove values inside a contextualized block\n");
-  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *pos = calloc(1, KANODE_SIZE);
   struct KaNode *env = ka_init();
   ka_eval(ka_parser("list = [12 23 34]", &pos), &env);
   //ERROR: ka_eval(ka_parser("list :: {del (. 3)}", &pos), &env);

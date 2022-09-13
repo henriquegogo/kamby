@@ -43,4 +43,6 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos);
 
 struct KaNode *ka_init();
 
+void ka_free(struct KaNode *node);
+
 #endif
