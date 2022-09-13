@@ -19,7 +19,7 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
     node = node->next;
   }
   printf("\b\n");
-  return malloc(KANODE_SIZE);
+  return calloc(1, KANODE_SIZE);
 }
 
 char ident[256];
@@ -59,12 +59,12 @@ struct KaNode *builtin_tree(struct KaNode *node, struct KaNode **env) {
     }
     node = node->next && node->next->type ? node->next : NULL;
   }
-  return malloc(KANODE_SIZE);
+  return calloc(1, KANODE_SIZE);
 }
 
 int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
-  struct KaNode *pos = malloc(KANODE_SIZE);
+  struct KaNode *pos = calloc(1, KANODE_SIZE);
 
   ka_def(ka_link(ka_idf("puts"), ka_fn(builtin_puts), 0), &env);
   ka_def(ka_link(ka_idf("tree"), ka_fn(builtin_tree), 0), &env);
@@ -77,7 +77,8 @@ int main(int argc, char **argv) {
       fgets(input, 1024, stdin);
       if (input[0] == '\n') continue;
       else if (strcmp(input, "exit\n") == 0) break;
-      pos = malloc(KANODE_SIZE);
+      free(pos);
+      pos = calloc(1, KANODE_SIZE);
       ka_eval(ka_parser(input, &pos), &env);
       input[0] = '\0';
     }
@@ -86,12 +87,16 @@ int main(int argc, char **argv) {
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     rewind(file);
-    char *text = malloc(size);
+    char *text = calloc(1, size + 1);
     fread(text, size, 1, file);
     struct KaNode *ast = ka_parser(text, &pos);
     ka_eval(ast, &env);
     fclose(file);
+    free(text);
   }
+
+  free(pos);
+  free(env);
 
   return 0;
 }
