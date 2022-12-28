@@ -62,12 +62,18 @@ struct KaNode *builtin_tree(struct KaNode *node, struct KaNode **env) {
   return calloc(1, KANODE_SIZE);
 }
 
+struct KaNode *builtin_exit(struct KaNode *node, struct KaNode **env) {
+  int ret = node && node->type == KA_NUM ? node->num : 0;
+  exit(ret);
+}
+
 int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = calloc(1, KANODE_SIZE);
 
   ka_def(ka_link(ka_idf("puts"), ka_fn(builtin_puts), 0), &env);
   ka_def(ka_link(ka_idf("tree"), ka_fn(builtin_tree), 0), &env);
+  ka_def(ka_link(ka_idf("exit"), ka_fn(builtin_exit), 0), &env);
 
   if (argc == 1) {
     char input[1024];
@@ -76,7 +82,6 @@ int main(int argc, char **argv) {
       fflush(stdout);
       fgets(input, 1024, stdin);
       if (input[0] == '\n') continue;
-      else if (strcmp(input, "exit\n") == 0) break;
       free(pos);
       pos = calloc(1, KANODE_SIZE);
       ka_eval(ka_parser(input, &pos), &env);
