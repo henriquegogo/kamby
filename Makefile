@@ -9,13 +9,13 @@ lib:
 	rm $(BINNAME).o
 
 bin:
-	$(CC) -o $(BINNAME) main.c $(BINNAME).c
+	$(CC) -o $(BINNAME) cli.c $(BINNAME).c
 
 shared: lib
-	$(CC) -o $(BINNAME) main.c -L`pwd` -lkamby
+	$(CC) -o $(BINNAME) cli.c -L`pwd` -lkamby
 
 static:
-	$(CC) -static -o $(BINNAME) main.c $(BINNAME).c
+	$(CC) -static -o $(BINNAME) cli.c $(BINNAME).c
 
 clean:
 	test -e $(BINNAME) && rm $(BINNAME) || true
@@ -33,6 +33,11 @@ test: lib
 
 prompt: bin
 	@./$(BINNAME)
+	@make clean >> /dev/null
+
+debug:
+	$(CC) -g -o $(BINNAME) cli.c $(BINNAME).c
+	gdb ./$(BINNAME)
 	@make clean >> /dev/null
 
 wasm:
