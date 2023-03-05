@@ -41,4 +41,4 @@ debug:
 	@make clean >> /dev/null
 
 wasm:
-	emcc --no-entry -O1 -o kamby.wasm run.c kamby.c -sEXPORTED_FUNCTIONS=_ka_run -sEXPORTED_RUNTIME_METHODS=cwrap
+	emcc --no-entry -O1 -o docs/kamby.wasm run.c kamby.c -sEXPORTED_FUNCTIONS=_ka_run -sEXPORTED_RUNTIME_METHODS=cwrap

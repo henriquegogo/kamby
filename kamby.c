@@ -250,8 +250,6 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         break;
       case KA_LIST:
         node->chld = ka_eval(node->chld, &local);
-        memcpy(value, node, KANODE_SIZE);
-        break;
       case KA_IDF:
         value = ka_get(node, env);
         if (value->type) break;
@@ -409,15 +407,4 @@ struct KaNode *ka_init() {
   ka_def(ka_link(ka_idf("false"),ka_num(0), 0),&env);
 
   return env;
-}
-
-void ka_free(struct KaNode *node) {
-  if (node->next) ka_free(node->next);
-  switch (node->type) {
-    case KA_EXPR: case KA_BLCK: case KA_LIST: ka_free(node->chld); break;
-    case KA_STR: case KA_IDF: free(node->str); break;
-    case KA_NUM: default: break;
-  }
-  free(node->key);
-  free(node);
 }

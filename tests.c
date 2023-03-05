@@ -14,7 +14,6 @@ void test_init() {
   printf("- Initialization\n");
   struct KaNode *env = ka_init();
   assert(env);
-  ka_free(env);
 }
 
 void test_parser() {
@@ -40,8 +39,6 @@ void test_evaluation() {
   ast->type = KA_EXPR;
   ast->chld = ka_link( ka_idf("+"), ka_num(4),  ka_num(5), 0);
   assert(ka_eval(ast, &env)->num == 9);
-  ka_free(ast);
-  ka_free(env);
 }
 
 void test_constructors() {
@@ -64,7 +61,6 @@ void test_definitions() {
   assert(ka_get(ka_idf("number"), &env)->num == 456);
   assert(ka_del(ka_idf("number"), &env));
   assert(ka_get(ka_idf("number"), &env)->num == 789);
-  ka_free(env);
 }
 
 void test_stack() {
@@ -77,7 +73,6 @@ void test_stack() {
   assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
   assert(ka_eval(ka_parser(". 2", zeropos(&pos)), &env)->num == 987);
   assert(!ka_eval(ka_parser(". 3", zeropos(&pos)), &env)->num);
-  ka_free(env);
 }
 
 void test_call() {
@@ -100,7 +95,6 @@ void test_call() {
   assert(ka_eval(ka_parser("obj :: {age}", zeropos(&pos)), &env)->num == 40);
   assert(ka_eval(ka_parser(". 1", zeropos(&pos)), &env)->num == 789);
   assert(ka_eval(ka_parser(". 4", zeropos(&pos)), &env)->num == 987);
-  ka_free(env);
 }
 
 void test_call_change_values() {
