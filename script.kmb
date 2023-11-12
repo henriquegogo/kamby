@@ -1,69 +1,76 @@
 #!./kamby
 
 message := 'Hello, World!'    # Define new variable
-puts 'Message:' message       # Return 'Hello, World!'
+print 'Message:' message      # Return 'Hello, World!'
 message = 'Bye, bye'          # Edit variable value
-puts 'Edited:' message        # Return 'Bye, bye'
+print 'Edited:' message       # Return 'Bye, bye'
 message := 'Hello again!'     # Append 'message' in stack
-puts 'Appended:' message      # Return 'Hello again!'
-puts 'Last removed'
+print 'Appended:' message     # Return 'Hello again!'
+print 'Last removed'
 del message                   # Remove last 'message' in stack
-puts 'Old value:' message     # Return 'Bye, bye' (previous 'message' in stack)
-puts "Sum:" 1 + 2 + 3         # Math expressions
+print 'Old value:' message    # Return 'Bye, bye' (previous 'message' in stack)
+print "Sum:" 1 + 2 + 3        # Math expressions
 
 user := "GOGS"
 if true {
-    puts user
+    print user
     del user
-    puts user 'should be deleted'
+    print user 'should be deleted'
 } message {
-    puts 'Else if'
+    print 'Else if'
 } else {
-    puts 'Final else'
+    print 'Final else'
 }
 
-puts user 'should be deleted'
-puts (if false 'yes' else 'no')
+print user 'should be deleted'
+print (if false 'yes' else 'no')
 
-def say { puts "Function said:" surname firstname (.) }
+def say { print "Function said:" surname firstname (.) }
 say [firstname := "Henrique"; surname := "Soares"]
 say "Gogs"
 
 count = 0
 while {count < 3} {
     count += 1
-    puts 'COUNT:' count
+    print 'COUNT:' count
 }
-puts "END:" count
+print "END:" count
 
 for {i := 3} {i < 5} {i += 1} {
-    puts 'I:' i
+    print 'I:' i
 }
 
 list = ['first' 'second' 'third']
 list += 'fourth'
-puts 'LIST APPENDED:' list :: {. 4}
-puts 'LIST:' list :: {. 2}
+print 'LIST APPENDED:' list :: {. 4}
+print 'LIST:' list :: {. 2}
 list :: {(. 4) = '4th'}
 list :: {(. 2) = '2nd'}
 list += ['five' 'last one']
-tree list
+debug list
 
 test := "Test"
 (.) = 'Little thing'
-puts 'Last:' (. 1)
+print 'Last:' (. 1)
 
 l2 = ['shamone' 'two' 'three']
-puts l2 :: {. 0}
-puts l2 :: {. 1}
-puts l2 :: {. 3}
-puts l2 :: {. 7}
+print l2 :: {. 0}
+print l2 :: {. 1}
+print l2 :: {. 3}
+print l2 :: {. 7}
 
 obj = [name := 'Gogs'; age := 37; children := 3]
-obj :: {name = 'Henrique'}
-obj :: {children = 4}
-puts "children:" obj :: {children}
+obj :: {
+  name = 'Henrique'
+  children = 4
+}
+print "children:" obj :: {children}
 obj :: {del children}
-tree obj
-obj :: {del name}
-obj :: {tree}
+debug obj
+obj :: {
+  del name
+  print "Debug inside"
+  debug
+}
+print "Debug after"
+obj :: {debug}
