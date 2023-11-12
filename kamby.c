@@ -245,8 +245,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     struct KaNode *value = calloc(1, KANODE_SIZE);
     switch (node->type) {
       case KA_EXPR:
-        memcpy(value, node->chld, KANODE_SIZE);
-        value = ka_eval(value, env);
+        memcpy(value, ka_eval(node->chld, env), KANODE_SIZE);
         break;
       case KA_LIST:
         node->chld = ka_eval(node->chld, &local);
