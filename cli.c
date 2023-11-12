@@ -5,7 +5,12 @@
 
 #include "kamby.h"
 
-struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
+struct KaNode *builtin_exit(struct KaNode *node, struct KaNode **env) {
+  exit(0);
+  return 0;
+}
+
+struct KaNode *builtin_print(struct KaNode *node, struct KaNode **env) {
   while (node) {
     switch (node->type) {
       case KA_NUM:
@@ -23,26 +28,26 @@ struct KaNode *builtin_puts(struct KaNode *node, struct KaNode **env) {
 }
 
 char ident[256];
-struct KaNode *builtin_tree(struct KaNode *node, struct KaNode **env) {
+struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
   if (!node) node = *env;
   while (node) {
     switch (node->type) {
       case KA_EXPR:
         printf("%sEXPR %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld, env);
+        builtin_debug(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_BLCK:
         printf("%sBLCK %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld, env);
+        builtin_debug(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_LIST:
         printf("%sLIST %s:\n", ident, node->key);
         strcat(ident, "..");
-        builtin_tree(node->chld, env);
+        builtin_debug(node->chld, env);
         strcpy(ident, ident + 2);
         break;
       case KA_NUM:
@@ -66,8 +71,9 @@ int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = calloc(1, KANODE_SIZE);
 
-  ka_def(ka_link(ka_idf("puts"), ka_fn(builtin_puts), 0), &env);
-  ka_def(ka_link(ka_idf("tree"), ka_fn(builtin_tree), 0), &env);
+  ka_def(ka_lnk(ka_idf("exit"), ka_fn(builtin_exit), 0), &env);
+  ka_def(ka_lnk(ka_idf("print"), ka_fn(builtin_print), 0), &env);
+  ka_def(ka_lnk(ka_idf("debug"), ka_fn(builtin_debug), 0), &env);
 
   if (argc == 1) {
     char input[1024];
@@ -75,8 +81,6 @@ int main(int argc, char **argv) {
       printf("kamby> ");
       fflush(stdout);
       fgets(input, 1024, stdin);
-      if (input[0] == '\n') continue;
-      else if (strcmp(input, "exit\n") == 0) break;
       free(pos);
       pos = calloc(1, KANODE_SIZE);
       ka_eval(ka_parser(input, &pos), &env);

@@ -14,7 +14,7 @@ struct KaNode {
     long long num;
     char *str;
     struct KaNode *chld;
-    struct KaNode *(*fn)();
+    struct KaNode *(*fn)(struct KaNode *node, struct KaNode **env);
   };
   struct KaNode *next;
 };
@@ -25,9 +25,9 @@ struct KaNode *ka_str(char *str);
 
 struct KaNode *ka_idf(char *str);
 
-struct KaNode *ka_fn(struct KaNode *(*fn)());
+struct KaNode *ka_fn(struct KaNode *(*fn)(struct KaNode *node, struct KaNode **env));
 
-struct KaNode *ka_link(struct KaNode *node, ...);
+struct KaNode *ka_lnk(struct KaNode *node, ...);
 
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env);
 
