@@ -73,6 +73,7 @@ obj :: {
   print "obj children edited to" children = 4
 }
 print "obj children:" obj :: {children}
+print "obj children deleted"
 obj :: {del children}
 debug obj
 obj :: {
