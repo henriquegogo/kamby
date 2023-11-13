@@ -10,7 +10,10 @@ char *ka_run(char *text) {
   struct KaNode *res = ka_eval(ka_parser(text, &pos), &env);
   while (res->next) res = res->next;
   char *output = calloc(1, sizeof(long long));
-  if (res->type == KA_NUM) sprintf(output, "%lld", res->num);
-  else strcpy(output, res->str);
+  if (res->type == KA_NUM) {
+    sprintf(output, "%lld", res->num);
+  } else if (res->type == KA_STR) {
+    strcpy(output, res->str);
+  }
   return output;
 }
