@@ -30,6 +30,7 @@ struct KaNode *builtin_print(struct KaNode *node, struct KaNode **env) {
 char ident[256];
 struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
   if (!node) node = *env;
+  if (!ident[0]) printf(",,,,,,,,,,,,,,,\n");
   while (node) {
     switch (node->type) {
       case KA_EXPR:
@@ -64,6 +65,7 @@ struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
     }
     node = node->next && node->next->type ? node->next : NULL;
   }
+  if (!ident[0]) printf("'''''''''''''''\n");
   return calloc(1, KANODE_SIZE);
 }
 
