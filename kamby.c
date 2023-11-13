@@ -166,11 +166,12 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR && node->next->type == KA_STR) {
-    struct KaNode *output = ka_str(node->str);
-    strcat(output->str, node->next->str);
-    return output;
+    char *str = calloc(1, sizeof(node->str));
+    return ka_str(strcat(strcpy(str, node->str), node->next->str));
+  } else if (node->type == KA_NUM && node->next->type == KA_NUM) {
+    return ka_num(node->num + node->next->num);
   }
-  return ka_num(node->num + node->next->num);
+  return calloc(1, KANODE_SIZE);
 }
 
 struct KaNode *ka_sub(struct KaNode *node, struct KaNode **env) {
@@ -330,7 +331,7 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
       case '\'': case '"':
         while (text[++(*pos)->num] != text[start]);
         node->type = KA_STR;
-        node->str = calloc(1, (*pos)->num - start - 1);
+        node->str = calloc(1, (*pos)->num - start);
         strncpy(node->str, text + start + 1, (*pos)->num - start - 1);
         break;
       default:
@@ -392,18 +393,18 @@ struct KaNode *ka_init() {
   ka_def(ka_lnk(ka_idf("."),     ka_fn(ka_stack), 0), &env);
   ka_def(ka_lnk(ka_idf("::"),    ka_fn(ka_call),  0), &env);
 
-  ka_def(ka_lnk(ka_idf("+"),  ka_fn(ka_add),  0),  &env);
-  ka_def(ka_lnk(ka_idf("-"),  ka_fn(ka_sub),  0),  &env);
-  ka_def(ka_lnk(ka_idf("*"),  ka_fn(ka_mul),  0),  &env);
-  ka_def(ka_lnk(ka_idf("/"),  ka_fn(ka_div),  0),  &env);
-  ka_def(ka_lnk(ka_idf("&&"), ka_fn(ka_and),  0),  &env);
-  ka_def(ka_lnk(ka_idf("||"), ka_fn(ka_or),   0),  &env);
-  ka_def(ka_lnk(ka_idf("=="), ka_fn(ka_eq),   0),  &env);
-  ka_def(ka_lnk(ka_idf("!="), ka_fn(ka_not),  0),  &env);
-  ka_def(ka_lnk(ka_idf("<"),  ka_fn(ka_lt),   0),  &env);
-  ka_def(ka_lnk(ka_idf("<="), ka_fn(ka_lte),  0),  &env);
-  ka_def(ka_lnk(ka_idf(">"),  ka_fn(ka_gt),   0),  &env);
-  ka_def(ka_lnk(ka_idf(">="), ka_fn(ka_gte),  0),  &env);
+  ka_def(ka_lnk(ka_idf("+"),  ka_fn(ka_add),  0), &env);
+  ka_def(ka_lnk(ka_idf("-"),  ka_fn(ka_sub),  0), &env);
+  ka_def(ka_lnk(ka_idf("*"),  ka_fn(ka_mul),  0), &env);
+  ka_def(ka_lnk(ka_idf("/"),  ka_fn(ka_div),  0), &env);
+  ka_def(ka_lnk(ka_idf("&&"), ka_fn(ka_and),  0), &env);
+  ka_def(ka_lnk(ka_idf("||"), ka_fn(ka_or),   0), &env);
+  ka_def(ka_lnk(ka_idf("=="), ka_fn(ka_eq),   0), &env);
+  ka_def(ka_lnk(ka_idf("!="), ka_fn(ka_not),  0), &env);
+  ka_def(ka_lnk(ka_idf("<"),  ka_fn(ka_lt),   0), &env);
+  ka_def(ka_lnk(ka_idf("<="), ka_fn(ka_lte),  0), &env);
+  ka_def(ka_lnk(ka_idf(">"),  ka_fn(ka_gt),   0), &env);
+  ka_def(ka_lnk(ka_idf(">="), ka_fn(ka_gte),  0), &env);
   ka_def(ka_lnk(ka_idf("+="), ka_fn(ka_incr), 0), &env);
   ka_def(ka_lnk(ka_idf("-="), ka_fn(ka_decr), 0), &env);
 
