@@ -46,7 +46,6 @@ struct KaNode *ka_lnk(struct KaNode *node, ...) {
   return node;
 }
 
-// Definitions and memory control
 struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, int copy_next) {
   dest->type = orig->type;
   dest->key = orig->key;
@@ -55,9 +54,11 @@ struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, int copy_next) {
   dest->chld = orig->chld;
   dest->fn = orig->fn;
   if (copy_next) dest->next = orig->next;
+  else dest->next = NULL;
   return dest;
 }
 
+// Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = calloc(1, KANODE_SIZE);
   char *key = node->key ? node->key : node->str;
