@@ -1,76 +1,85 @@
 #!./kamby
 
-message := 'Hello, World!'    # Define new variable
-print 'Message:' message      # Return 'Hello, World!'
-message = 'Bye, bye'          # Edit variable value
-print 'Edited:' message       # Return 'Bye, bye'
-message := 'Hello again!'     # Append 'message' in stack
-print 'Appended:' message     # Return 'Hello again!'
-print 'Last removed'
-del message                   # Remove last 'message' in stack
-print 'Old value:' message    # Return 'Bye, bye' (previous 'message' in stack)
-print "Sum:" 1 + 2 + 3        # Math expressions
+message := 'Hello, World!'
+print 'new message:' message
+message = 'Bye, bye'
+print 'edit message:' message
+message := 'Hello again!'
+print 'new message:' message
+del message
+print 'del message'
+print 'message:' message
+print "1 + 2 + 3 =" 1 + 2 + 3        # Math expressions
 
 user := "GOGS"
 if true {
-    print user
+    print 'user:' user
     del user
-    print user 'should be deleted'
+    print 'del user'
+    print user '"user" deleted locally and globally'
 } message {
     print 'Else if'
 } else {
     print 'Final else'
 }
 
-print user 'should be deleted'
-print (if false 'yes' else 'no')
+print user '"user" deleted globally'
+print 'if false, say' (if false 'yes' else 'no')
 
-def say { print "Function said:" surname firstname (.) }
+def say { print "function say:" surname firstname (.) }
 say [firstname := "Henrique"; surname := "Soares"]
 say "Gogs"
 
 count = 0
 while {count < 3} {
     count += 1
-    print 'COUNT:' count
+    print 'while count:' count
 }
-print "END:" count
+print "while end count:" count
 
 for {i := 3} {i < 5} {i += 1} {
-    print 'I:' i
+    print 'for index:' i
 }
 
+print 'list: ["first" "second" "third"]'
 list = ['first' 'second' 'third']
 list += 'fourth'
-print 'LIST APPENDED:' list :: {. 4}
-print 'LIST:' list :: {. 2}
+print 'list appended:' list :: {. 4}
+print 'list index 2:' list :: {. 2}
+print 'list edit #4 and #2 items'
 list :: {(. 4) = '4th'}
 list :: {(. 2) = '2nd'}
+print 'list concat ["five" "last one"]'
 list += ['five' 'last one']
 debug list
 
-test := "Test"
-(.) = 'Little thing'
-print 'Last:' (. 1)
+test := "test scope"
+print (.)
+(.) = 'edited scope'
+print (. 1)
 
-l2 = ['shamone' 'two' 'three']
-print l2 :: {. 0}
-print l2 :: {. 1}
-print l2 :: {. 3}
-print l2 :: {. 7}
+print 'list scope: ["one" "two" "three"]'
+list_scope = ['one' 'two' 'three']
+print 'list scope index 0:' list_scope :: {. 0}
+print 'list scope index 1:' list_scope :: {. 1}
+print 'list scope index 3:' list_scope :: {. 3}
+print 'list scope index 7:' list_scope :: {. 7}
 
+print "obj: [name := 'Gogs'; age := 37; children := 3]"
 obj = [name := 'Gogs'; age := 37; children := 3]
 obj :: {
+  print "obj name edited to 'Henrique'"
   name = 'Henrique'
-  children = 4
+  print "obj children edited to" children = 4
 }
-print "children:" obj :: {children}
+print "obj children:" obj :: {children}
 obj :: {del children}
 debug obj
 obj :: {
+  print "del obj name"
   del name
-  print "Debug inside"
+  print "debug inside obj"
   debug
 }
-print "Debug after"
-obj :: {debug}
+print "debug outside obj (obj name should be deleted as well)"
+debug obj
