@@ -6,7 +6,7 @@
 #define KANODE_SIZE sizeof(struct KaNode)
 
 typedef enum {
-  KA_NONE, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_BLCK, KA_LIST
+  KA_NONE, KA_INIT, KA_NUM, KA_IDF, KA_STR, KA_EXPR, KA_BLCK, KA_LIST
 } KaType;
 
 struct KaNode {
