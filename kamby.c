@@ -91,13 +91,12 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = calloc(1, KANODE_SIZE);
   limiter->next = *env;
-  struct KaNode *reg = *env = limiter;
+  struct KaNode *reg = limiter;
   if (node->key) {
     while (strcmp(node->key, reg->next->key ? reg->next->key : "") != 0)
       reg = reg->next;
     if (reg->next) ka_cpy(reg->next, reg->next->next, TRUE);
   }
-  *env = (*env)->next;
   free(limiter);
   return calloc(1, KANODE_SIZE);
 }
@@ -140,10 +139,9 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = calloc(1, KANODE_SIZE);
   limiter->next = *env;
-  struct KaNode *local = *env = limiter;
+  struct KaNode *local = limiter;
   while (ka_eval(node->val, &local)->num)
     ka_eval(node->next->val, &local);
-  *env = (*env)->next;
   free(limiter);
   return calloc(1, KANODE_SIZE);
 }
@@ -151,13 +149,12 @@ struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
   struct KaNode *limiter = calloc(1, KANODE_SIZE);
   limiter->next = *env;
-  struct KaNode *local = *env = limiter;
+  struct KaNode *local = limiter;
   for (ka_eval(node->val, &local);
       ka_eval(node->next->val, &local)->num;
       ka_eval(node->next->next->val, &local)) {
     ka_eval(node->next->next->next->val, &local);
   }
-  *env = (*env)->next;
   free(limiter);
   return calloc(1, KANODE_SIZE);
 }
