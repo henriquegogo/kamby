@@ -79,8 +79,10 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
 
 struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
-  while (reg && strcmp(node->str, reg->key ? reg->key : "") != 0)
+  while (reg && strcmp(node->str, reg->key ? reg->key : "") != 0) {
+    if (reg->type == KA_INIT) return calloc(1, KANODE_SIZE);
     reg = reg->next;
+  }
   struct KaNode *output = calloc(1, KANODE_SIZE);
   if (reg) ka_cpy(output, reg, FALSE);
   return output;
@@ -379,6 +381,7 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
 
 struct KaNode *ka_init() {
   struct KaNode *env = calloc(1, KANODE_SIZE);
+  env->type = KA_INIT;
 
   ka_def(ka_lnk(ka_idf("def"),   ka_fun(ka_def),   0), &env);
   ka_def(ka_lnk(ka_idf(":="),    ka_fun(ka_def),   0), &env);

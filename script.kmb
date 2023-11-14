@@ -84,3 +84,5 @@ obj :: {
 }
 print "debug outside obj (obj name should be deleted as well)"
 debug obj
+obj :: { del age }
+obj :: { age }

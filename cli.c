@@ -32,6 +32,7 @@ struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
   if (!node) node = *env;
   if (!ident[0]) printf(",,,,,,,,,,,,,,,\n");
   while (node) {
+    if (node->type == KA_INIT) break;
     switch (node->type) {
       case KA_EXPR:
         printf("%sEXPR %s:\n", ident, node->key);
