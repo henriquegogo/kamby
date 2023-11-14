@@ -12,8 +12,7 @@ Kamby has some conventions to make the syntax more friendly:
 https://kamby.org
 
 ## Known issues / TODO
-- VM / Bytecode
-- Delete first item from object (using call context)
+- Improve memory management
 
 ## License
 MIT

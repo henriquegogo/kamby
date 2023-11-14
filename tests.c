@@ -21,15 +21,15 @@ void test_parser() {
   struct KaNode *pos = calloc(1, KANODE_SIZE);
   struct KaNode *ast = ka_parser("4 + 5; puts 'message'", &pos);
   assert(ast->type == KA_EXPR);
-  assert(ast->chld->type == KA_EXPR);
-  assert(strcmp(ast->chld->chld->str, "+") == 0);
-  assert(ast->chld->chld->next->num == 4);
-  assert(ast->chld->chld->next->next->num == 5);
+  assert(ast->val->type == KA_EXPR);
+  assert(strcmp(ast->val->val->str, "+") == 0);
+  assert(ast->val->val->next->num == 4);
+  assert(ast->val->val->next->next->num == 5);
   assert(ast->next->type == KA_EXPR);
-  assert(ast->next->chld->type == KA_IDF);
-  assert(strcmp(ast->next->chld->str, "puts") == 0);
-  assert(ast->next->chld->next->type == KA_STR);
-  assert(strcmp(ast->next->chld->next->str, "message") == 0);
+  assert(ast->next->val->type == KA_IDF);
+  assert(strcmp(ast->next->val->str, "puts") == 0);
+  assert(ast->next->val->next->type == KA_STR);
+  assert(strcmp(ast->next->val->next->str, "message") == 0);
 }
 
 void test_evaluation() {
@@ -37,7 +37,7 @@ void test_evaluation() {
   struct KaNode *env = ka_init();
   struct KaNode *ast = calloc(1, KANODE_SIZE);
   ast->type = KA_EXPR;
-  ast->chld = ka_lnk(ka_idf("+"), ka_num(4), ka_num(5), 0);
+  ast->val = ka_lnk(ka_idf("+"), ka_num(4), ka_num(5), 0);
   assert(ka_eval(ast, &env)->num == 9);
 }
 
@@ -48,13 +48,13 @@ void test_constructors() {
   struct KaNode *idf_node = ka_idf("identifier");
   struct KaNode *lnk_node = ka_lnk(ka_num(5), ka_num(6), 0);
   struct KaNode *cpy_node = ka_cpy(cpy_node, lnk_node, FALSE);
-  struct KaNode *fn_node = ka_fn(ka_init);
+  struct KaNode *fun_node = ka_fun(ka_init);
   assert(num_node->type == KA_NUM && num_node->num == 5);
   assert(str_node->type == KA_STR && strcmp(str_node->str, "string") == 0);
   assert(idf_node->type == KA_IDF && strcmp(idf_node->str, "identifier") == 0);
   assert(lnk_node->num == 5 && lnk_node->next->num == 6);
   assert(cpy_node->type == KA_NUM && cpy_node->num == 5 && cpy_node->next == NULL);
-  assert(fn_node->fn == ka_init);
+  assert(fun_node->fun == ka_init);
 }
 
 void test_definitions() {
