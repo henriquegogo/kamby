@@ -66,7 +66,6 @@ struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key && node->type == KA_KEY) return ka_def(node, env);
   while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0) {
-    if (reg->type == KA_INIT) return calloc(1, KANODE_SIZE);
     reg = reg->next;
   }
   node->next->key = reg->key;
@@ -92,7 +91,7 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
       reg = reg->next;
     if (reg->next) ka_cpy(reg->next, reg->next->next, reg->next->next->next);
   }
-  return calloc(1, KANODE_SIZE);
+  return node;
 }
 
 // Context methods
@@ -128,7 +127,7 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
     }
     node = node->next->next;
   }
-  return calloc(1, KANODE_SIZE);
+  return node;
 }
 
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
@@ -136,7 +135,7 @@ struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
   while (ka_eval(node->val, &local)->num)
     ka_eval(node->next->val, &local);
   free(local);
-  return calloc(1, KANODE_SIZE);
+  return node;
 }
 
 struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
@@ -147,7 +146,7 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
     ka_eval(node->next->next->next->val, &local);
   }
   free(local);
-  return calloc(1, KANODE_SIZE);
+  return node;
 }
 
 // Math and Logical operators
@@ -157,7 +156,7 @@ struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   } else if (node->type == KA_NUM && node->next->type == KA_NUM) {
     return ka_num(node->num + node->next->num);
   }
-  return calloc(1, KANODE_SIZE);
+  return node;
 }
 
 struct KaNode *ka_sub(struct KaNode *node, struct KaNode **env) {
