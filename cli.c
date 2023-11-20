@@ -29,7 +29,7 @@ struct KaNode *builtin_print(struct KaNode *node, struct KaNode **env) {
 
 char ident[256];
 struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
-  if (!node) node = *env;
+  if (!node) node = (*env)->next;
   if (!ident[0]) printf(",,,,,,,,,,,,,,,\n");
   while (node) {
     if (node->type == KA_INIT) break;
