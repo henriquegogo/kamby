@@ -47,7 +47,7 @@ void test_constructors() {
   struct KaNode *str_node = ka_str("string");
   struct KaNode *idf_node = ka_idf("identifier");
   struct KaNode *lnk_node = ka_lnk(ka_num(5), ka_num(6), 0);
-  struct KaNode *cpy_node = ka_cpy(cpy_node, lnk_node, FALSE);
+  struct KaNode *cpy_node = ka_cpy(cpy_node, lnk_node, NULL);
   struct KaNode *fun_node = ka_fun(ka_init);
   assert(num_node->type == KA_NUM && num_node->num == 5);
   assert(str_node->type == KA_STR && strcmp(str_node->str, "string") == 0);
