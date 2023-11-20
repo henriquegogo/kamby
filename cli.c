@@ -58,8 +58,8 @@ struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
       case KA_STR:
         printf("%sSTR %s: %s\n", ident, node->key, node->str);
         break;
-      case KA_IDF:
-        printf("%sIDF %s: %s\n", ident, node->key, node->str);
+      case KA_KEY:
+        printf("%sKEY %s: %s\n", ident, node->key, node->str);
         break;
       default:
         printf("%sNONE %s: %s\n", ident, node->key, node->str);
@@ -74,9 +74,9 @@ int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
   struct KaNode *pos = calloc(1, KANODE_SIZE);
 
-  ka_def(ka_lnk(ka_idf("exit"),  ka_fun(builtin_exit),  0), &env);
-  ka_def(ka_lnk(ka_idf("print"), ka_fun(builtin_print), 0), &env);
-  ka_def(ka_lnk(ka_idf("debug"), ka_fun(builtin_debug), 0), &env);
+  ka_def(ka_lnk(ka_key("exit"),  ka_fun(builtin_exit),  0), &env);
+  ka_def(ka_lnk(ka_key("print"), ka_fun(builtin_print), 0), &env);
+  ka_def(ka_lnk(ka_key("debug"), ka_fun(builtin_debug), 0), &env);
 
   if (argc == 1) {
     char input[1024];
