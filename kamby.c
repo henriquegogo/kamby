@@ -57,8 +57,8 @@ struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, struct KaNode *n
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   node->next->key = node->key ? node->key : node->str;
-  struct KaNode *reg = ka_cpy(calloc(1, KANODE_SIZE), node->next, *env);
-  *env = reg;
+  struct KaNode *reg = ka_cpy(calloc(1, KANODE_SIZE), node->next, (*env)->next);
+  (*env)->next = reg;
   return node->next;
 }
 
@@ -86,22 +86,19 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *limiter = calloc(1, KANODE_SIZE);
-  limiter->next = *env;
-  struct KaNode *reg = limiter;
+  struct KaNode *reg = *env;
   if (node->key) {
     while (strcmp(node->key, reg->next->key ? reg->next->key : "") != 0)
       reg = reg->next;
     if (reg->next) ka_cpy(reg->next, reg->next->next, reg->next->next->next);
   }
-  free(limiter);
   return calloc(1, KANODE_SIZE);
 }
 
 // Context methods
 struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
   struct KaNode *output = calloc(1, KANODE_SIZE);
-  struct KaNode *reg = *env;
+  struct KaNode *reg = (*env)->next;
   for (int i = 0; reg->type && node && i < node->num - 1; i++) reg = reg->next;
   if (reg && (!node || node->num)) {
     if (!reg->key) sprintf(reg->key = calloc(1, sizeof(uuid)), "#%lld", uuid++);
@@ -111,12 +108,13 @@ struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *tail = node->val;
+  struct KaNode *local = calloc(1, KANODE_SIZE);
+  struct KaNode *tail = local->next = node->val;
   while (tail->next) tail = tail->next;
-  tail->next = calloc(1, KANODE_SIZE);
-  tail->next->next = *env;
-  struct KaNode *output = ka_eval(node->next, &node->val);
+  tail->next = *env;
+  struct KaNode *output = ka_eval(node->next, &local);
   tail->next = NULL;
+  free(local);
   return output;
 }
 
@@ -134,33 +132,26 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *limiter = calloc(1, KANODE_SIZE);
-  limiter->next = *env;
-  struct KaNode *local = limiter;
+  struct KaNode *local = *env;
   while (ka_eval(node->val, &local)->num)
     ka_eval(node->next->val, &local);
-  free(limiter);
   return calloc(1, KANODE_SIZE);
 }
 
 struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *limiter = calloc(1, KANODE_SIZE);
-  limiter->next = *env;
-  struct KaNode *local = limiter;
+  struct KaNode *local = *env;
   for (ka_eval(node->val, &local);
       ka_eval(node->next->val, &local)->num;
       ka_eval(node->next->next->val, &local)) {
     ka_eval(node->next->next->next->val, &local);
   }
-  free(limiter);
   return calloc(1, KANODE_SIZE);
 }
 
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR && node->next->type == KA_STR) {
-    char *str = calloc(1, sizeof(node->str));
-    return ka_str(strcat(strcpy(str, node->str), node->next->str));
+    return ka_str(strcat(strcpy(calloc(1, sizeof(node->str)), node->str), node->next->str));
   } else if (node->type == KA_NUM && node->next->type == KA_NUM) {
     return ka_num(node->num + node->next->num);
   }
@@ -237,7 +228,7 @@ struct KaNode *ka_decr(struct KaNode *node, struct KaNode **env) {
 struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   struct KaNode *head = calloc(1, KANODE_SIZE);
   struct KaNode *tail = head;
-  struct KaNode *local = *env;
+  struct KaNode *local = ka_cpy(calloc(1, KANODE_SIZE), *env, (*env)->next);
   
   // Eval expressions and get variables
   while (node) {
@@ -375,7 +366,8 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
 
 struct KaNode *ka_init() {
   struct KaNode *env = calloc(1, KANODE_SIZE);
-  env->type = KA_INIT;
+  env->next = calloc(1, KANODE_SIZE);
+  env->next->type = KA_INIT;
 
   ka_def(ka_lnk(ka_idf("def"),   ka_fun(ka_def),   0), &env);
   ka_def(ka_lnk(ka_idf(":="),    ka_fun(ka_def),   0), &env);

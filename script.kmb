@@ -1,5 +1,3 @@
-#!./kamby
-
 message := 'Hello, World!'
 print 'new message:' message
 message = 'Bye, bye'
