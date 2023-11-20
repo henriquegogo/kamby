@@ -132,19 +132,21 @@ struct KaNode *ka_if(struct KaNode *node, struct KaNode **env) {
 }
 
 struct KaNode *ka_while(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *local = *env;
+  struct KaNode *local = ka_cpy(calloc(1, KANODE_SIZE), *env, (*env)->next);
   while (ka_eval(node->val, &local)->num)
     ka_eval(node->next->val, &local);
+  free(local);
   return calloc(1, KANODE_SIZE);
 }
 
 struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *local = *env;
+  struct KaNode *local = ka_cpy(calloc(1, KANODE_SIZE), *env, (*env)->next);
   for (ka_eval(node->val, &local);
       ka_eval(node->next->val, &local)->num;
       ka_eval(node->next->next->val, &local)) {
     ka_eval(node->next->next->next->val, &local);
   }
+  free(local);
   return calloc(1, KANODE_SIZE);
 }
 
