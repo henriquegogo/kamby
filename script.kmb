@@ -38,6 +38,7 @@ print "while end count:" count
 for {i := 3} {i < 5} {i += 1} {
     print 'for index:' i
 }
+print "for end i:" i
 
 print 'list: ["first" "second" "third"]'
 list = ['first' 'second' 'third']
@@ -82,5 +83,10 @@ obj :: {
 }
 print "debug outside obj (obj name should be deleted as well)"
 debug obj
+obj :: { goal := "success" }
+print "obj goal added"
+debug obj
 obj :: { del age }
+print "obj age deleted"
 obj :: { age }
+debug obj
