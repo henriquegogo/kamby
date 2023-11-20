@@ -46,33 +46,32 @@ struct KaNode *ka_lnk(struct KaNode *node, ...) {
   return node;
 }
 
-struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, int copy_next) {
+struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, struct KaNode *next) {
   dest->type = orig->type;
   dest->key = orig->key;
   dest->val = orig->val;
-  dest->next = copy_next ? orig->next : NULL;
+  dest->next = next;
   return dest;
 }
 
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
-  struct KaNode *reg = calloc(1, KANODE_SIZE);
-  char *key = node->key ? node->key : node->str;
-  node->next->key = key;
-  ka_cpy(reg, node->next, FALSE);
-  reg->next = *env;
+  node->next->key = node->key ? node->key : node->str;
+  struct KaNode *reg = ka_cpy(calloc(1, KANODE_SIZE), node->next, *env);
   *env = reg;
-  return node->next->type == KA_BLCK ? calloc(1, KANODE_SIZE) : node->next;
+  return node->next;
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key && node->type == KA_IDF) return ka_def(node, env);
-  while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0)
+  while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0) {
+    if (reg->type == KA_INIT) return calloc(1, KANODE_SIZE);
     reg = reg->next;
+  }
   node->next->key = reg->key;
   node->next->next = reg->next;
-  ka_cpy(reg, node->next, TRUE);
+  ka_cpy(reg, node->next, node->next->next);
   node->next->next = NULL;
   return node->next;
 }
@@ -83,9 +82,7 @@ struct KaNode *ka_get(struct KaNode *node, struct KaNode **env) {
     if (reg->type == KA_INIT) return calloc(1, KANODE_SIZE);
     reg = reg->next;
   }
-  struct KaNode *output = calloc(1, KANODE_SIZE);
-  if (reg) ka_cpy(output, reg, FALSE);
-  return output;
+  return ka_cpy(calloc(1, KANODE_SIZE), reg, NULL);
 }
 
 struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
@@ -95,7 +92,7 @@ struct KaNode *ka_del(struct KaNode *node, struct KaNode **env) {
   if (node->key) {
     while (strcmp(node->key, reg->next->key ? reg->next->key : "") != 0)
       reg = reg->next;
-    if (reg->next) ka_cpy(reg->next, reg->next->next, TRUE);
+    if (reg->next) ka_cpy(reg->next, reg->next->next, reg->next->next->next);
   }
   free(limiter);
   return calloc(1, KANODE_SIZE);
@@ -108,7 +105,7 @@ struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
   for (int i = 0; reg->type && node && i < node->num - 1; i++) reg = reg->next;
   if (reg && (!node || node->num)) {
     if (!reg->key) sprintf(reg->key = calloc(1, sizeof(uuid)), "#%lld", uuid++);
-    ka_cpy(output, reg, FALSE);
+    ka_cpy(output, reg, NULL);
   }
   return output;
 }
@@ -247,7 +244,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
     struct KaNode *value = calloc(1, KANODE_SIZE);
     switch (node->type) {
       case KA_EXPR:
-        ka_cpy(value, ka_eval(node->val, env), TRUE);
+        value = ka_eval(node->val, env);
         break;
       case KA_LIST:
         node->val = ka_eval(node->val, &local);
@@ -255,7 +252,7 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
         value = ka_get(node, env);
         if (value->type) break;
       default:
-        ka_cpy(value, node, TRUE);
+        ka_cpy(value, node, node->next);
     }
     tail->next = value;
     tail = tail->next;

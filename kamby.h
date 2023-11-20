@@ -31,7 +31,7 @@ struct KaNode *ka_fun(struct KaNode *(*fun)(struct KaNode *node, struct KaNode *
 
 struct KaNode *ka_lnk(struct KaNode *node, ...);
 
-struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, int copy_next);
+struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, struct KaNode *next);
 
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env);
 
