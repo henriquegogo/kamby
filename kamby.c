@@ -158,7 +158,8 @@ struct KaNode *ka_for(struct KaNode *node, struct KaNode **env) {
 // Math and Logical operators
 struct KaNode *ka_add(struct KaNode *node, struct KaNode **env) {
   if (node->type == KA_STR && node->next->type == KA_STR) {
-    return ka_str(strcat(strcpy(calloc(1, sizeof(node->str)), node->str), node->next->str));
+    int size = strlen(node->str) + strlen(node->next->str);
+    return ka_str(strcat(strcpy(calloc(1, size), node->str), node->next->str));
   } else if (node->type == KA_NUM && node->next->type == KA_NUM) {
     return ka_num(node->num + node->next->num);
   }
