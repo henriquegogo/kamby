@@ -57,17 +57,15 @@ struct KaNode *ka_cpy(struct KaNode *dest, struct KaNode *orig, struct KaNode *n
 // Definitions and memory control
 struct KaNode *ka_def(struct KaNode *node, struct KaNode **env) {
   node->next->key = node->key ? node->key : node->str;
-  struct KaNode *reg = ka_cpy(calloc(1, KANODE_SIZE), node->next, (*env)->next);
-  (*env)->next = reg;
+  (*env)->next = ka_cpy(calloc(1, KANODE_SIZE), node->next, (*env)->next);
   return node->next;
 }
 
 struct KaNode *ka_set(struct KaNode *node, struct KaNode **env) {
   struct KaNode *reg = *env;
   if (!node->key && node->type == KA_KEY) return ka_def(node, env);
-  while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0) {
+  while (reg && strcmp(node->key, reg->key ? reg->key : "") != 0)
     reg = reg->next;
-  }
   node->next->key = reg->key;
   node->next->next = reg->next;
   ka_cpy(reg, node->next, node->next->next);
@@ -103,6 +101,7 @@ struct KaNode *ka_stack(struct KaNode *node, struct KaNode **env) {
     if (!reg->key) sprintf(reg->key = calloc(1, sizeof(uuid)), "#%lld", uuid++);
     ka_cpy(output, reg, NULL);
   }
+  free(node);
   return output;
 }
 
@@ -113,6 +112,7 @@ struct KaNode *ka_call(struct KaNode *node, struct KaNode **env) {
   tail->next = *env;
   struct KaNode *output = ka_eval(node->next, &local);
   tail->next = NULL;
+  free(node);
   free(local);
   return output;
 }
@@ -256,8 +256,10 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
   switch (head->type) {
     case KA_KEY:
       node = ka_get(head, env);
-      if (node->fun) return node->fun(head->next, env);
-      else break;
+      if (node->fun) {
+        free(local);
+        return node->fun(head->next, env);
+      } else break;
     case KA_BLCK:
       while (head->next) {
         ka_def(ka_lnk(ka_key(""), ka_eval(head->next, &local), 0), &local);
@@ -265,9 +267,11 @@ struct KaNode *ka_eval(struct KaNode *node, struct KaNode **env) {
       }
       tail = ka_eval(head->val, &local);
       while (tail->next) tail = tail->next;
-      return tail;
+      head = tail;
     default:;
   }
+  free(node);
+  free(local);
   return head;
 }
 
