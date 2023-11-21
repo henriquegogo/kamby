@@ -331,7 +331,7 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
               text[(*pos)->num] != '[' && text[(*pos)->num] != ']')
             (*pos)->num++;
           node->type = KA_KEY;
-          node->str = calloc(1, (*pos)->num - start);
+          node->str = calloc(1, (*pos)->num - start + 1);
           strncpy(node->str, text + start, (*pos)->num - start);
           (*pos)->num--;
         }
@@ -352,7 +352,7 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
     struct KaNode *op = tail->next->next;
     struct KaNode *b = tail->next->next->next;
     struct KaNode *next = tail->next->next->next->next;
-    if (op->type == KA_KEY && !op->str[2] && ispunct(op->str[0])) {
+    if (op->type == KA_KEY && strlen(op->str) < 3 && ispunct(op->str[0])) {
       tail->next = calloc(1, KANODE_SIZE);
       tail->next->type = KA_EXPR;
       tail->next->val = ka_lnk(op, a, b, 0);
