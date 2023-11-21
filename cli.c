@@ -24,7 +24,7 @@ struct KaNode *builtin_print(struct KaNode *node, struct KaNode **env) {
     node = node->next;
   }
   printf("\b\n");
-  return calloc(1, KANODE_SIZE);
+  return ka_new();
 }
 
 char ident[256];
@@ -67,12 +67,12 @@ struct KaNode *builtin_debug(struct KaNode *node, struct KaNode **env) {
     node = node->next && node->next->type ? node->next : NULL;
   }
   if (!ident[0]) printf("'''''''''''''''\n");
-  return calloc(1, KANODE_SIZE);
+  return ka_new();
 }
 
 int main(int argc, char **argv) {
   struct KaNode *env = ka_init();
-  struct KaNode *pos = calloc(1, KANODE_SIZE);
+  struct KaNode *pos = ka_new();
 
   ka_def(ka_lnk(ka_key("exit"),  ka_fun(builtin_exit),  0), &env);
   ka_def(ka_lnk(ka_key("print"), ka_fun(builtin_print), 0), &env);
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
       fflush(stdout);
       fgets(input, 1024, stdin);
       free(pos);
-      pos = calloc(1, KANODE_SIZE);
+      pos = ka_new();
       ka_eval(ka_parser(input, &pos), &env);
       input[0] = '\0';
     }
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   }
 
   free(pos);
-  free(env);
+  ka_free(&env);
 
   return 0;
 }

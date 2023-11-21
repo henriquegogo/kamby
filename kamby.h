@@ -1,8 +1,6 @@
 #ifndef KAMBY_H
 #define KAMBY_H
 
-#define KANODE_SIZE sizeof(struct KaNode)
-
 typedef enum {
   KA_NONE, KA_INIT, KA_NUM, KA_KEY, KA_STR, KA_EXPR, KA_BLCK, KA_LIST
 } KaType;
@@ -18,6 +16,8 @@ struct KaNode {
   };
   struct KaNode *next;
 };
+
+struct KaNode *ka_new();
 
 struct KaNode *ka_num(long long num);
 
@@ -45,6 +45,6 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos);
 
 struct KaNode *ka_init();
 
-void ka_free(struct KaNode *node);
+void ka_free(struct KaNode **node);
 
 #endif
