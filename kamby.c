@@ -285,6 +285,8 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
       expr->type = KA_EXPR;
       tail->next = expr;
       tail = tail->next;
+    } else {
+      free(expr);
     }
   }
 
@@ -340,6 +342,8 @@ struct KaNode *ka_parser(char *text, struct KaNode **pos) {
     if (node->type) {
       tail->next = node;
       tail = tail->next;
+    } else {
+      free(node);
     }
 
     (*pos)->num++;
