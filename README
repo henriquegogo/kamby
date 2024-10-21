@@ -1,0 +1,58 @@
+Kamby Language
+==============
+Kamby is a programming language that transpiles to Scheme. It introduces
+syntactic sugar and conventions to reduce the heavy use of parentheses,
+which is typical in Lisp dialects.
+
+Conventions
+-----------
+- The document implicitly starts with an opening `(`.
+- The end of the document automatically closes any open blocks.
+- Lines are terminated with `;`, which internally closes a block with
+  `)` and starts a new one with `(`.
+- Lists are declared using `[` and `]`.
+- Sequencing blocks (equivalent to `(begin ...)`) are declared using `{`
+  and `}`.
+- Logical and mathematical operators are placed as the second item in an
+  expression (e.g., `2 + 2` becomes `(+ 2 2)`).
+- Variables are declared with `var key` or `var key = value`.
+- Variables are modified with `key = value`.
+- Functions are declared with `func name(args) { ... }`.
+
+Example
+-------
+
+  var name = "Kamby";
+  name = "Kamby Language";
+
+  func hello(who age) {
+    print "Hello, " who "!";
+    print "You are " age " years old.";
+  }
+
+  hello name (3 + 1);
+
+Behind the scenes
+-----------------
+Kamby is both a transpiler and an evaluator. It converts Kamby code into
+Scheme, so once you understand the syntax, you can leverage the full
+power of Scheme.
+
+To maximize compatibility with various Scheme implementations, Kamby
+reads input from `stdin`.
+
+The current implementation supports R5RS, R6RS, and R7RS standards,
+making it compatible with major Scheme implementations like Chicken,
+Chibi, Gambit, Guile, and Chez. The `include-script` directive works
+like `include`, but is only available in R6RS.
+
+Usage
+-----
+$ scheme --script kamby.scm < example.ka  # Chez Scheme
+$ csi -s kamby.scm < example.ka           # Chicken Scheme
+$ gsi kamby.scm < example.ka              # Gambit Scheme
+$ guile kamby.scm < example.ka            # Guile Scheme
+
+License
+-------
+MIT

@@ -5,11 +5,10 @@
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <title>Kamby Language</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/scheme.min.js"></script>
     <script>hljs.highlightAll();</script>
-    <script src="./kamby.js"></script>
-    <script>const ka_run = Module.cwrap("ka_run", "string", ["string"])</script>
     <style>
       html { scroll-behavior: smooth }
       body { margin: 0; font-family: 'Noto Sans', sans-serif }
@@ -59,8 +58,6 @@
         <a href='/'>Kamby</a>
       </h1>
       <nav>
-        <a href='#docs'>Documentation</a>
-        <a href='/'>Try it!</a>
         <a href='https://github.com/henriquegogo/kamby'>Download</a>
       </nav>
     </header>
@@ -68,131 +65,103 @@
       <section>
         <aside>
           <h2>What is Kamby?</h2>
-          <p>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes. The core is just ~400LOC and binary has just 20kb.</p>
+          <p>
+            Kamby is a programming language that transpiles to Scheme. It introduces
+            syntactic sugar and conventions to reduce the heavy use of parentheses,
+            which is typical in Lisp dialects.
+          </p>
           <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
         </aside>
-        <pre><code class='language-ruby'>
-planet = [
-  name := 'World'
-  nick := 'Earth'
-]
+        <pre><code class='language-go'>
+var name = "Kamby";
+name = "Kamby Language";
 
-'Hello, ' + (planet :: {name})
+func hello(who age) {
+  print "Hello, " who "!";
+  print "You are " age " years old.";
+}
+
+hello name (3 + 1);
         </code></pre>
       </section>
     </main>
-    <a name='try'>
     <section>
-      <h1>Try it!</h1>
-      <textarea id='tryinput' style='width: calc(100% - 20px); max-width: 400px; height: 150px'>
-planet = [
-  name := 'World'
-  nick := 'Earth'
-]
-
-'Hello, ' + (planet :: {name})
-      </textarea>
-      <button onclick='tryoutput.innerHTML = ka_run(tryinput.value)'>Run</button>
-      <b>Output: </b><span id='tryoutput'></span>
-    </section>
-    <a name='docs'>
-    <section>
-      <h1>Variables stack</h1>
-      <p>Variables can contain any type of data, including number, strings, lists or even blocks of code.</p>
-      <pre><code class='language-ruby'>
-message := 'Hello, World!'    # Define new variable (alternative: def key value)
-message = 'Bye, bye'          # Edit variable value
-def message 'Hello again!'    # Append new 'message' in stack (alternative syntax)
-del message                   # Remove last 'message' in stack
-message                       # Message has old value 'Bye, bye'
-      </code></pre>
-      <p>Variables are not unique. You can declare multiple values for the same variable name using ":=" and append in the stack. If you want to edit the last declaration, just user simple "=" operator. To remove the last variable with specific name in stack, use "del varname"</p>
-      <p>You can return the value of some stack item using index instead of var name</p>
-      <pre><code class='language-ruby'>
-num1 = 12                     # If num1 was not previously declared, it'll be
-num2 = 23
-.                             # Return last item value from stack. 23
-. 2                           # Return the second item from stack. 12
-      </code></pre>
+      <h1>Conventions</h1>
+      <ul>
+        <li>The document implicitly starts with an opening `(`.</li>
+        <li>The end of the document automatically closes any open blocks.</li>
+        <li>Lines are terminated with `;`, which internally closes a block with `)` and starts a new one with `(`.</li>
+        <li>Lists are declared using `[` and `]`.</li>
+        <li>Sequencing blocks (equivalent to `(begin ...)`) are declared using `{` and `}`.</li>
+        <li>Logical and mathematical operators are placed as the second item in an expression (e.g., `2 + 2` becomes `(+ 2 2)`).</li>
+        <li>Variables are declared with `var key` or `var key = value`.</li>
+        <li>Variables are modified with `key = value`.</li>
+        <li>Functions are declared with `func name(args) { ... }`.</li>
+      </ul>
     </section>
     <section>
-      <h1>Expressions, lists and blocks</h1>
-      <p>Basically those three types of lists has the same structure but act different when executed.</p>
-      <pre><code class='language-ruby'>
-# Expressions will be evaluated an return the value
-expression = (1 + 2)
+      <h1>Transpiled code</h1>
+      <p>The above code transpiled to Scheme is:</p>
+      <div style="display:flex">
+        <pre style="flex:1"><code class='language-go'>
+var name = "Kamby";
+name = "Kamby Language";
 
-# List items are separated by space. Expressions return will be attribuited to item
-list = ['first item' (1 + 2)]
-
-# Blocks are lists of expressions that can be called after declaration
-block = {
-  message := 'OK'
+func hello(who age) {
+  print "Hello, " who "!";
+  print "You are " age " years old.";
 }
-      </code></pre>
-      <p>For source code or blocks, each line is considered an expression. To execute a block, just call it as first item of an expression. The arguments are be appended to the internal block variables stack</p>
-      <pre><code class='language-ruby'>
-sum = { (. 1) + (. 2) }
-# or
-def sum { (. 1) + (. 2) }
-sum 2 3
-      </code></pre>
+
+hello name (3 + 1);
+        </code></pre>
+        <pre style="flex:1"><code class='language-scheme'>
+(define name "Kamby")
+(set! name "Kamby Language")
+
+(define (hello who age)
+  (begin
+    (print "Hello, " who "!")
+    (print "You are " age " years old." )))
+
+(hello name (+ 3 1))
+        </code></pre>
+      </div>
+      <p>Some aditional macros are prepended to the transpiled code. These macros implements the "var =!", "func" and other directives.</p>
+      <p>Kamby is pure Scheme, so you can do everything your Scheme program can.</p>
     </section>
     <section>
-      <h1>Context</h1>
-      <p>Lists can be sent as a context appended to global variables context.</p>
-      <pre><code class='language-ruby'>
-name := 'Global name'         # Declare a new variable in current stack
-
-person = [
-  name := 'Local name'        # The return of this attribution will be the list item.
-  age := 20
-]
-
-name                          # Return 'Global name'
-
-person :: { name }            # "person" is set as context to block execution.
-                              # "name" returns 'Local name'
-      </code></pre>
-      <p>Using the context call, you can operate lists items like global variables</p>
-      <pre><code class='language-ruby'>
-person :: { name = 'Local' }  # Edit "name" item of "person" list
-person :: { del name }        # Remove named item of "person" list
-person :: { del (. 1) }       # Remove item of "person" list by index
-name                          # Return 'Global name'
-      </code></pre>
-    </section>
-    <section>
-      <h1>Operators</h1>
-      <pre><code class='language-ruby'>
-+ - * /
-&& || == != >= <= > <
-+= -=
-      </code></pre>
-      <p>Operator "+" will sum two numbers, concatenate two strings, append a node to list or merge two lists.</p>
-      <pre><code class='language-ruby'>
-1 + 2                    # 3
-"Kamby" + "Lang"         # KambyLang
-[1 2] += 3               # [1 2 3]
-list = ([1 2] += [3 4])  # [1 2 3 4]
+      <h1>Usage</h1>
+      <pre><code class='language-shell'>
+$ scheme --script kamby.scm < example.ka  # Chez Scheme
+$ csi -s kamby.scm < example.ka           # Chicken Scheme
+$ gsi kamby.scm < example.ka              # Gambit Scheme
+$ guile kamby.scm < example.ka            # Guile Scheme
       </code></pre>
     </section>
     <section>
       <h1>Behind the scenes</h1>
-      <p>Internaly the implementation follows some basic concepts like S-expressions and car/cdr as any Lisp language.</p>
-      <p>Kamby has some conventions to make the syntax more friendly:</p>
-      <ul>
-        <li>Anything starting with a new line and finishing in end of line is considered an expression</li>
-        <li>An item formed by 2 or less punctuation characters, will create an expression formed by (punct previous next). Ex.: 2 + 2 => (+ 2 2) ... something == anything => (== something anything)</li>
-        <li>Blocks will be evaluated if is the first item of expression.</li>
-      </ul>
+      <p>
+        Kamby is both a transpiler and an evaluator. It converts Kamby code into
+        Scheme, so once you understand the syntax, you can leverage the full
+        power of Scheme.
+      </p>
+      <p>
+        To maximize compatibility with various Scheme implementations, Kamby
+        reads input from `stdin`.
+      </p>
+      <p>
+        The current implementation supports R5RS, R6RS, and R7RS standards,
+        making it compatible with major Scheme implementations like Chicken,
+        Chibi, Gambit, Guile, and Chez. The `include-script` directive works
+        like `include`, but is only available in R6RS.
+      </p>
     </section>
     <section>
       <h1>License</h1>
       <p>MIT</p>
     </section>
     <footer>
-      <section>Made just for fun by <a href="https://twitter.com/henriquegogo">@henriquegogo</a></section>
+      <section>Made just for fun by <a href="https://x.com/henriquegogo">@henriquegogo</a></section>
     </footer>
   </body>
 </html>

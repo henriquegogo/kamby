@@ -1,0 +1,9 @@
+var name = "Kamby";
+name = "Kamby Language";
+
+func hello(who age) {
+  print "Hello, " who "!";
+  print "You are " age " years old.";
+}
+
+hello name (3 + 1);
