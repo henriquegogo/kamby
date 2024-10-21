@@ -56,8 +56,6 @@
       (loop (read-char) (string-append acc (make-string 1 char))))))
 
 (define (eval-string str)
-  (display str)
-  (newline)
   (let ((port (open-input-string str)))
     (do ((expr (read port) (read port)))
       ((eof-object? expr))

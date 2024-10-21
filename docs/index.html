@@ -101,11 +101,16 @@ hello name (3 + 1);
     </section>
     <section>
       <h1>Transpiled code</h1>
-      <p>The above code transpiled to Scheme is:</p>
       <div style="display:flex">
         <pre style="flex:1"><code class='language-go'>
 var name = "Kamby";
 name = "Kamby Language";
+
+func show-item(item) {
+  print "Item: " item;
+}
+
+for-each show-item ["First" "Second" "Third"];
 
 func hello(who age) {
   print "Hello, " who "!";
@@ -118,6 +123,12 @@ hello name (3 + 1);
 (define name "Kamby")
 (set! name "Kamby Language")
 
+(define (show-item item )
+  (begin
+    (print "Item: " item )))
+
+(for-each show-item '("First" "Second" "Third"))
+
 (define (hello who age)
   (begin
     (print "Hello, " who "!")
@@ -126,7 +137,7 @@ hello name (3 + 1);
 (hello name (+ 3 1))
         </code></pre>
       </div>
-      <p>Some aditional macros are prepended to the transpiled code. These macros implements the "var =!", "func" and other directives.</p>
+      <p>Some aditional macros are prepended to the transpiled code.</p>
       <p>Kamby is pure Scheme, so you can do everything your Scheme program can.</p>
     </section>
     <section>
