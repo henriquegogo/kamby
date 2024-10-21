@@ -1,6 +1,12 @@
 var name = "Kamby";
 name = "Kamby Language";
 
+func show-item(item) {
+  print "Item: " item;
+}
+
+for-each show-item ["First" "Second" "Third"];
+
 func hello(who age) {
   print "Hello, " who "!";
   print "You are " age " years old.";
