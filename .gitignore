@@ -1,10 +1,9 @@
-*.o
-*.link
-*.so
-*.so.*
+*.bin
+*.boot
 *.exe
+*.link
+*.o
 *.out
+*.so
 
-###
 kamby
-tests
