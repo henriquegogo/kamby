@@ -2,7 +2,7 @@
   (let ((tkns (list "")) (in-str? #f))
 
     (define (append-str! str)
-      (set-car! tkns (string-append (car tkns) str)))
+      (set! tkns (cons (string-append (car tkns) str) (cdr tkns))))
 
     (define (add-tkn! . strs)
       (if (string=? (car tkns) "") (set! tkns (cdr tkns)))
