@@ -6,7 +6,7 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_EXPR, KA_BLOCK, KA_LIST
+  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_LIST, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -107,12 +107,6 @@ static inline KaNode *ka_chain(KaNode *chain, ...) {
 
   va_end(args);
   return chain;
-}
-
-static inline KaNode *ka_key(char *key, KaNode *node) {
-  free(node->key);
-  node->key = strdup(key);
-  return node;
 }
 
 static inline KaNode *ka_get(char *key, KaNode **chain) {
