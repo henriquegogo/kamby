@@ -34,7 +34,8 @@ static inline void ka_free(KaNode *node) {
     KaNode *next = node->next;
 
     if ((*node->refcount)-- <= 0) {
-      node->type == KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
+      if (node->type == KA_LIST) ka_free((KaNode *)node->value);
+      else free(node->value);
       free(node->refcount);
     }
 
@@ -78,6 +79,7 @@ static inline KaNode *ka_copy(KaNode *node) {
     copy->refcount = node->refcount;
     (*node->refcount)++;
   }
+
   copy->key = node->key ? strdup(node->key) : NULL;
   return copy;
 }
