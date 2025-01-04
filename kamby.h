@@ -104,8 +104,11 @@ static inline KaNode *ka_chain(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
 
-  KaNode *last = chain ? chain : va_arg(args, KaNode *);
-  while (last) last = last->next = va_arg(args, KaNode *);
+  KaNode *last = chain;
+  while (last) {
+    while (last->next) last = last->next;
+    last = last->next = va_arg(args, KaNode *);
+  }
 
   va_end(args);
   return chain;

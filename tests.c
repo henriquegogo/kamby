@@ -17,13 +17,20 @@ void test_new() {
 }
 
 void test_chain() {
-  KaNode *node = ka_chain(ka_new(KA_NUMBER), ka_new(KA_STRING), NULL);
+  KaNode *chain = ka_chain(
+      ka_new(KA_NUMBER),
+      ka_chain(
+        ka_new(KA_SYMBOL),
+        ka_new(KA_SYMBOL), NULL),
+      ka_new(KA_STRING), NULL);
 
-  assert(node->type == KA_NUMBER);
-  assert(node->next->type == KA_STRING);
-  assert(node->next->next == NULL);
+  assert(chain->type == KA_NUMBER);
+  assert(chain->next->type == KA_SYMBOL);
+  assert(chain->next->next->type == KA_SYMBOL);
+  assert(chain->next->next->next->type == KA_STRING);
+  assert(chain->next->next->next->next == NULL);
 
-  ka_free(node);
+  ka_free(chain);
 }
 
 void test_number() {
