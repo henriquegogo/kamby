@@ -143,7 +143,8 @@ static inline KaNode *ka_set(char *key, KaNode *node, KaNode **chain) {
 }
 
 static inline KaNode *ka_del(char *key, KaNode **chain) {
-  KaNode *prev = *chain, *item = *chain;
+  KaNode *prev = *chain;
+  KaNode *item = *chain;
   while (item && strcmp(key, item->key ? item->key : "") != 0) {
     prev = item;
     item = item->next;

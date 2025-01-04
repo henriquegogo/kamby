@@ -17,20 +17,20 @@ void test_new() {
 }
 
 void test_chain() {
-  KaNode *chain = ka_chain(
+  KaNode *node = ka_chain(
       ka_new(KA_NUMBER),
       ka_chain(
         ka_new(KA_SYMBOL),
         ka_new(KA_SYMBOL), NULL),
       ka_new(KA_STRING), NULL);
 
-  assert(chain->type == KA_NUMBER);
-  assert(chain->next->type == KA_SYMBOL);
-  assert(chain->next->next->type == KA_SYMBOL);
-  assert(chain->next->next->next->type == KA_STRING);
-  assert(chain->next->next->next->next == NULL);
+  assert(node->type == KA_NUMBER);
+  assert(node->next->type == KA_SYMBOL);
+  assert(node->next->next->type == KA_SYMBOL);
+  assert(node->next->next->next->type == KA_STRING);
+  assert(node->next->next->next->next == NULL);
 
-  ka_free(chain);
+  ka_free(node);
 }
 
 void test_number() {
@@ -108,6 +108,53 @@ void test_copy() {
   ka_free(list);
 }
 
+void test_def() {
+  KaNode *env = ka_new(KA_NONE);
+  ka_def("name", ka_string("Hello"), &env);
+  ka_def("age", ka_number(42), &env);
+  ka_def("name", ka_string("World"), &env);
+
+  assert(strcmp(env->key, "name") == 0);
+  assert(strcmp(env->string, "World") == 0);
+  assert(strcmp(env->next->key, "age") == 0);
+  assert(*env->next->number == 42);
+  assert(strcmp(env->next->next->key, "name") == 0);
+  assert(strcmp(env->next->next->string, "Hello") == 0);
+
+  ka_free(env);
+}
+
+void test_set() {
+  KaNode *env = ka_new(KA_NONE);
+  ka_set("name", ka_list(ka_string("Hello"), ka_string("World"), NULL), &env);
+  ka_set("age", ka_number(42), &env);
+  ka_set("name", ka_string("Foo"), &env);
+
+  assert(strcmp(env->key, "age") == 0);
+  assert(*env->number == 42);
+  assert(env->next->type == KA_STRING);
+  assert(strcmp(env->next->key, "name") == 0);
+  assert(strcmp(env->next->string, "Foo") == 0);
+
+  ka_free(env);
+}
+
+void test_del() {
+  KaNode *env = ka_new(KA_NONE);
+  ka_def("name", ka_string("Hello"), &env);
+  ka_def("age", ka_number(42), &env);
+  ka_def("message", ka_string("Foo"), &env);
+
+  ka_del("message", &env);
+  assert(strcmp(env->key, "age") == 0);
+  assert(strcmp(env->next->key, "name") == 0);
+
+  ka_del("name", &env);
+  assert(env->next->type == KA_NONE);
+
+  ka_free(env);
+}
+
 int main() {
   printf("\nStarting tests...\n");
 
@@ -118,6 +165,9 @@ int main() {
   test_symbol();
   test_list();
   test_copy();
+  test_def();
+  test_set();
+  test_del();
 
   printf("Done!\n\n");
   return 0;
