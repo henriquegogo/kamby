@@ -35,7 +35,7 @@ static inline void ka_free(KaNode *node) {
     KaNode *next = node->next;
 
     if ((*node->refcount)-- <= 0) {
-      if (node->type == KA_LIST) ka_free((KaNode *)node->value);
+      if (node->type >= KA_LIST) ka_free((KaNode *)node->value);
       else free(node->value);
       free(node->refcount);
     }
@@ -76,9 +76,9 @@ static inline KaNode *ka_copy(KaNode *node) {
     (node->type == KA_NUMBER) ? ka_number(*node->number) :
     (node->type == KA_STRING) ? ka_string(node->string) :
     (node->type == KA_SYMBOL) ? ka_symbol(node->key) :
-    (node->type == KA_LIST) ? ka_new(KA_LIST) : ka_new(node->type);
+    ka_new(node->type);
 
-  if (copy->type == KA_LIST) {
+  if (copy->type >= KA_LIST) {
     copy->value = node->value;
 
     free(copy->refcount);
@@ -89,24 +89,6 @@ static inline KaNode *ka_copy(KaNode *node) {
   copy->key = node->key ? strdup(node->key) : NULL;
 
   return copy;
-}
-
-static inline KaNode *ka_list(KaNode *chain, ...) {
-  va_list args;
-  va_start(args, chain);
-
-  KaNode *last = chain ? chain : va_arg(args, KaNode *);
-  
-  while ((last->next = va_arg(args, KaNode *))) { 
-    last = last->next->next ? last->next = ka_copy(last->next) : last->next;
-  }
-
-  KaNode *node = ka_new(KA_LIST);
-  node->children = chain;
-
-  va_end(args);
-
-  return node;
 }
 
 static inline KaNode *ka_chain(KaNode *chain, ...) {
@@ -123,6 +105,40 @@ static inline KaNode *ka_chain(KaNode *chain, ...) {
   va_end(args);
 
   return chain;
+}
+
+static inline KaNode *ka_list(KaNode *chain, ...) {
+  va_list args;
+  va_start(args, chain);
+
+  KaNode *last = chain;
+  
+  while ((last->next = va_arg(args, KaNode *))) { 
+    last = last->next->next ? last->next = ka_copy(last->next) : last->next;
+  }
+
+  KaNode *node = ka_new(KA_LIST);
+  node->children = chain;
+
+  va_end(args);
+
+  return node;
+}
+
+static inline KaNode *ka_block(KaNode *chain, ...) {
+  va_list args;
+  va_start(args, chain);
+
+  KaNode *last = chain;
+  
+  while (last) last = last->next = va_arg(args, KaNode *);
+
+  KaNode *node = ka_new(KA_BLOCK);
+  node->children = chain;
+
+  va_end(args);
+
+  return node;
 }
 
 static inline KaNode *ka_get(char *key, KaNode **chain) {
@@ -149,7 +165,7 @@ static inline KaNode *ka_set(char *key, KaNode *node, KaNode **chain) {
   KaNode *item = ka_get(key, chain);
   if (!item) return ka_def(key, node, chain);
 
-  item->type == KA_LIST ? ka_free((KaNode *)item->value) : free(item->value);
+  item->type >= KA_LIST ? ka_free((KaNode *)item->value) : free(item->value);
   item->type = node->type;
   item->value = node->value;
 
@@ -160,7 +176,7 @@ static inline KaNode *ka_set(char *key, KaNode *node, KaNode **chain) {
   return item;
 }
 
-static inline KaNode *ka_del(char *key, KaNode **chain) {
+static inline void ka_del(char *key, KaNode **chain) {
   KaNode *prev = *chain;
   KaNode *item = *chain;
 
@@ -169,14 +185,12 @@ static inline KaNode *ka_del(char *key, KaNode **chain) {
     item = item->next;
   }
 
-  if (!item) return *chain;
+  if (!item) return;
   if (item == *chain) *chain = item->next;
   else prev->next = item->next;
   
   item->next = NULL;
   ka_free(item);
-  
-  return *chain;
 }
 
 #endif
