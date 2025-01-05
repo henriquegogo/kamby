@@ -70,13 +70,31 @@ void test_symbol() {
 }
 
 void test_list() {
-  KaNode *node = ka_list(ka_new(KA_NUMBER), ka_new(KA_STRING), NULL);
+  KaNode *node = ka_list(ka_number(42), ka_string("Hello"), NULL);
 
   assert(node->type == KA_LIST);
   assert(node->key == NULL);
   assert(node->children->type == KA_NUMBER);
   assert(node->children->next->type == KA_STRING);
   assert(node->children->next->next == NULL);
+  assert(*node->refcount == 0);
+  assert(node->next == NULL);
+
+  ka_free(node);
+}
+
+void test_block() {
+  KaNode *node = ka_block(ka_symbol("num"), ka_symbol("="), ka_number(7), NULL);
+
+  assert(node->type == KA_BLOCK);
+  assert(node->key == NULL);
+  assert(node->children->type == KA_SYMBOL);
+  assert(strcmp(node->children->key, "num") == 0);
+  assert(node->children->next->type == KA_SYMBOL);
+  assert(strcmp(node->children->next->key, "=") == 0);
+  assert(node->children->next->next->type == KA_NUMBER);
+  assert(*node->children->next->next->number == 7);
+  assert(node->children->next->next->next == NULL);
   assert(*node->refcount == 0);
   assert(node->next == NULL);
 
@@ -159,12 +177,13 @@ int main() {
   printf("\nStarting tests...\n");
 
   test_new();
-  test_chain();
   test_number();
   test_string();
   test_symbol();
-  test_list();
   test_copy();
+  test_chain();
+  test_list();
+  test_block();
   test_def();
   test_set();
   test_del();
