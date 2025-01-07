@@ -5,6 +5,7 @@
 int print_level = 0;
 void print_node(KaNode *node) {
   if (!node) return;
+  KaNode *child;
   for (int i = 0; i < print_level; i++) printf("  ");
   switch (node->type) {
     case KA_NUMBER:
@@ -19,11 +20,22 @@ void print_node(KaNode *node) {
     case KA_LIST:
       printf("(ref %d) list %s:\n", *node->refcount, node->key);
       print_level++;
-      KaNode *child = node->children;
-      while (child) {
-        print_node(child);
-        child = child->next;
-      }
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
+      print_level--;
+      break;
+    case KA_EXPR:
+      printf("(ref %d) expr %s:\n", *node->refcount, node->key);
+      print_level++;
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
+      print_level--;
+      break;
+    case KA_BLOCK:
+      printf("(ref %d) block %s:\n", *node->refcount, node->key);
+      print_level++;
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
       print_level--;
       break;
     default:;
@@ -61,6 +73,11 @@ int main() {
     ka_string("Grape"), NULL), &env);
 
   ka_set("name", ka_string("Mr Soarrs"), &env);
+
+  ka_def("sum", ka_block(
+    ka_symbol("a"),
+    ka_symbol("+"),
+    ka_symbol("b"), NULL), &env);
 
   print_chain(env);
   printf("\n");

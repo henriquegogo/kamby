@@ -6,7 +6,7 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_LIST, KA_BLOCK
+  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -95,12 +95,8 @@ static inline KaNode *ka_chain(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
 
-  KaNode *last = chain;
-  
-  while (last) {
+  for (KaNode *last = chain; last; last = last->next = va_arg(args, KaNode *))
     while (last->next) last = last->next;
-    last = last->next = va_arg(args, KaNode *);
-  }
 
   va_end(args);
 
@@ -111,14 +107,25 @@ static inline KaNode *ka_list(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
 
-  KaNode *last = chain;
-  
-  while ((last->next = va_arg(args, KaNode *))) { 
-    last = last->next->next ? last->next = ka_copy(last->next) : last->next;
-  }
-
   KaNode *node = ka_new(KA_LIST);
-  node->children = chain;
+
+  for (KaNode *last = node->children = chain;
+      (last->next = va_arg(args, KaNode *)); 
+      last = last->next->next ? last->next = ka_copy(last->next) : last->next);
+
+  va_end(args);
+
+  return node;
+}
+
+static inline KaNode *ka_expr(KaNode *chain, ...) {
+  va_list args;
+  va_start(args, chain);
+
+  KaNode *node = ka_new(KA_EXPR);
+
+  for (KaNode *last = node->children = chain; last;
+      last = last->next = va_arg(args, KaNode *));
 
   va_end(args);
 
@@ -129,12 +136,10 @@ static inline KaNode *ka_block(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
 
-  KaNode *last = chain;
-  
-  while (last) last = last->next = va_arg(args, KaNode *);
-
   KaNode *node = ka_new(KA_BLOCK);
-  node->children = chain;
+
+  for (KaNode *last = node->children = chain; last;
+      last = last->next = va_arg(args, KaNode *));
 
   va_end(args);
 
@@ -142,13 +147,11 @@ static inline KaNode *ka_block(KaNode *chain, ...) {
 }
 
 static inline KaNode *ka_get(char *key, KaNode **chain) {
-  KaNode *item = *chain;
-  
-  while (item && strcmp(key, item->key ? item->key : "") != 0) {
-    item = item->next;
-  }
-  
-  return item;
+  KaNode *node = *chain;
+
+  while (node && strcmp(key, node->key ? node->key : "")) node = node->next;
+
+  return node;
 }
 
 static inline KaNode *ka_def(char *key, KaNode *node, KaNode **chain) {
@@ -180,7 +183,7 @@ static inline void ka_del(char *key, KaNode **chain) {
   KaNode *prev = *chain;
   KaNode *item = *chain;
 
-  while (item && strcmp(key, item->key ? item->key : "") != 0) {
+  while (item && strcmp(key, item->key ? item->key : "")) {
     prev = item;
     item = item->next;
   }

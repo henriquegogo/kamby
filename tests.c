@@ -83,6 +83,24 @@ void test_list() {
   ka_free(node);
 }
 
+void test_expr() {
+  KaNode *node = ka_expr(ka_symbol("num"), ka_symbol("="), ka_number(7), NULL);
+
+  assert(node->type == KA_EXPR);
+  assert(node->key == NULL);
+  assert(node->children->type == KA_SYMBOL);
+  assert(strcmp(node->children->key, "num") == 0);
+  assert(node->children->next->type == KA_SYMBOL);
+  assert(strcmp(node->children->next->key, "=") == 0);
+  assert(node->children->next->next->type == KA_NUMBER);
+  assert(*node->children->next->next->number == 7);
+  assert(node->children->next->next->next == NULL);
+  assert(*node->refcount == 0);
+  assert(node->next == NULL);
+
+  ka_free(node);
+}
+
 void test_block() {
   KaNode *node = ka_block(ka_symbol("num"), ka_symbol("="), ka_number(7), NULL);
 
@@ -183,6 +201,7 @@ int main() {
   test_copy();
   test_chain();
   test_list();
+  test_expr();
   test_block();
   test_def();
   test_set();
