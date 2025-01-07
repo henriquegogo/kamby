@@ -26,7 +26,6 @@ static inline KaNode *ka_new(KaType type) {
   KaNode *node = (KaNode *)calloc(1, sizeof(KaNode));
   node->type = type;
   node->refcount = (int *)calloc(1, sizeof(int));
-
   return node;
 }
 
@@ -51,21 +50,18 @@ static inline KaNode *ka_number(long double value) {
   KaNode *node = ka_new(KA_NUMBER);
   node->number = (long double *)calloc(1, sizeof(long double));
   *node->number = value;
-  
   return node;
 }
 
 static inline KaNode *ka_string(char *value) {
   KaNode *node = ka_new(KA_STRING);
   node->string = strdup(value);
-  
   return node;
 }
 
 static inline KaNode *ka_symbol(char *key) {
   KaNode *node = ka_new(KA_SYMBOL);
   node->key = strdup(key);
-
   return node;
 }
 
@@ -99,14 +95,12 @@ static inline KaNode *ka_chain(KaNode *chain, ...) {
     while (last->next) last = last->next;
 
   va_end(args);
-
   return chain;
 }
 
 static inline KaNode *ka_list(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
-
   KaNode *node = ka_new(KA_LIST);
 
   for (KaNode *last = node->children = chain;
@@ -114,54 +108,44 @@ static inline KaNode *ka_list(KaNode *chain, ...) {
       last = last->next->next ? last->next = ka_copy(last->next) : last->next);
 
   va_end(args);
-
   return node;
 }
 
 static inline KaNode *ka_expr(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
-
   KaNode *node = ka_new(KA_EXPR);
 
   for (KaNode *last = node->children = chain; last;
       last = last->next = va_arg(args, KaNode *));
 
   va_end(args);
-
   return node;
 }
 
 static inline KaNode *ka_block(KaNode *chain, ...) {
   va_list args;
   va_start(args, chain);
-
   KaNode *node = ka_new(KA_BLOCK);
 
   for (KaNode *last = node->children = chain; last;
       last = last->next = va_arg(args, KaNode *));
 
   va_end(args);
-
   return node;
 }
 
 static inline KaNode *ka_get(char *key, KaNode **chain) {
   KaNode *node = *chain;
-
   while (node && strcmp(key, node->key ? node->key : "")) node = node->next;
-
   return node;
 }
 
 static inline KaNode *ka_def(char *key, KaNode *node, KaNode **chain) {
   free(node->key);
-  
   node->key = strdup(key);
   node->next = *chain;
-  *chain = node;
-  
-  return node;
+  return *chain = node;
 }
 
 static inline KaNode *ka_set(char *key, KaNode *node, KaNode **chain) {
