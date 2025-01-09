@@ -2,6 +2,7 @@
 #define KAMBY_H
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -142,33 +143,43 @@ static inline KaNode *ka_def(char *key, KaNode *node, KaNode **chain) {
   return *chain = node;
 }
 
-static inline KaNode *ka_set(char *key, KaNode *node, KaNode **chain) {
-  KaNode *item = ka_get(key, chain);
-  if (!item) return ka_def(key, node, chain);
+static inline KaNode *ka_set(char *key, KaNode *data, KaNode **chain) {
+  KaNode *node = ka_get(key, chain);
+  if (!node) return ka_def(key, data, chain);
 
-  item->type >= KA_LIST ? ka_free((KaNode *)item->value) : free(item->value);
-  item->type = node->type;
-  item->value = node->value;
+  node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
+  node->type = data->type;
+  node->value = data->value;
 
-  free(node->key);
-  free(node->refcount);
-  free(node);
-  return item;
+  free(data->key);
+  free(data->refcount);
+  free(data);
+  return node;
 }
 
 static inline void ka_del(char *key, KaNode **chain) {
   KaNode *prev = *chain;
-  KaNode *item = *chain;
+  KaNode *node = *chain;
 
-  while (item && strcmp(key, item->key ? item->key : "")) {
-    prev = item;
-    item = item->next;
+  while (node && strcmp(key, node->key ? node->key : "")) {
+    prev = node;
+    node = node->next;
   }
 
-  if (!item) return;
-  item == *chain ? (*chain = item->next) : (prev->next = item->next);
-  item->next = NULL;
-  ka_free(item);
+  if (!node) return;
+  node == *chain ? (*chain = node->next) : (prev->next = node->next);
+  node->next = NULL;
+  ka_free(node);
+}
+
+static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
+  if (node->type == KA_BLOCK) return ka_eval((KaNode *)node->value, NULL);
+
+  for (KaNode *current = node; current; current = current->next) {
+    if (current->key) printf("%s\n", current->key); 
+  }
+
+  return node;
 }
 
 #endif
