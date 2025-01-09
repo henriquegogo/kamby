@@ -85,6 +85,8 @@ int main() {
   KaNode *dupfruit = ka_copy(ka_get("fruits", &env));
   print_node(dupfruit);
   ka_free(dupfruit);
+
+  ka_eval(ka_get("sum", &env), &env);
   
   ka_free(env);
 
