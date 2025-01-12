@@ -74,10 +74,9 @@ int main() {
 
   ka_set("name", ka_string("Mr Soarrs"), &env);
 
-  ka_def("sum", ka_block(
-    ka_symbol("a"),
-    ka_symbol("+"),
-    ka_symbol("b"), NULL), &env);
+  ka_def("sum", ka_expr(
+    ka_symbol("name"),
+    ka_symbol("age"), NULL), &env);
 
   print_chain(env);
   printf("\n");
@@ -86,7 +85,20 @@ int main() {
   print_node(dupfruit);
   ka_free(dupfruit);
 
-  ka_eval(ka_get("sum", &env), &env);
+  printf("\n");
+  KaNode *code_block = ka_expr(
+      ka_number(42),
+      ka_string("Hello"),
+      ka_list(
+        ka_symbol("name"),
+        ka_string("endlist"),
+        NULL),
+      ka_symbol("name"),
+      NULL);
+  KaNode *result = ka_eval(code_block, &env);
+  print_chain(result);
+  ka_free(result);
+  ka_free(code_block);
   
   ka_free(env);
 

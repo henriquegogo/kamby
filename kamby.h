@@ -173,13 +173,36 @@ static inline void ka_del(char *key, KaNode **chain) {
 }
 
 static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
-  if (node->type == KA_BLOCK) return ka_eval((KaNode *)node->value, NULL);
+  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
-  for (KaNode *current = node; current; current = current->next) {
-    if (current->key) printf("%s\n", current->key); 
+  // Eval expressions and get variables
+  for (KaNode *curr = node; curr; curr = curr->next) {
+    KaNode *children;
+    switch (curr->type) {
+      case KA_SYMBOL:
+        last = last->next = ka_copy(ka_get(curr->key, env));
+        break;
+      case KA_EXPR:
+        last = last->next = ka_eval(curr->children, env);
+        break;
+      case KA_LIST:
+        curr->children = ka_eval(children = curr->children, env);
+        ka_free(children);
+      default:
+        last = last->next = ka_copy(curr);
+    }
   }
 
-  return node;
+  // Discard first head node
+  head = head->next;
+  first->next = NULL;
+  ka_free(first);
+
+  // Take actions based on node type
+  for (KaNode *curr = head; curr; curr = curr->next) {
+  }
+
+  return head;
 }
 
 #endif
