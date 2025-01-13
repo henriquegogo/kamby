@@ -105,7 +105,7 @@ int main() {
       NULL);
 
   KaNode *print = ka_func(builtin_print);
-  print->function(ka_string("Hello, World!"), &ctx);
+  print->func(ka_string("Hello, World!"), &ctx);
   ka_free(print);
 
   printf("\n");

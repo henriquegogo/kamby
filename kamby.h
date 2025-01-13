@@ -16,7 +16,7 @@ typedef struct KaNode {
   union {
     long double *number;
     char *string;
-    struct KaNode *(*function)(struct KaNode *args, struct KaNode **ctx);
+    struct KaNode *(*func)(struct KaNode *args, struct KaNode **ctx);
     struct KaNode *children;
     void *value;
   };
@@ -36,8 +36,8 @@ static inline void ka_free(KaNode *node) {
     curr = node->next;
 
     if ((*node->refcount)-- <= 0) {
-      if (node->type >= KA_LIST) ka_free((KaNode *)node->value);
-      else if (node->type != KA_FUNC) free(node->value);
+      node->type >= KA_LIST ? ka_free((KaNode *)node->value) :
+      node->type == KA_FUNC ? (void)0 : free(node->value);
       free(node->refcount);
     }
 
@@ -78,7 +78,7 @@ static inline KaNode *ka_symbol(char *key) {
 
 static inline KaNode *ka_func(KaNode *(*func)(KaNode *args, KaNode **ctx)) {
   KaNode *node = ka_new(KA_FUNC);
-  node->function = func;
+  node->func = func;
   return node;
 }
 

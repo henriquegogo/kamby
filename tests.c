@@ -212,7 +212,7 @@ int main() {
   test_number();
   test_string();
   test_symbol();
-  //test_function();
+  //test_func();
   test_copy();
   test_list();
   test_expr();
