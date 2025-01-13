@@ -16,7 +16,7 @@ typedef struct KaNode {
   union {
     long double *number;
     char *string;
-    struct KaNode *(*function)(struct KaNode *node, ...);
+    struct KaNode *(*function)(struct KaNode *args, struct KaNode **ctx);
     struct KaNode *children;
     void *value;
   };
@@ -75,7 +75,7 @@ static inline KaNode *ka_symbol(char *key) {
   return node;
 }
 
-static inline KaNode *ka_func(KaNode *(*func)(KaNode *node, ...)) {
+static inline KaNode *ka_func(KaNode *(*func)(KaNode *args, KaNode **ctx)) {
   KaNode *node = ka_new(KA_FUNC);
   node->function = func;
   return node;
@@ -137,28 +137,31 @@ static inline KaNode *ka_block(KaNode *arg, ...) {
   return node;
 }
 
-static inline KaNode *ka_get(KaNode *symbol, KaNode **env) {
-  KaNode *curr = *env;
+static inline KaNode *ka_get(KaNode *arg, KaNode **ctx) {
+  KaNode *curr = *ctx;
 
-  while (curr && strcmp(symbol->key, curr->key ? curr->key : "")) {
+  while (curr && strcmp(arg->key, curr->key ? curr->key : ""))
     curr = curr->next;
-  }
 
-  ka_free(symbol);
+  ka_free(arg);
   return curr;
 }
 
-static inline KaNode *ka_def(KaNode *symbol, KaNode *node, KaNode **env) {
-  free(node->key);
-  node->key = strdup(symbol->key);
-  node->next = *env;
+static inline KaNode *ka_def(KaNode *args, KaNode **ctx) {
+  KaNode *symbol = args, *data = args->next;
+  symbol->next = NULL;
+  free(data->key);
+  data->key = strdup(symbol->key);
+  data->next = *ctx;
   ka_free(symbol);
-  return *env = node;
+  return *ctx = data;
 }
 
-static inline KaNode *ka_set(KaNode *symbol, KaNode *data, KaNode **env) {
-  KaNode *node = ka_get(ka_symbol(symbol->key), env);
-  if (!node) return ka_def(symbol, data, env);
+static inline KaNode *ka_set(KaNode *args, KaNode **ctx) {
+  KaNode *symbol = args, *data = args->next;
+  KaNode *node = ka_get(ka_symbol(symbol->key), ctx);
+  if (!node) return ka_def(args, ctx);
+  symbol->next = NULL;
   ka_free(symbol);
 
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
@@ -171,9 +174,9 @@ static inline KaNode *ka_set(KaNode *symbol, KaNode *data, KaNode **env) {
   return node;
 }
 
-static inline void ka_del(KaNode *symbol, KaNode **env) {
-  KaNode *prev = *env;
-  KaNode *node = *env;
+static inline void ka_del(KaNode *symbol, KaNode **ctx) {
+  KaNode *prev = *ctx;
+  KaNode *node = *ctx;
 
   while (node && strcmp(symbol->key, node->key ? node->key : "")) {
     prev = node;
@@ -181,13 +184,13 @@ static inline void ka_del(KaNode *symbol, KaNode **env) {
   }
 
   if (!node) return;
-  node == *env ? (*env = node->next) : (prev->next = node->next);
+  node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
   node->next = NULL;
   ka_free(symbol);
   ka_free(node);
 }
 
-static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
+static inline KaNode *ka_eval(KaNode *node, KaNode **ctx) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
   // Eval expressions and get variables
@@ -195,14 +198,14 @@ static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
     KaNode *children;
     switch (curr->type) {
       case KA_SYMBOL:
-        last = last->next = ka_copy(ka_get(ka_symbol(curr->key), env));
+        last = last->next = ka_copy(ka_get(ka_symbol(curr->key), ctx));
         break;
       case KA_EXPR:
-        last = last->next = ka_eval(curr->children, env);
+        last = last->next = ka_eval(curr->children, ctx);
         break;
       case KA_LIST:
         last = last->next = ka_new(curr->type);
-        last->children = ka_eval(curr->children, env);
+        last->children = ka_eval(curr->children, ctx);
         break;
       default:
         last = last->next = ka_copy(curr);
