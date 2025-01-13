@@ -31,8 +31,8 @@ static inline KaNode *ka_new(KaType type) {
 }
 
 static inline void ka_free(KaNode *node) {
-  for (KaNode *next; node; node = next) {
-    next = node->next;
+  for (KaNode *curr; node; node = curr) {
+    curr = node->next;
 
     if ((*node->refcount)-- <= 0) {
       node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
@@ -130,22 +130,29 @@ static inline KaNode *ka_block(KaNode *arg, ...) {
   return node;
 }
 
-static inline KaNode *ka_get(char *key, KaNode **env) {
-  KaNode *node = *env;
-  while (node && strcmp(key, node->key ? node->key : "")) node = node->next;
-  return node;
+static inline KaNode *ka_get(KaNode *symbol, KaNode **env) {
+  KaNode *curr = *env;
+
+  while (curr && strcmp(symbol->key, curr->key ? curr->key : "")) {
+    curr = curr->next;
+  }
+
+  ka_free(symbol);
+  return curr;
 }
 
-static inline KaNode *ka_def(char *key, KaNode *node, KaNode **env) {
+static inline KaNode *ka_def(KaNode *symbol, KaNode *node, KaNode **env) {
   free(node->key);
-  node->key = strdup(key);
+  node->key = strdup(symbol->key);
   node->next = *env;
+  ka_free(symbol);
   return *env = node;
 }
 
-static inline KaNode *ka_set(char *key, KaNode *data, KaNode **env) {
-  KaNode *node = ka_get(key, env);
-  if (!node) return ka_def(key, data, env);
+static inline KaNode *ka_set(KaNode *symbol, KaNode *data, KaNode **env) {
+  KaNode *node = ka_get(ka_symbol(symbol->key), env);
+  if (!node) return ka_def(symbol, data, env);
+  ka_free(symbol);
 
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
   node->type = data->type;
@@ -157,11 +164,11 @@ static inline KaNode *ka_set(char *key, KaNode *data, KaNode **env) {
   return node;
 }
 
-static inline void ka_del(char *key, KaNode **env) {
+static inline void ka_del(KaNode *symbol, KaNode **env) {
   KaNode *prev = *env;
   KaNode *node = *env;
 
-  while (node && strcmp(key, node->key ? node->key : "")) {
+  while (node && strcmp(symbol->key, node->key ? node->key : "")) {
     prev = node;
     node = node->next;
   }
@@ -169,6 +176,7 @@ static inline void ka_del(char *key, KaNode **env) {
   if (!node) return;
   node == *env ? (*env = node->next) : (prev->next = node->next);
   node->next = NULL;
+  ka_free(symbol);
   ka_free(node);
 }
 
@@ -180,7 +188,7 @@ static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
     KaNode *children;
     switch (curr->type) {
       case KA_SYMBOL:
-        last = last->next = ka_copy(ka_get(curr->key, env));
+        last = last->next = ka_copy(ka_get(ka_symbol(curr->key), env));
         break;
       case KA_EXPR:
         last = last->next = ka_eval(curr->children, env);
