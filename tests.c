@@ -144,6 +144,15 @@ void test_copy() {
   ka_free(list);
 }
 
+void test_get() {
+  KaNode *env = ka_new(KA_NONE);
+  ka_def(ka_symbol("name"), ka_string("Hello"), &env);
+  ka_def(ka_symbol("age"), ka_number(42), &env);
+
+  assert(*ka_get(ka_symbol("age"), &env)->number == 42);
+  assert(!strcmp(ka_get(ka_symbol("name"), &env)->string, "Hello"));
+}
+
 void test_def() {
   KaNode *env = ka_new(KA_NONE);
   ka_def(ka_symbol("name"), ka_string("Hello"), &env);
@@ -196,15 +205,16 @@ int main() {
   printf("\nStarting tests...\n");
 
   test_new();
+  test_chain();
   test_number();
   test_string();
   test_symbol();
+  //test_function();
   test_copy();
-  test_chain();
   test_list();
   test_expr();
   test_block();
-  //test_get();
+  test_get();
   test_def();
   test_set();
   test_del();
