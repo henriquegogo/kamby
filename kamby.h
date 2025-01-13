@@ -36,7 +36,8 @@ static inline void ka_free(KaNode *node) {
     curr = node->next;
 
     if ((*node->refcount)-- <= 0) {
-      node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
+      if (node->type >= KA_LIST) ka_free((KaNode *)node->value);
+      else if (node->type != KA_FUNC) free(node->value);
       free(node->refcount);
     }
 
