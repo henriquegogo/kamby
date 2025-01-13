@@ -151,6 +151,8 @@ void test_get() {
 
   assert(*ka_get(ka_symbol("age"), &env)->number == 42);
   assert(!strcmp(ka_get(ka_symbol("name"), &env)->string, "Hello"));
+
+  ka_free(env);
 }
 
 void test_def() {
