@@ -82,70 +82,70 @@ static inline KaNode *ka_copy(KaNode *node) {
   return copy;
 }
 
-static inline KaNode *ka_chain(KaNode *chain, ...) {
+static inline KaNode *ka_chain(KaNode *arg, ...) {
   va_list args;
-  va_start(args, chain);
+  va_start(args, arg);
 
-  for (KaNode *last = chain; last; last = last->next = va_arg(args, KaNode *))
-    while (last->next) last = last->next;
+  for (KaNode *curr = arg; curr; curr = curr->next = va_arg(args, KaNode *))
+    while (curr->next) curr = curr->next;
 
   va_end(args);
-  return chain;
+  return arg;
 }
 
-static inline KaNode *ka_list(KaNode *chain, ...) {
+static inline KaNode *ka_list(KaNode *arg, ...) {
   va_list args;
-  va_start(args, chain);
+  va_start(args, arg);
   KaNode *node = ka_new(KA_LIST);
 
-  for (KaNode *last = node->children = chain;
-      (last->next = va_arg(args, KaNode *)); 
-      last = last->next->next ? last->next = ka_copy(last->next) : last->next);
+  for (KaNode *curr = node->children = arg;
+      (curr->next = va_arg(args, KaNode *)); 
+      curr = curr->next->next ? curr->next = ka_copy(curr->next) : curr->next);
 
   va_end(args);
   return node;
 }
 
-static inline KaNode *ka_expr(KaNode *chain, ...) {
+static inline KaNode *ka_expr(KaNode *arg, ...) {
   va_list args;
-  va_start(args, chain);
+  va_start(args, arg);
   KaNode *node = ka_new(KA_EXPR);
 
-  for (KaNode *last = node->children = chain; last;
-      last = last->next = va_arg(args, KaNode *));
+  for (KaNode *curr = node->children = arg; curr;
+      curr = curr->next = va_arg(args, KaNode *));
 
   va_end(args);
   return node;
 }
 
-static inline KaNode *ka_block(KaNode *chain, ...) {
+static inline KaNode *ka_block(KaNode *arg, ...) {
   va_list args;
-  va_start(args, chain);
+  va_start(args, arg);
   KaNode *node = ka_new(KA_BLOCK);
 
-  for (KaNode *last = node->children = chain; last;
-      last = last->next = va_arg(args, KaNode *));
+  for (KaNode *curr = node->children = arg; curr;
+      curr = curr->next = va_arg(args, KaNode *));
 
   va_end(args);
   return node;
 }
 
-static inline KaNode *ka_get(char *key, KaNode **chain) {
-  KaNode *node = *chain;
+static inline KaNode *ka_get(char *key, KaNode **env) {
+  KaNode *node = *env;
   while (node && strcmp(key, node->key ? node->key : "")) node = node->next;
   return node;
 }
 
-static inline KaNode *ka_def(char *key, KaNode *node, KaNode **chain) {
+static inline KaNode *ka_def(char *key, KaNode *node, KaNode **env) {
   free(node->key);
   node->key = strdup(key);
-  node->next = *chain;
-  return *chain = node;
+  node->next = *env;
+  return *env = node;
 }
 
-static inline KaNode *ka_set(char *key, KaNode *data, KaNode **chain) {
-  KaNode *node = ka_get(key, chain);
-  if (!node) return ka_def(key, data, chain);
+static inline KaNode *ka_set(char *key, KaNode *data, KaNode **env) {
+  KaNode *node = ka_get(key, env);
+  if (!node) return ka_def(key, data, env);
 
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
   node->type = data->type;
@@ -157,9 +157,9 @@ static inline KaNode *ka_set(char *key, KaNode *data, KaNode **chain) {
   return node;
 }
 
-static inline void ka_del(char *key, KaNode **chain) {
-  KaNode *prev = *chain;
-  KaNode *node = *chain;
+static inline void ka_del(char *key, KaNode **env) {
+  KaNode *prev = *env;
+  KaNode *node = *env;
 
   while (node && strcmp(key, node->key ? node->key : "")) {
     prev = node;
@@ -167,7 +167,7 @@ static inline void ka_del(char *key, KaNode **chain) {
   }
 
   if (!node) return;
-  node == *chain ? (*chain = node->next) : (prev->next = node->next);
+  node == *env ? (*env = node->next) : (prev->next = node->next);
   node->next = NULL;
   ka_free(node);
 }
@@ -186,8 +186,9 @@ static inline KaNode *ka_eval(KaNode *node, KaNode **env) {
         last = last->next = ka_eval(curr->children, env);
         break;
       case KA_LIST:
-        curr->children = ka_eval(children = curr->children, env);
-        ka_free(children);
+        last = last->next = ka_new(curr->type);
+        last->children = ka_eval(curr->children, env);
+        break;
       default:
         last = last->next = ka_copy(curr);
     }
