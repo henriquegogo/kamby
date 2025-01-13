@@ -55,6 +55,8 @@ void setvar(char *key, KaNode *value, KaNode **ctx) {
 }
 
 KaNode *builtin_print(KaNode *node, KaNode **ctx) {
+  printf("printing: %s\n", node->string);
+  ka_free(node);
   return NULL;
 }
 
@@ -102,7 +104,9 @@ int main() {
       ka_symbol("name"),
       NULL);
 
-  //ka_func(builtin_print);
+  KaNode *print = ka_func(builtin_print);
+  print->function(ka_string("Hello, World!"), &ctx);
+  ka_free(print);
 
   printf("\n");
   KaNode *result = ka_eval(code_block, &ctx);
