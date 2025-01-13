@@ -54,34 +54,34 @@ int main() {
   printf("Kamby v0.0.2\n");
 
   KaNode *env = ka_new(KA_NONE);
-  ka_def("name", ka_string("Henrique"), &env);
-  ka_def("age", ka_number(40), &env);
+  ka_def(ka_symbol("name"), ka_string("Henrique"), &env);
+  ka_def(ka_symbol("age"), ka_number(40), &env);
 
-  ka_set("newvar", ka_string("This is not a value"), &env);
+  ka_set(ka_symbol("newvar"), ka_string("This is not a value"), &env);
 
-  ka_def("seeds", ka_list(
+  ka_def(ka_symbol("seeds"), ka_list(
     ka_string("Wheat"),
     ka_string("Rye"),
     ka_string("Barley"), NULL), &env);
 
-  ka_def("fruits", ka_list(
+  ka_def(ka_symbol("fruits"), ka_list(
     ka_string("Apple"),
     ka_string("Banana"),
     ka_number(22),
-    ka_get("seeds", &env),
-    ka_get("name", &env),
+    ka_get(ka_symbol("seeds"), &env),
+    ka_get(ka_symbol("name"), &env),
     ka_string("Grape"), NULL), &env);
 
-  ka_set("name", ka_string("Mr Soarrs"), &env);
+  ka_set(ka_symbol("name"), ka_string("Mr Soarrs"), &env);
 
-  ka_def("sum", ka_expr(
+  ka_def(ka_symbol("sum"), ka_expr(
     ka_symbol("name"),
     ka_symbol("age"), NULL), &env);
 
   print_chain(env);
   printf("\n");
   
-  KaNode *dupfruit = ka_copy(ka_get("fruits", &env));
+  KaNode *dupfruit = ka_copy(ka_get(ka_symbol("fruits"), &env));
   print_node(dupfruit);
   ka_free(dupfruit);
 

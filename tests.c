@@ -50,7 +50,7 @@ void test_string() {
 
   assert(node->type == KA_STRING);
   assert(node->key == NULL);
-  assert(strcmp(node->string, "Hello") == 0);
+  assert(!strcmp(node->string, "Hello"));
   assert(*node->refcount == 0);
   assert(node->next == NULL);
 
@@ -61,7 +61,7 @@ void test_symbol() {
   KaNode *node = ka_symbol("sum");
 
   assert(node->type == KA_SYMBOL);
-  assert(strcmp(node->key, "sum") == 0);
+  assert(!strcmp(node->key, "sum"));
   assert(node->value == NULL);
   assert(*node->refcount == 0);
   assert(node->next == NULL);
@@ -89,9 +89,9 @@ void test_expr() {
   assert(node->type == KA_EXPR);
   assert(node->key == NULL);
   assert(node->children->type == KA_SYMBOL);
-  assert(strcmp(node->children->key, "num") == 0);
+  assert(!strcmp(node->children->key, "num"));
   assert(node->children->next->type == KA_SYMBOL);
-  assert(strcmp(node->children->next->key, "=") == 0);
+  assert(!strcmp(node->children->next->key, "="));
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
@@ -107,9 +107,9 @@ void test_block() {
   assert(node->type == KA_BLOCK);
   assert(node->key == NULL);
   assert(node->children->type == KA_SYMBOL);
-  assert(strcmp(node->children->key, "num") == 0);
+  assert(!strcmp(node->children->key, "num"));
   assert(node->children->next->type == KA_SYMBOL);
-  assert(strcmp(node->children->next->key, "=") == 0);
+  assert(!strcmp(node->children->next->key, "="));
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
@@ -128,7 +128,7 @@ void test_copy() {
   KaNode *third_copy = ka_copy(list->children->next->next);
 
   assert(first_copy->type == first->type && first->type == KA_NUMBER);
-  assert(strcmp(first_copy->string, first->string) == 0);
+  assert(!strcmp(first_copy->string, first->string));
   assert(*first_copy->refcount == *first->refcount && *first->refcount == 0);
   assert(first->next != NULL && first_copy->next == NULL);
   assert(!second_copy->next && !third_copy->next);
@@ -146,46 +146,47 @@ void test_copy() {
 
 void test_def() {
   KaNode *env = ka_new(KA_NONE);
-  ka_def("name", ka_string("Hello"), &env);
-  ka_def("age", ka_number(42), &env);
-  ka_def("name", ka_string("World"), &env);
+  ka_def(ka_symbol("name"), ka_string("Hello"), &env);
+  ka_def(ka_symbol("age"), ka_number(42), &env);
+  ka_def(ka_symbol("name"), ka_string("World"), &env);
 
-  assert(strcmp(env->key, "name") == 0);
-  assert(strcmp(env->string, "World") == 0);
-  assert(strcmp(env->next->key, "age") == 0);
+  assert(!strcmp(env->key, "name"));
+  assert(!strcmp(env->string, "World"));
+  assert(!strcmp(env->next->key, "age"));
   assert(*env->next->number == 42);
-  assert(strcmp(env->next->next->key, "name") == 0);
-  assert(strcmp(env->next->next->string, "Hello") == 0);
+  assert(!strcmp(env->next->next->key, "name"));
+  assert(!strcmp(env->next->next->string, "Hello"));
 
   ka_free(env);
 }
 
 void test_set() {
   KaNode *env = ka_new(KA_NONE);
-  ka_set("name", ka_list(ka_string("Hello"), ka_string("World"), NULL), &env);
-  ka_set("age", ka_number(42), &env);
-  ka_set("name", ka_string("Foo"), &env);
+  ka_set(ka_symbol("name"),
+      ka_list(ka_string("Hello"), ka_string("World"), NULL), &env);
+  ka_set(ka_symbol("age"), ka_number(42), &env);
+  ka_set(ka_symbol("name"), ka_string("Foo"), &env);
 
-  assert(strcmp(env->key, "age") == 0);
+  assert(!strcmp(env->key, "age"));
   assert(*env->number == 42);
   assert(env->next->type == KA_STRING);
-  assert(strcmp(env->next->key, "name") == 0);
-  assert(strcmp(env->next->string, "Foo") == 0);
+  assert(!strcmp(env->next->key, "name"));
+  assert(!strcmp(env->next->string, "Foo"));
 
   ka_free(env);
 }
 
 void test_del() {
   KaNode *env = ka_new(KA_NONE);
-  ka_def("name", ka_string("Hello"), &env);
-  ka_def("age", ka_number(42), &env);
-  ka_def("message", ka_string("Foo"), &env);
+  ka_def(ka_symbol("name"), ka_string("Hello"), &env);
+  ka_def(ka_symbol("age"), ka_number(42), &env);
+  ka_def(ka_symbol("message"), ka_string("Foo"), &env);
 
-  ka_del("message", &env);
-  assert(strcmp(env->key, "age") == 0);
-  assert(strcmp(env->next->key, "name") == 0);
+  ka_del(ka_symbol("message"), &env);
+  assert(!strcmp(env->key, "age"));
+  assert(!strcmp(env->next->key, "name"));
 
-  ka_del("name", &env);
+  ka_del(ka_symbol("name"), &env);
   assert(env->next->type == KA_NONE);
 
   ka_free(env);
@@ -203,9 +204,11 @@ int main() {
   test_list();
   test_expr();
   test_block();
+  //test_get();
   test_def();
   test_set();
   test_del();
+  //test_eval();
 
   printf("Done!\n\n");
   return 0;
