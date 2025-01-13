@@ -50,38 +50,45 @@ void print_chain(KaNode *chain) {
   }
 }
 
+void setvar(char *key, KaNode *value, KaNode **ctx) {
+  ka_def(ka_chain(ka_symbol(key), value, NULL), ctx);
+}
+
+KaNode *builtin_print(KaNode *node, KaNode **ctx) {
+  return NULL;
+}
+
 int main() {
   printf("Kamby v0.0.2\n");
 
-  KaNode *env = ka_new(KA_NONE);
-  ka_def(ka_symbol("name"), ka_string("Henrique"), &env);
-  ka_def(ka_symbol("age"), ka_number(40), &env);
+  KaNode *ctx = ka_new(KA_NONE);
+  setvar("name", ka_string("Henrique"), &ctx);
+  setvar("age", ka_number(40), &ctx);
+  setvar("newvar", ka_string("This is not a value"), &ctx);
 
-  ka_set(ka_symbol("newvar"), ka_string("This is not a value"), &env);
-
-  ka_def(ka_symbol("seeds"), ka_list(
+  setvar("seeds", ka_list(
     ka_string("Wheat"),
     ka_string("Rye"),
-    ka_string("Barley"), NULL), &env);
+    ka_string("Barley"), NULL), &ctx);
 
-  ka_def(ka_symbol("fruits"), ka_list(
+  setvar("fruits", ka_list(
     ka_string("Apple"),
     ka_string("Banana"),
     ka_number(22),
-    ka_get(ka_symbol("seeds"), &env),
-    ka_get(ka_symbol("name"), &env),
-    ka_string("Grape"), NULL), &env);
+    ka_get(ka_symbol("seeds"), &ctx),
+    ka_get(ka_symbol("name"), &ctx),
+    ka_string("Grape"), NULL), &ctx);
 
-  ka_set(ka_symbol("name"), ka_string("Mr Soarrs"), &env);
+  setvar("name", ka_string("Mr Soarrs"), &ctx);
 
-  ka_def(ka_symbol("sum"), ka_expr(
+  setvar("sum", ka_expr(
     ka_symbol("name"),
-    ka_symbol("age"), NULL), &env);
+    ka_symbol("age"), NULL), &ctx);
 
-  print_chain(env);
+  print_chain(ctx);
   printf("\n");
   
-  KaNode *dupfruit = ka_copy(ka_get(ka_symbol("fruits"), &env));
+  KaNode *dupfruit = ka_copy(ka_get(ka_symbol("fruits"), &ctx));
   print_node(dupfruit);
   ka_free(dupfruit);
 
@@ -95,19 +102,21 @@ int main() {
       ka_symbol("name"),
       NULL);
 
+  //ka_func(builtin_print);
+
   printf("\n");
-  KaNode *result = ka_eval(code_block, &env);
+  KaNode *result = ka_eval(code_block, &ctx);
   print_chain(result);
   ka_free(result);
   
   printf("\n");
-  result = ka_eval(code_block, &env);
+  result = ka_eval(code_block, &ctx);
   print_chain(result);
   ka_free(result);
 
   ka_free(code_block);
   
-  ka_free(env);
+  ka_free(ctx);
 
   return 0;
 }
