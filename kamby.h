@@ -7,7 +7,7 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_LIST, KA_EXPR, KA_BLOCK
+  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC, KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -16,6 +16,7 @@ typedef struct KaNode {
   union {
     long double *number;
     char *string;
+    struct KaNode *(*function)(struct KaNode *node, ...);
     struct KaNode *children;
     void *value;
   };
@@ -44,6 +45,17 @@ static inline void ka_free(KaNode *node) {
   }
 }
 
+static inline KaNode *ka_chain(KaNode *arg, ...) {
+  va_list args;
+  va_start(args, arg);
+
+  for (KaNode *curr = arg; curr; curr = curr->next = va_arg(args, KaNode *))
+    while (curr->next) curr = curr->next;
+
+  va_end(args);
+  return arg;
+}
+
 static inline KaNode *ka_number(long double value) {
   KaNode *node = ka_new(KA_NUMBER);
   node->number = (long double *)calloc(1, sizeof(long double));
@@ -60,6 +72,12 @@ static inline KaNode *ka_string(char *value) {
 static inline KaNode *ka_symbol(char *key) {
   KaNode *node = ka_new(KA_SYMBOL);
   node->key = strdup(key);
+  return node;
+}
+
+static inline KaNode *ka_func(KaNode *(*func)(KaNode *node, ...)) {
+  KaNode *node = ka_new(KA_FUNC);
+  node->function = func;
   return node;
 }
 
@@ -80,17 +98,6 @@ static inline KaNode *ka_copy(KaNode *node) {
 
   copy->key = node->key ? strdup(node->key) : NULL;
   return copy;
-}
-
-static inline KaNode *ka_chain(KaNode *arg, ...) {
-  va_list args;
-  va_start(args, arg);
-
-  for (KaNode *curr = arg; curr; curr = curr->next = va_arg(args, KaNode *))
-    while (curr->next) curr = curr->next;
-
-  va_end(args);
-  return arg;
 }
 
 static inline KaNode *ka_list(KaNode *arg, ...) {
