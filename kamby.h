@@ -16,7 +16,7 @@ typedef struct KaNode {
   union {
     long double *number;
     char *string;
-    struct KaNode *(*func)(struct KaNode **ctx, struct KaNode *arg, ...);
+    struct KaNode *(*func)(struct KaNode **ctx, struct KaNode *args);
     struct KaNode *children;
     void *value;
   };
@@ -76,7 +76,7 @@ static inline KaNode *ka_symbol(char *key) {
   return node;
 }
 
-static inline KaNode *ka_func(KaNode *(*func)(KaNode **ctx, KaNode *arg, ...)) {
+static inline KaNode *ka_func(KaNode *(*func)(KaNode **ctx, KaNode *args)) {
   KaNode *node = ka_new(KA_FUNC);
   node->func = func;
   return node;
@@ -138,7 +138,7 @@ static inline KaNode *ka_block(KaNode *arg, ...) {
   return node;
 }
 
-static inline KaNode *ka_get(KaNode **ctx, KaNode *arg, ...) {
+static inline KaNode *ka_get(KaNode **ctx, KaNode *arg) {
   KaNode *curr = *ctx;
 
   while (curr && strcmp(arg->key, curr->key ? curr->key : ""))
@@ -148,29 +148,24 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *arg, ...) {
   return curr;
 }
 
-static inline KaNode *ka_def(KaNode **ctx, KaNode *arg, ...) {
-  va_list args;
-  va_start(args, arg);
-  KaNode *data = va_arg(args, KaNode *);
-  va_end(args);
+static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = args, *data = args->next;
+  symbol->next = NULL;
 
   free(data->key);
-  data->key = strdup(arg->key);
+  data->key = strdup(symbol->key);
   data->next = *ctx;
 
-  ka_free(arg);
+  ka_free(symbol);
   return *ctx = data;
 }
 
-static inline KaNode *ka_set(KaNode **ctx, KaNode *arg, ...) {
-  va_list args;
-  va_start(args, arg);
-  KaNode *data = va_arg(args, KaNode *);
-  va_end(args);
-
-  KaNode *node = ka_get(ctx, ka_symbol(arg->key));
-  if (!node) return ka_def(ctx, arg, data);
-  ka_free(arg);
+static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = args, *data = args->next;
+  KaNode *node = ka_get(ctx, ka_symbol(symbol->key));
+  if (!node) return ka_def(ctx, args);
+  symbol->next = NULL;
+  ka_free(symbol);
 
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
   node->type = data->type;
@@ -182,7 +177,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *arg, ...) {
   return node;
 }
 
-static inline void ka_del(KaNode **ctx, KaNode *arg, ...) {
+static inline void ka_del(KaNode **ctx, KaNode *arg) {
   KaNode *prev = *ctx;
   KaNode *node = *ctx;
 
