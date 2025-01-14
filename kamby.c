@@ -50,7 +50,7 @@ void print_chain(KaNode *chain) {
   }
 }
 
-KaNode *builtin_print(KaNode **ctx, KaNode *arg, ...) {
+KaNode *builtin_print(KaNode **ctx, KaNode *arg) {
   printf("printing: %s\n", arg->string);
   ka_free(arg);
   return NULL;
@@ -60,28 +60,28 @@ int main() {
   printf("Kamby v0.0.2\n");
 
   KaNode *ctx = ka_new(KA_NONE);
-  ka_def(&ctx, ka_symbol("name"), ka_string("Henrique"));
-  ka_def(&ctx, ka_symbol("age"), ka_number(40));
-  ka_def(&ctx, ka_symbol("newvar"), ka_string("This is not a value"));
+  ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Henrique"), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(40), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("newvar"), ka_string("This is not a value"), NULL));
 
-  ka_def(&ctx, ka_symbol("seeds"), ka_list(
+  ka_def(&ctx, ka_chain(ka_symbol("seeds"), ka_list(
     ka_string("Wheat"),
     ka_string("Rye"),
-    ka_string("Barley"), NULL));
+    ka_string("Barley"), NULL), NULL));
 
-  ka_def(&ctx, ka_symbol("fruits"), ka_list(
+  ka_def(&ctx, ka_chain(ka_symbol("fruits"), ka_list(
     ka_string("Apple"),
     ka_string("Banana"),
     ka_number(22),
     ka_get(&ctx, ka_symbol("seeds")),
     ka_get(&ctx, ka_symbol("name")),
-    ka_string("Grape"), NULL));
+    ka_string("Grape"), NULL), NULL));
 
-  ka_def(&ctx, ka_symbol("name"), ka_string("Mr Soarrs"));
+  ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Mr Soarrs"), NULL));
 
-  ka_def(&ctx, ka_symbol("sum"), ka_expr(
+  ka_def(&ctx, ka_chain(ka_symbol("sum"), ka_expr(
     ka_symbol("name"),
-    ka_symbol("age"), NULL));
+    ka_symbol("age"), NULL), NULL));
 
   print_chain(ctx);
   printf("\n");
