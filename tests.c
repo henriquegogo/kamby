@@ -146,21 +146,21 @@ void test_copy() {
 
 void test_get() {
   KaNode *ctx = ka_new(KA_NONE);
-  ka_def(ka_chain(ka_symbol("name"), ka_string("Hello"), NULL), &ctx);
-  ka_def(ka_chain(ka_symbol("age"), ka_number(42), NULL), &ctx);
+  ka_def(&ctx, ka_symbol("name"), ka_string("Hello"));
+  ka_def(&ctx, ka_symbol("age"), ka_number(42));
 
-  assert(*ka_get(ka_symbol("age"), &ctx)->number == 42);
-  assert(!strcmp(ka_get(ka_symbol("name"), &ctx)->string, "Hello"));
-  assert(ka_get(ka_symbol("inexistent"), &ctx) == NULL);
+  assert(*ka_get(&ctx, ka_symbol("age"))->number == 42);
+  assert(!strcmp(ka_get(&ctx, ka_symbol("name"))->string, "Hello"));
+  assert(ka_get(&ctx, ka_symbol("inexistent")) == NULL);
 
   ka_free(ctx);
 }
 
 void test_def() {
   KaNode *ctx = ka_new(KA_NONE);
-  ka_def(ka_chain(ka_symbol("name"), ka_string("Hello"), NULL), &ctx);
-  ka_def(ka_chain(ka_symbol("age"), ka_number(42), NULL), &ctx);
-  ka_def(ka_chain(ka_symbol("name"), ka_string("World"), NULL), &ctx);
+  ka_def(&ctx, ka_symbol("name"), ka_string("Hello"));
+  ka_def(&ctx, ka_symbol("age"), ka_number(42));
+  ka_def(&ctx, ka_symbol("name"), ka_string("World"));
 
   assert(!strcmp(ctx->key, "name"));
   assert(!strcmp(ctx->string, "World"));
@@ -174,10 +174,10 @@ void test_def() {
 
 void test_set() {
   KaNode *ctx = ka_new(KA_NONE);
-  ka_set(ka_chain(ka_symbol("name"),
-      ka_list(ka_string("Hello"), ka_string("World"), NULL), NULL), &ctx);
-  ka_set(ka_chain(ka_symbol("age"), ka_number(42), NULL), &ctx);
-  ka_set(ka_chain(ka_symbol("name"), ka_string("Foo"), NULL), &ctx);
+  ka_set(&ctx, ka_symbol("name"),
+      ka_list(ka_string("Hello"), ka_string("World"), NULL));
+  ka_set(&ctx, ka_symbol("age"), ka_number(42));
+  ka_set(&ctx, ka_symbol("name"), ka_string("Foo"));
 
   assert(!strcmp(ctx->key, "age"));
   assert(*ctx->number == 42);
@@ -190,15 +190,15 @@ void test_set() {
 
 void test_del() {
   KaNode *ctx = ka_new(KA_NONE);
-  ka_def(ka_chain(ka_symbol("name"), ka_string("Hello"), NULL), &ctx);
-  ka_def(ka_chain(ka_symbol("age"), ka_number(42), NULL), &ctx);
-  ka_def(ka_chain(ka_symbol("message"), ka_string("Foo"), NULL), &ctx);
+  ka_def(&ctx, ka_symbol("name"), ka_string("Hello"));
+  ka_def(&ctx, ka_symbol("age"), ka_number(42));
+  ka_def(&ctx, ka_symbol("message"), ka_string("Foo"));
 
-  ka_del(ka_symbol("message"), &ctx);
+  ka_del(&ctx, ka_symbol("message"));
   assert(!strcmp(ctx->key, "age"));
   assert(!strcmp(ctx->next->key, "name"));
 
-  ka_del(ka_symbol("name"), &ctx);
+  ka_del(&ctx, ka_symbol("name"));
   assert(ctx->next->type == KA_NONE);
 
   ka_free(ctx);
