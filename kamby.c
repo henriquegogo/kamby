@@ -17,6 +17,9 @@ void print_node(KaNode *node) {
     case KA_SYMBOL:
       printf("(ref %d) symbol %s\n", *node->refcount, node->key);
       break;
+    case KA_FUNC:
+      printf("(ref %d) func %s: %p\n", *node->refcount, node->key, node->func);
+      break;
     case KA_LIST:
       printf("(ref %d) list %s:\n", *node->refcount, node->key);
       print_level++;
@@ -83,17 +86,24 @@ int main() {
     ka_symbol("name"),
     ka_symbol("age"), NULL), NULL));
 
-  print_chain(ctx);
-  printf("\n");
-  
   KaNode *dupfruit = ka_copy(ka_get(&ctx, ka_symbol("fruits")));
   print_node(dupfruit);
   ka_free(dupfruit);
+
+  printf("\n");
+
+  ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("print"), ka_func(builtin_print), NULL));
+
+  print_chain(ctx);
+  printf("\n");
 
   KaNode *code_block = ka_expr(
       ka_symbol("name"),
       ka_number(42),
       ka_string("Hello"),
+      ka_expr(ka_symbol("def"), ka_symbol("text"), ka_string("My Text"), NULL),
+      ka_expr(ka_symbol("print"), ka_symbol("text"), NULL),
       ka_list(
         ka_symbol("name"),
         ka_string("endlist"),

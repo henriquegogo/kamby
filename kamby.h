@@ -88,7 +88,8 @@ static inline KaNode *ka_copy(KaNode *node) {
   KaNode *copy =
     node->type == KA_NUMBER ? ka_number(*node->number) :
     node->type == KA_STRING ? ka_string(node->string) :
-    node->type == KA_SYMBOL ? ka_symbol(node->key) : ka_new(node->type);
+    node->type == KA_SYMBOL ? ka_symbol(node->key) :
+    node->type == KA_FUNC ? ka_func(node->func) : ka_new(node->type);
 
   if (copy->type >= KA_LIST) {
     free(copy->refcount);
@@ -226,10 +227,13 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
   ka_free(first);
 
   // Take actions based on node type
-  for (KaNode *curr = head; curr; curr = curr->next) {
-  }
-
+  KaNode *result = head->type == KA_FUNC ? head->func(ctx, head->next) : head;
   return head;
+
+  //for (KaNode *curr = head; curr; curr = curr->next) {
+  //}
+
+  //return head;
 }
 
 #endif
