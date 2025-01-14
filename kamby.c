@@ -95,12 +95,14 @@ int main() {
   ka_free(dupfruit);
 
   KaNode *code_block = ka_expr(
+      ka_symbol("name"),
       ka_number(42),
       ka_string("Hello"),
       ka_list(
         ka_symbol("name"),
         ka_string("endlist"),
         NULL),
+      ka_symbol("var"),
       ka_symbol("name"),
       NULL);
 
@@ -113,11 +115,6 @@ int main() {
   print_chain(result);
   ka_free(result);
   
-  printf("\n");
-  result = ka_eval(code_block, &ctx);
-  print_chain(result);
-  ka_free(result);
-
   ka_free(code_block);
   
   ka_free(ctx);

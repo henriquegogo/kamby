@@ -83,7 +83,7 @@ static inline KaNode *ka_func(KaNode *(*func)(KaNode *args, KaNode **ctx)) {
 }
 
 static inline KaNode *ka_copy(KaNode *node) {
-  if (!node) return NULL;
+  if (!node) return ka_new(KA_NONE);
 
   KaNode *copy =
     node->type == KA_NUMBER ? ka_number(*node->number) :
@@ -151,9 +151,11 @@ static inline KaNode *ka_get(KaNode *arg, KaNode **ctx) {
 static inline KaNode *ka_def(KaNode *args, KaNode **ctx) {
   KaNode *symbol = args, *data = args->next;
   symbol->next = NULL;
+
   free(data->key);
   data->key = strdup(symbol->key);
   data->next = *ctx;
+
   ka_free(symbol);
   return *ctx = data;
 }
@@ -199,7 +201,12 @@ static inline KaNode *ka_eval(KaNode *node, KaNode **ctx) {
     KaNode *children;
     switch (curr->type) {
       case KA_SYMBOL:
-        last = last->next = ka_copy(ka_get(ka_symbol(curr->key), ctx));
+        last->next = ka_copy(ka_get(ka_symbol(curr->key), ctx));
+        if (last->next->type == KA_NONE) {
+          ka_free(last->next);
+          last->next = ka_symbol(curr->key);
+        }
+        last = last->next;
         break;
       case KA_EXPR:
         last = last->next = ka_eval(curr->children, ctx);
