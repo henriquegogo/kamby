@@ -50,13 +50,9 @@ void print_chain(KaNode *chain) {
   }
 }
 
-void setvar(char *key, KaNode *value, KaNode **ctx) {
-  ka_def(ka_chain(ka_symbol(key), value, NULL), ctx);
-}
-
-KaNode *builtin_print(KaNode *node, KaNode **ctx) {
-  printf("printing: %s\n", node->string);
-  ka_free(node);
+KaNode *builtin_print(KaNode **ctx, KaNode *arg, ...) {
+  printf("printing: %s\n", arg->string);
+  ka_free(arg);
   return NULL;
 }
 
@@ -64,33 +60,33 @@ int main() {
   printf("Kamby v0.0.2\n");
 
   KaNode *ctx = ka_new(KA_NONE);
-  setvar("name", ka_string("Henrique"), &ctx);
-  setvar("age", ka_number(40), &ctx);
-  setvar("newvar", ka_string("This is not a value"), &ctx);
+  ka_def(&ctx, ka_symbol("name"), ka_string("Henrique"));
+  ka_def(&ctx, ka_symbol("age"), ka_number(40));
+  ka_def(&ctx, ka_symbol("newvar"), ka_string("This is not a value"));
 
-  setvar("seeds", ka_list(
+  ka_def(&ctx, ka_symbol("seeds"), ka_list(
     ka_string("Wheat"),
     ka_string("Rye"),
-    ka_string("Barley"), NULL), &ctx);
+    ka_string("Barley"), NULL));
 
-  setvar("fruits", ka_list(
+  ka_def(&ctx, ka_symbol("fruits"), ka_list(
     ka_string("Apple"),
     ka_string("Banana"),
     ka_number(22),
-    ka_get(ka_symbol("seeds"), &ctx),
-    ka_get(ka_symbol("name"), &ctx),
-    ka_string("Grape"), NULL), &ctx);
+    ka_get(&ctx, ka_symbol("seeds")),
+    ka_get(&ctx, ka_symbol("name")),
+    ka_string("Grape"), NULL));
 
-  setvar("name", ka_string("Mr Soarrs"), &ctx);
+  ka_def(&ctx, ka_symbol("name"), ka_string("Mr Soarrs"));
 
-  setvar("sum", ka_expr(
+  ka_def(&ctx, ka_symbol("sum"), ka_expr(
     ka_symbol("name"),
-    ka_symbol("age"), NULL), &ctx);
+    ka_symbol("age"), NULL));
 
   print_chain(ctx);
   printf("\n");
   
-  KaNode *dupfruit = ka_copy(ka_get(ka_symbol("fruits"), &ctx));
+  KaNode *dupfruit = ka_copy(ka_get(&ctx, ka_symbol("fruits")));
   print_node(dupfruit);
   ka_free(dupfruit);
 
@@ -107,11 +103,11 @@ int main() {
       NULL);
 
   KaNode *print = ka_func(builtin_print);
-  print->func(ka_string("Hello, World!"), &ctx);
+  print->func(&ctx, ka_string("Hello, World!"));
   ka_free(print);
 
   printf("\n");
-  KaNode *result = ka_eval(code_block, &ctx);
+  KaNode *result = ka_eval(&ctx, code_block);
   print_chain(result);
   ka_free(result);
   
