@@ -41,6 +41,9 @@ void print_node(KaNode *node) {
       while (child) { print_node(child); child = child->next; }
       print_level--;
       break;
+    case KA_NONE:
+      printf("(ref %d) none %s\n", *node->refcount, node->key);
+      break;
     default:;
   }
 }
