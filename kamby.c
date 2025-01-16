@@ -112,6 +112,14 @@ int main() {
         ka_string("endlist"),
         NULL),
       ka_symbol("var"),
+      ka_expr(ka_symbol("def"), ka_symbol("say"),
+        ka_block(
+          ka_expr(ka_symbol("print"), ka_string("This is a block"), NULL),
+        NULL),
+      NULL),
+      ka_expr(ka_symbol("say"), NULL),
+      ka_symbol("name"),
+      ka_symbol("age"),
       ka_symbol("name"),
       NULL);
 

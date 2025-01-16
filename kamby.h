@@ -199,24 +199,20 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
 
   // Eval expressions and get variables
   for (KaNode *curr = node; curr; curr = curr->next) {
-    switch (curr->type) {
-      case KA_SYMBOL:
-        last->next = ka_copy(ka_get(ctx, ka_symbol(curr->key)));
-        if (last->next->type == KA_NONE) {
-          ka_free(last->next);
-          last->next = ka_symbol(curr->key);
-        }
-        last = last->next;
-        break;
-      case KA_EXPR:
-        if ((last->next = ka_eval(ctx, curr->children))) last = last->next;
-        break;
-      case KA_LIST:
-        last = last->next = ka_new(curr->type);
-        last->children = ka_eval(ctx, curr->children);
-        break;
-      default:
-        last = last->next = ka_copy(curr);
+    if (curr->type == KA_SYMBOL) {
+      last->next = ka_copy(ka_get(ctx, ka_symbol(curr->key)));
+      if (last->next->type == KA_NONE) {
+        ka_free(last->next);
+        last->next = ka_symbol(curr->key);
+      }
+      last = last->next;
+    } else if (curr->type == KA_LIST) {
+      last = last->next = ka_new(curr->type);
+      last->children = ka_eval(ctx, curr->children);
+    } else if (curr->type == KA_EXPR) {
+      last = last->next = ka_eval(ctx, curr->children);
+    } else {
+      last = last->next = ka_copy(curr);
     }
   }
 
@@ -230,12 +226,11 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
     KaNode *result = head->func(ctx, head->next);
     head->next = NULL;
     ka_free(head);
-    return result ? ka_copy(result) : NULL;
+    return result ? ka_copy(result) : ka_new(KA_NONE);
   } else if (head->type == KA_BLOCK) {
-    //KaNode *result = ka_eval(ctx, head->children);
-    //head->children = NULL;
-    //ka_free(head);
-    //return result;
+    KaNode *result = ka_eval(ctx, head->children); // TODO: block ctx
+    ka_free(head);
+    return result;
   }
 
   return head;
