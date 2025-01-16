@@ -227,13 +227,19 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
   ka_free(first);
 
   // Take actions based on node type
-  KaNode *result = head->type == KA_FUNC ? head->func(ctx, head->next) : head;
+  if (head->type == KA_FUNC) {
+    KaNode *result = head->func(ctx, head->next);
+    head->next = NULL;
+    ka_free(head);
+    return result ? ka_copy(result) : ka_new(KA_NONE);
+  } else if (head->type == KA_BLOCK) {
+    //KaNode *result = ka_eval(ctx, head->children);
+    //head->children = NULL;
+    //ka_free(head);
+    //return result;
+  }
+
   return head;
-
-  //for (KaNode *curr = head; curr; curr = curr->next) {
-  //}
-
-  //return head;
 }
 
 #endif
