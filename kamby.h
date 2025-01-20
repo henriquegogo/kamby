@@ -227,7 +227,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
     KaNode *result = head->func(ctx, head->next);
     head->next = NULL;
     ka_free(head);
-    return result ? ka_copy(result) : ka_new(KA_NONE);
+    return ka_copy(result);
   } else if (head->type == KA_BLOCK) {
     KaNode *result = ka_eval(ctx, head->children); // TODO: block ctx
     ka_free(head);
