@@ -7,7 +7,8 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC, KA_LIST, KA_EXPR, KA_BLOCK
+  KA_NONE, KA_CTX, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
+  KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -195,7 +196,7 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
 }
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
-  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+  KaNode *head = ka_new(KA_CTX), *first = head, *last = head;
 
   // Eval expressions and get variables
   for (KaNode *curr = node; curr; curr = curr->next) {

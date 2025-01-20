@@ -157,7 +157,7 @@ void test_block() {
 }
 
 void test_get() {
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
   ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Hello"), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL));
 
@@ -169,7 +169,7 @@ void test_get() {
 }
 
 void test_def() {
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
   ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Hello"), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("World"), NULL));
@@ -185,7 +185,7 @@ void test_def() {
 }
 
 void test_set() {
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
   ka_set(&ctx, ka_chain(ka_symbol("name"),
       ka_list(ka_string("Hello"), ka_string("World"), NULL), NULL));
   ka_set(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL));
@@ -201,7 +201,7 @@ void test_set() {
 }
 
 void test_del() {
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
   ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Hello"), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL));
@@ -211,7 +211,7 @@ void test_del() {
   assert(!strcmp(ctx->next->key, "name"));
 
   ka_del(&ctx, ka_symbol("name"));
-  assert(ctx->next->type == KA_NONE);
+  assert(ctx->next->type == KA_CTX);
 
   ka_free(ctx);
 }
