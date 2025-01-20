@@ -34,16 +34,18 @@ static inline KaNode *ka_new(KaType type) {
 
 static inline void ka_free(KaNode *node) {
   for (KaNode *curr; node; node = curr) {
+    KaType type = node->type;
     curr = node->next;
 
     if ((*node->refcount)-- <= 0) {
-      node->type >= KA_LIST ? ka_free((KaNode *)node->value) :
-      node->type == KA_FUNC ? (void)0 : free(node->value);
+      type >= KA_LIST ? ka_free((KaNode *)node->value) :
+      type == KA_FUNC ? (void)0 : free(node->value);
       free(node->refcount);
     }
 
     free(node->key);
     free(node);
+    if (type == KA_CTX) break;
   }
 }
 
@@ -229,7 +231,9 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
     ka_free(head);
     return ka_copy(result);
   } else if (head->type == KA_BLOCK) {
-    KaNode *result = ka_eval(ctx, head->children); // TODO: block ctx
+    KaNode *block_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
+    KaNode *result = ka_eval(&block_ctx, head->children);
+    ka_free(block_ctx);
     ka_free(head);
     return result;
   }
