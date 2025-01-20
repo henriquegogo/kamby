@@ -65,7 +65,7 @@ KaNode *builtin_print(KaNode **ctx, KaNode *arg) {
 int main() {
   printf("Kamby v0.0.2\n");
 
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
   ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Henrique"), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(40), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("newvar"), ka_string("This is not a value"), NULL));
