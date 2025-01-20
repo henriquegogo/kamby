@@ -196,7 +196,7 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
 }
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
-  KaNode *head = ka_new(KA_CTX), *first = head, *last = head;
+  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
   // Eval expressions and get variables
   for (KaNode *curr = node; curr; curr = curr->next) {
