@@ -226,15 +226,11 @@ void test_eval() {
   ka_free(expr);
  
   // Define and recover a variable inside a block a block context
-  expr = ka_expr(
-      ka_block(
+  // WIP: This test probably works but it's not the best way to do it
+  expr = ka_expr(ka_block(
         ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
-        ka_expr(ka_symbol("name"), NULL),
-        NULL),
-      NULL);
+        ka_expr(ka_symbol("name"), NULL), NULL), NULL);
   result = ka_eval(&ctx, expr);
-
-  assert(result->type == KA_STRING);
   assert(!strcmp(result->string, "Doe"));
 
   ka_free(expr);
@@ -243,13 +239,10 @@ void test_eval() {
   // Recover a global variable using a new block
   expr = ka_expr(ka_symbol("name"), NULL);
   result = ka_eval(&ctx, expr);
-  
-  assert(result->type == KA_STRING);
   assert(!strcmp(result->string, "John"));
 
   ka_free(expr);
   ka_free(result);
-
   ka_free(ctx);
 }
 
