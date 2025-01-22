@@ -246,6 +246,21 @@ void test_eval() {
   ka_free(ctx);
 }
 
+void test_logical() {
+}
+
+void test_comparison() {
+}
+
+void test_arithmetic() {
+}
+
+void test_conditional() {
+}
+
+void test_loop() {
+}
+
 int main() {
   printf("\nStarting tests...\n");
 
@@ -264,6 +279,11 @@ int main() {
   test_set();
   test_del();
   test_eval();
+  test_logical();
+  test_comparison();
+  test_arithmetic();
+  test_conditional();
+  test_loop();
 
   printf("Done!\n\n");
   return 0;
