@@ -2,7 +2,6 @@
 #define KAMBY_H
 
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +23,8 @@ typedef struct KaNode {
   int *refcount;
   struct KaNode *next;
 } KaNode;
+
+// Constructors
 
 static inline KaNode *ka_new(KaType type) {
   KaNode *node = (KaNode *)calloc(1, sizeof(KaNode));
@@ -142,6 +143,8 @@ static inline KaNode *ka_block(KaNode *arg, ...) {
   return node;
 }
 
+// Variables
+
 static inline KaNode *ka_get(KaNode **ctx, KaNode *arg) {
   KaNode *curr = *ctx;
 
@@ -196,6 +199,80 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
   ka_free(arg);
   ka_free(node);
 }
+
+// Logical operators
+
+static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_not(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+// Comparison operators
+
+static inline KaNode *ka_eq(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+// Arithmetic operators
+
+static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+// Conditional and loops
+
+static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
+  return NULL;
+}
+
+// Parser and Interpreter
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
