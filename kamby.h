@@ -33,6 +33,17 @@ static inline KaNode *ka_new(KaType type) {
   return node;
 }
 
+static inline KaNode *ka_first(KaNode *node) {
+  KaNode *first = node;
+  first->next = NULL;
+  return first;
+}
+
+static inline KaNode *ka_last(KaNode *node) {
+  while (node->next) node = node->next;
+  return node;
+}
+
 static inline void ka_free(KaNode *node) {
   for (KaNode *curr; node; node = curr) {
     KaType type = node->type;
@@ -55,7 +66,7 @@ static inline KaNode *ka_chain(KaNode *arg, ...) {
   va_start(args, arg);
 
   for (KaNode *curr = arg; curr; curr = curr->next = va_arg(args, KaNode *))
-    while (curr->next) curr = curr->next;
+    curr = ka_last(curr);
 
   va_end(args);
   return arg;
@@ -157,13 +168,12 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *arg) {
 
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   KaNode *symbol = args, *data = args->next;
-  symbol->next = NULL;
 
   free(data->key);
   data->key = strdup(symbol->key);
   data->next = *ctx;
 
-  ka_free(symbol);
+  ka_free(ka_first(symbol));
   return *ctx = data;
 }
 
@@ -171,8 +181,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   KaNode *symbol = args, *data = args->next;
   KaNode *node = ka_get(ctx, ka_symbol(symbol->key));
   if (!node) return ka_def(ctx, args);
-  symbol->next = NULL;
-  ka_free(symbol);
+  ka_free(ka_first(symbol));
 
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
   node->type = data->type;
@@ -195,9 +204,8 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
 
   if (!node) return;
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
-  node->next = NULL;
   ka_free(arg);
-  ka_free(node);
+  ka_free(ka_first(node));
 }
 
 // Logical operators
@@ -298,21 +306,21 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
 
   // Discard first head node
   head = head->next;
-  first->next = NULL;
-  ka_free(first);
+  ka_free(ka_first(first));
 
   // Take actions based on node type
   if (head->type == KA_FUNC) {
     KaNode *result = head->func(ctx, head->next);
-    head->next = NULL;
-    ka_free(head);
+    ka_free(ka_first(head));
     return ka_copy(result);
   } else if (head->type == KA_BLOCK) {
     KaNode *block_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
     KaNode *result = ka_eval(&block_ctx, head->children);
+    KaNode *last_result = ka_copy(ka_last(result));
+    ka_free(result);
     ka_free(block_ctx);
     ka_free(head);
-    return result;
+    return last_result;
   }
 
   return head;

@@ -16,6 +16,31 @@ void test_new() {
   ka_free(node);
 }
 
+void test_first() {
+  KaNode *node = ka_new(KA_NONE);
+  KaNode *next = node->next = ka_new(KA_NONE);
+
+  assert(node);
+  assert(node->next);
+  assert(!ka_first(node)->next);
+  assert(ka_first(node));
+
+  ka_free(next);
+  ka_free(node);
+}
+
+void test_last() {
+  KaNode *node = ka_new(KA_NONE);
+  node->next = ka_new(KA_NONE);
+  node->next->next = ka_new(KA_NONE);
+
+  assert(node);
+  assert(node->next);
+  assert(ka_last(node) == node->next->next);
+
+  ka_free(node);
+}
+
 void test_chain() {
   KaNode *node = ka_chain(
       ka_new(KA_NUMBER),
@@ -228,6 +253,7 @@ void test_eval() {
   // Define and recover a variable inside a block a block context
   // WIP: This test probably works but it's not the best way to do it
   expr = ka_expr(ka_block(
+        ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
         ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
         ka_expr(ka_symbol("name"), NULL), NULL), NULL);
   result = ka_eval(&ctx, expr);
@@ -265,6 +291,8 @@ int main() {
   printf("\nStarting tests...\n");
 
   test_new();
+  test_first();
+  test_last();
   test_chain();
   test_number();
   test_string();
