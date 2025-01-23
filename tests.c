@@ -273,9 +273,75 @@ void test_eval() {
 }
 
 void test_logical() {
+  KaNode *num1 = ka_number(1);
+  KaNode *num2 = ka_number(2);
+  KaNode *numeq1 = ka_number(1);
+  KaNode *none = ka_new(KA_NONE);
+  KaNode *none2 = ka_new(KA_NONE);
+
+  assert(ka_and(NULL, ka_chain(num1, num2, NULL)) == num2);
+  assert(ka_and(NULL, ka_chain(num1, none, NULL)) == NULL);
+  assert(ka_and(NULL, ka_chain(none, num2, NULL)) == NULL);
+  assert(ka_and(NULL, ka_chain(none, none2, NULL)) == NULL);
+
+  assert(ka_or(NULL, ka_chain(num1, num2, NULL)) == num1);
+  assert(ka_or(NULL, ka_chain(none, num2, NULL)) == num2);
+  assert(ka_or(NULL, ka_chain(none, none2, NULL)) == NULL);
+
+  assert(ka_not(NULL, num1) == NULL);
+  assert(ka_not(NULL, NULL) == &KA_TRUE);
+
+  ka_free(none2);
+  ka_free(none);
+  ka_free(numeq1);
+  ka_free(num2);
+  ka_free(num1);
 }
 
 void test_comparison() {
+  KaNode *num1 = ka_number(1);
+  KaNode *num2 = ka_number(2);
+  KaNode *numeq1 = ka_number(1);
+  KaNode *str1 = ka_string("Hello");
+  KaNode *str2 = ka_string("World");
+  KaNode *str3 = ka_string("Hello");
+  KaNode *none = ka_new(KA_NONE);
+
+  assert(ka_eq(NULL, ka_chain(num1, num2, NULL)) == NULL);
+  assert(ka_eq(NULL, ka_chain(none, num2, NULL)) == NULL);
+  assert(ka_eq(NULL, ka_chain(num1, numeq1, NULL)) == &KA_TRUE);
+  assert(ka_eq(NULL, ka_chain(str1, str2, NULL)) == NULL);
+  assert(ka_eq(NULL, ka_chain(str1, str3, NULL)) == &KA_TRUE);
+
+  assert(ka_neq(NULL, ka_chain(num1, num2, NULL)) == &KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(none, num2, NULL)) == &KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(num1, numeq1, NULL)) == NULL);
+  assert(ka_neq(NULL, ka_chain(str1, str2, NULL)) == &KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(str1, str3, NULL)) == NULL);
+
+  assert(ka_gt(NULL, ka_chain(num2, num1, NULL)) == &KA_TRUE);
+  assert(ka_gt(NULL, ka_chain(num1, num2, NULL)) == NULL);
+  assert(ka_gt(NULL, ka_chain(num1, numeq1, NULL)) == NULL);
+
+  assert(ka_lt(NULL, ka_chain(num2, num1, NULL)) == NULL);
+  assert(ka_lt(NULL, ka_chain(num1, num2, NULL)) == &KA_TRUE);
+  assert(ka_lt(NULL, ka_chain(num1, numeq1, NULL)) == NULL);
+
+  assert(ka_gte(NULL, ka_chain(num2, num1, NULL)) == &KA_TRUE);
+  assert(ka_gte(NULL, ka_chain(num1, num2, NULL)) == NULL);
+  assert(ka_gte(NULL, ka_chain(num1, numeq1, NULL)) == &KA_TRUE);
+
+  assert(ka_lte(NULL, ka_chain(num2, num1, NULL)) == NULL);
+  assert(ka_lte(NULL, ka_chain(num1, num2, NULL)) == &KA_TRUE);
+  assert(ka_lte(NULL, ka_chain(num1, numeq1, NULL)) == &KA_TRUE);
+
+  ka_free(none);
+  ka_free(str3);
+  ka_free(str2);
+  ka_free(str1);
+  ka_free(numeq1);
+  ka_free(num2);
+  ka_free(num1);
 }
 
 void test_arithmetic() {
