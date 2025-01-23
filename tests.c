@@ -345,6 +345,23 @@ void test_comparison() {
 }
 
 void test_arithmetic() {
+  KaNode *num2 = ka_number(2);
+  KaNode *num3 = ka_number(3);
+  KaNode *result;
+
+  assert(*(result = ka_add(NULL, ka_chain(num3, num2, NULL)))->number == 5);
+  ka_free(result);
+  assert(*(result = ka_sub(NULL, ka_chain(num3, num2, NULL)))->number == 1);
+  ka_free(result);
+  assert(*(result = ka_mul(NULL, ka_chain(num3, num2, NULL)))->number == 6);
+  ka_free(result);
+  assert(*(result = ka_div(NULL, ka_chain(num3, num2, NULL)))->number == 1.5);
+  ka_free(result);
+  assert(*(result = ka_mod(NULL, ka_chain(num3, num2, NULL)))->number == 1);
+  ka_free(result);
+
+  ka_free(num3);
+  ka_free(num2);
 }
 
 void test_conditional() {
