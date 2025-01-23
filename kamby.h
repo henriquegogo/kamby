@@ -266,23 +266,33 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 // Arithmetic operators
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
-  return NULL;
+  KaNode *right = args->next, *left = ka_first(args);
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
+  return ka_number(*left->number + *right->number);
 }
 
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
-  return NULL;
+  KaNode *right = args->next, *left = ka_first(args);
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
+  return ka_number(*left->number - *right->number);
 }
 
 static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
-  return NULL;
+  KaNode *right = args->next, *left = ka_first(args);
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
+  return ka_number(*left->number * *right->number);
 }
 
 static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
-  return NULL;
+  KaNode *right = args->next, *left = ka_first(args);
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
+  return ka_number(*left->number / *right->number);
 }
 
 static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
-  return NULL;
+  KaNode *right = args->next, *left = ka_first(args);
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
+  return ka_number((int)*left->number % (int)*right->number);
 }
 
 // Conditional and loops
