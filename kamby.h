@@ -33,15 +33,15 @@ static inline KaNode *ka_new(KaType type) {
   return node;
 }
 
-static inline KaNode *ka_first(KaNode *node) {
-  KaNode *first = node;
+static inline KaNode *ka_first(KaNode *nodes) {
+  KaNode *first = nodes;
   first->next = NULL;
   return first;
 }
 
-static inline KaNode *ka_last(KaNode *node) {
-  while (node->next) node = node->next;
-  return node;
+static inline KaNode *ka_last(KaNode *nodes) {
+  while (nodes->next) nodes = nodes->next;
+  return nodes;
 }
 
 static inline void ka_free(KaNode *node) {
@@ -282,11 +282,11 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
 
 // Parser and Interpreter
 
-static inline KaNode *ka_eval(KaNode **ctx, KaNode *node) {
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
   // Eval expressions and get variables
-  for (KaNode *curr = node; curr; curr = curr->next) {
+  for (KaNode *curr = nodes; curr; curr = curr->next) {
     if (curr->type == KA_SYMBOL) {
       last->next = ka_copy(ka_get(ctx, ka_symbol(curr->key)));
       if (last->next->type == KA_NONE) {
