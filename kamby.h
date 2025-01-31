@@ -303,19 +303,10 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
   return ka_number((int)*left->number % (int)*right->number);
 }
 
-// Conditional and loops
-
-static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
-  return NULL;
-}
-
-static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
-  return NULL;
-}
-
 // Parser and Interpreter
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
+  if (!nodes) return NULL;
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
   // Eval expressions and get variables
@@ -357,6 +348,20 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   }
 
   return head;
+}
+
+// Conditional and loops
+
+static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
+  KaNode *else_block = args->next->next,
+         *block = ka_first(args->next),
+         *condition = ka_first(args);
+  printf("condition: %d\n", condition);
+  return ka_eval(ctx, condition ? block : else_block);
+}
+
+static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
+  return NULL;
 }
 
 #endif
