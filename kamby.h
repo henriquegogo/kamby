@@ -25,6 +25,7 @@ typedef struct KaNode {
 } KaNode;
 
 static KaNode KA_TRUE = { };
+static KaNode KA_FALSE = { };
 
 // Constructors
 
@@ -67,6 +68,7 @@ static inline KaNode *ka_chain(KaNode *arg, ...) {
   va_list args;
   va_start(args, arg);
 
+  if (!arg) return NULL;
   for (KaNode *curr = arg; curr; curr = curr->next = va_arg(args, KaNode *))
     curr = ka_last(curr);
 
@@ -214,16 +216,16 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
 
 static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  return left->value && right->value ? right : NULL;
+  return left->value && right->value ? right : &KA_FALSE;
 }
 
 static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  return left->value ? left : right->value ? right : NULL;
+  return left->value ? left : right->value ? right : &KA_FALSE;
 }
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *arg) {
-  return arg ? NULL : &KA_TRUE;
+  return arg == NULL || arg == &KA_FALSE ? &KA_TRUE : &KA_FALSE;
 }
 
 // Comparison operators
@@ -232,7 +234,7 @@ static inline KaNode *ka_eq(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
   return left->type == KA_NUMBER && *left->number == *right->number ||
     left->type == KA_STRING && !strcmp(left->string, right->string) ||
-    left->value == right->value ? &KA_TRUE : NULL;
+    left->value == right->value ? &KA_TRUE : &KA_FALSE;
 }
 
 static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
@@ -241,26 +243,26 @@ static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return *left->number > *right->number ? &KA_TRUE : NULL;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
+  return *left->number > *right->number ? &KA_TRUE : &KA_FALSE;
 }
 
 static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return *left->number < *right->number ? &KA_TRUE : NULL;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
+  return *left->number < *right->number ? &KA_TRUE : &KA_FALSE;
 }
 
 static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return *left->number >= *right->number ? &KA_TRUE : NULL;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
+  return *left->number >= *right->number ? &KA_TRUE : &KA_FALSE;
 }
 
 static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return *left->number <= *right->number ? &KA_TRUE : NULL;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
+  return *left->number <= *right->number ? &KA_TRUE : &KA_FALSE;
 }
 
 // Arithmetic operators
@@ -353,11 +355,10 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
-  KaNode *else_block = args->next->next,
-         *block = ka_first(args->next),
+  KaNode *else_block = args && args->next ? args->next->next : NULL,
+         *block = args ? ka_first(args->next) : NULL,
          *condition = ka_first(args);
-  printf("condition: %d\n", condition);
-  return ka_eval(ctx, condition ? block : else_block);
+  return ka_eval(ctx, condition == &KA_TRUE ? block : else_block);
 }
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
