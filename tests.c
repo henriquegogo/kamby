@@ -47,13 +47,18 @@ void test_chain() {
       ka_chain(
         ka_new(KA_SYMBOL),
         ka_new(KA_SYMBOL), NULL),
-      ka_new(KA_STRING), NULL);
+      ka_chain(
+        ka_new(KA_NUMBER),
+        ka_new(KA_STRING), NULL),
+      ka_new(KA_SYMBOL), NULL);
 
   assert(node->type == KA_NUMBER);
   assert(node->next->type == KA_SYMBOL);
   assert(node->next->next->type == KA_SYMBOL);
-  assert(node->next->next->next->type == KA_STRING);
-  assert(node->next->next->next->next == NULL);
+  assert(node->next->next->next->type == KA_NUMBER);
+  assert(node->next->next->next->next->type == KA_STRING);
+  assert(node->next->next->next->next->next->type == KA_SYMBOL);
+  assert(node->next->next->next->next->next->next == NULL);
 
   ka_free(node);
 }
@@ -349,8 +354,6 @@ void test_arithmetic() {
   KaNode *num3 = ka_number(3);
   KaNode *str1 = ka_string("Hello");
   KaNode *str2 = ka_string("World");
-  KaNode *list1 = ka_list(ka_number(1), ka_number(2), NULL);
-  KaNode *list2 = ka_list(ka_string("a"), ka_string("b"), NULL);
   KaNode *result;
 
   assert(*(result = ka_add(NULL, ka_chain(num3, num2, NULL)))->number == 5);
@@ -371,11 +374,6 @@ void test_arithmetic() {
   assert(!strcmp(result->string, "HelloWorld"));
   ka_free(result);
 
-  //result = ka_add(NULL, ka_chain(list1, list2, NULL));
-  //ka_free(result);
-
-  ka_free(list2);
-  ka_free(list1);
   ka_free(str2);
   ka_free(str1);
   ka_free(num3);

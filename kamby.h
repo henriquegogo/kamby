@@ -268,16 +268,15 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
   if (left->type != right->type) return NULL;
-  else if (left->type == KA_STRING) {
+  if (left->type == KA_NUMBER) return ka_number(*left->number + *right->number);
+  if (left->type == KA_STRING) {
     int size = strlen(left->string) + strlen(right->string) + 1;
     char *str = (char *)calloc(1, size);
     KaNode *node = ka_string(strcat(strcpy(str, left->string), right->string));
     free(str);
     return node;
   }
-  return
-    left->type == KA_NUMBER ? ka_number(*left->number + *right->number) :
-    left->type == KA_LIST ? ka_list(ka_chain(left->children, right->children, NULL), NULL) : NULL;
+  return NULL;
 }
 
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
