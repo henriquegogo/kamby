@@ -381,6 +381,23 @@ void test_arithmetic() {
 }
 
 void test_conditional() {
+  KaNode *num1 = ka_number(1);
+  KaNode *num2 = ka_number(2);
+  KaNode *block = ka_block(ka_number(42), NULL);
+  KaNode *else_block = ka_block(ka_number(24), NULL);
+  KaNode *result;
+
+  //ka_eval(NULL, block);
+  //result = ka_if(NULL, ka_chain(
+  //      ka_lt(NULL, ka_chain(num1, num2, NULL)),
+  //      block, else_block, NULL));
+  ////assert(ka_eq(NULL, ka_chain(num1, num2, NULL)) == NULL);
+  //ka_free(result);
+
+  ka_free(else_block);
+  ka_free(block);
+  ka_free(num2);
+  ka_free(num1);
 }
 
 void test_loop() {
