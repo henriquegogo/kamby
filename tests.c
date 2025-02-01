@@ -442,6 +442,26 @@ void test_conditional() {
 }
 
 void test_loop() {
+  KaNode *ctx = ka_new(KA_CTX);
+  ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL));
+
+  KaNode *condition = ka_block(
+      ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
+
+  KaNode *block = ka_block(
+      ka_symbol("set"), ka_symbol("i"),
+      ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
+
+  //ka_free(ka_eval(&ctx, condition));
+  ka_loop(&ctx, ka_chain(condition, block, NULL));
+  assert(*ka_get(&ctx, ka_symbol("i"))->number == 10);
+
+  //ka_free(block);
+  ka_free(condition);
+  ka_free(ctx);
 }
 
 int main() {
