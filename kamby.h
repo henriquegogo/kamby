@@ -6,8 +6,8 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_CTX, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
-  KA_LIST, KA_EXPR, KA_BLOCK
+  KA_NONE, KA_FALSE, KA_TRUE, KA_CTX,
+  KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC, KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -24,9 +24,6 @@ typedef struct KaNode {
   struct KaNode *next;
 } KaNode;
 
-static KaNode KA_TRUE = { };
-static KaNode KA_FALSE = { };
-
 // Constructors
 
 static inline KaNode *ka_new(KaType type) {
@@ -35,6 +32,10 @@ static inline KaNode *ka_new(KaType type) {
   node->refcount = (int *)calloc(1, sizeof(int));
   return node;
 }
+
+static inline KaNode *ka_true() { return ka_new(KA_TRUE); }
+
+static inline KaNode *ka_false() { return ka_new(KA_FALSE); }
 
 static inline KaNode *ka_first(KaNode *nodes) {
   KaNode *first = nodes;
@@ -216,16 +217,18 @@ static inline void ka_del(KaNode **ctx, KaNode *arg) {
 
 static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  return left->value && right->value ? right : &KA_FALSE;
+  return left->value && right->value ? right : ka_false();
 }
 
 static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  return left->value ? left : right->value ? right : &KA_FALSE;
+  return left->value ? left : right->value ? right : ka_false();
 }
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *arg) {
-  return arg == NULL || arg == &KA_FALSE ? &KA_TRUE : &KA_FALSE;
+  KaNode *result = arg == NULL || arg->type == KA_FALSE ? ka_true() : ka_false();
+  if (arg && arg->type <= KA_TRUE) ka_free(arg);
+  return result;
 }
 
 // Comparison operators
@@ -234,7 +237,7 @@ static inline KaNode *ka_eq(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
   return left->type == KA_NUMBER && *left->number == *right->number ||
     left->type == KA_STRING && !strcmp(left->string, right->string) ||
-    left->value == right->value ? &KA_TRUE : &KA_FALSE;
+    left->value == right->value ? ka_true() : ka_false();
 }
 
 static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
@@ -243,26 +246,26 @@ static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
-  return *left->number > *right->number ? &KA_TRUE : &KA_FALSE;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
+  return *left->number > *right->number ? ka_true() : ka_false();
 }
 
 static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
-  return *left->number < *right->number ? &KA_TRUE : &KA_FALSE;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
+  return *left->number < *right->number ? ka_true() : ka_false();
 }
 
 static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
-  return *left->number >= *right->number ? &KA_TRUE : &KA_FALSE;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
+  return *left->number >= *right->number ? ka_true() : ka_false();
 }
 
 static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return &KA_FALSE;
-  return *left->number <= *right->number ? &KA_TRUE : &KA_FALSE;
+  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
+  return *left->number <= *right->number ? ka_true() : ka_false();
 }
 
 // Arithmetic operators
@@ -355,10 +358,10 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
-  KaNode *else_block = args && args->next ? args->next->next : NULL,
-         *block = args ? ka_first(args->next) : NULL,
-         *condition = ka_first(args);
-  return ka_eval(ctx, condition == &KA_TRUE ? block : else_block);
+  KaNode *else_block = args->next->next, *block = ka_first(args->next);
+  KaType condition = ka_first(args)->type;
+  ka_free(ka_first(args));
+  return ka_eval(ctx, condition == KA_TRUE ? block : else_block);
 }
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
