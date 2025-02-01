@@ -227,7 +227,7 @@ static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *arg) {
   KaNode *result = arg == NULL || arg->type == KA_FALSE ? ka_true() : ka_false();
-  if (arg && arg->type <= KA_TRUE) ka_free(arg);
+  if (arg && arg->type && arg->type <= KA_TRUE) ka_free(arg);
   return result;
 }
 
