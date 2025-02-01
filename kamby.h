@@ -375,6 +375,7 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
     ka_free(ka_eval(ctx, block));
   }
 
+  ka_free(condition);
   if (block && !block->key) ka_free(block);
   return NULL;
 }
