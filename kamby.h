@@ -360,11 +360,22 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   KaNode *else_block = args->next->next, *block = ka_first(args->next);
   KaType condition = ka_first(args)->type;
+  KaNode *result = ka_eval(ctx, condition == KA_TRUE ? block : else_block);
   ka_free(ka_first(args));
-  return ka_eval(ctx, condition == KA_TRUE ? block : else_block);
+  if (block && !block->key) ka_free(block);
+  if (else_block && !else_block->key) ka_free(else_block);
+  return result;
 }
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
+  KaNode *block = args->next, *condition = ka_first(args), *condition_result;
+
+  while ((condition_result = ka_eval(ctx, condition))->type == KA_TRUE) {
+    ka_free(condition_result);
+    ka_free(ka_eval(ctx, block));
+  }
+
+  if (block && !block->key) ka_free(block);
   return NULL;
 }
 

@@ -418,17 +418,19 @@ void test_conditional() {
   KaNode *result;
 
   result = ka_if(&ctx, ka_chain(
-        ka_lt(NULL, ka_chain(num1, num2, NULL)), block, else_block, NULL));
+        ka_lt(NULL, ka_chain(num1, num2, NULL)),
+        ka_copy(block), ka_copy(else_block), NULL));
   assert(*result->number == 42);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(num1, num2, NULL)), block, else_block, NULL));
+        ka_gt(NULL, ka_chain(num1, num2, NULL)),
+        ka_copy(block), ka_copy(else_block), NULL));
   assert(*result->number == 27);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(num1, num2, NULL)), block, NULL));
+        ka_gt(NULL, ka_chain(num1, num2, NULL)), ka_copy(block), NULL));
   assert(result == NULL);
   ka_free(result);
 
