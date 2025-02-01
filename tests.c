@@ -460,7 +460,7 @@ void test_loop() {
   assert(*ka_get(&ctx, ka_symbol("i"))->number == 10);
 
   //ka_free(block);
-  ka_free(condition);
+  //ka_free(condition);
   ka_free(ctx);
 }
 
