@@ -235,9 +235,12 @@ static inline KaNode *ka_not(KaNode **ctx, KaNode *arg) {
 
 static inline KaNode *ka_eq(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  return left->type == KA_NUMBER && *left->number == *right->number ||
+  KaNode *result = left->type == KA_NUMBER && *left->number == *right->number ||
     left->type == KA_STRING && !strcmp(left->string, right->string) ||
     left->value == right->value ? ka_true() : ka_false();
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
@@ -246,26 +249,30 @@ static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
-  return *left->number > *right->number ? ka_true() : ka_false();
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
+    ka_false() : *left->number > *right->number ? ka_true() : ka_false();
+  return result;
 }
 
 static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
-  return *left->number < *right->number ? ka_true() : ka_false();
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
+    ka_false() : *left->number < *right->number ? ka_true() : ka_false();
+  return result;
 }
 
 static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
-  return *left->number >= *right->number ? ka_true() : ka_false();
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
+    ka_false() : *left->number >= *right->number ? ka_true() : ka_false();
+  return result;
 }
 
 static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return ka_false();
-  return *left->number <= *right->number ? ka_true() : ka_false();
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
+    ka_false() : *left->number <= *right->number ? ka_true() : ka_false();
+  return result;
 }
 
 // Arithmetic operators
