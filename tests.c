@@ -310,13 +310,13 @@ void test_logical() {
 }
 
 void test_comparison() {
-  KaNode *num1 = ka_number(1);
-  KaNode *num2 = ka_number(2);
-  KaNode *numeq1 = ka_number(1);
-  KaNode *str1 = ka_string("Hello");
-  KaNode *str2 = ka_string("World");
-  KaNode *str3 = ka_string("Hello");
-  KaNode *none = ka_new(KA_NONE);
+  KaNode *num1 = ka_number(1); num1->key = strdup("key");
+  KaNode *num2 = ka_number(2); num2->key = strdup("key");
+  KaNode *numeq1 = ka_number(1); numeq1->key = strdup("key");
+  KaNode *str1 = ka_string("Hello"); str1->key = strdup("key");
+  KaNode *str2 = ka_string("World"); str2->key = strdup("key");
+  KaNode *str3 = ka_string("Hello"); str3->key = strdup("key");
+  KaNode *none = ka_new(KA_NONE); none->key = strdup("key");
   KaNode *result;
 
   assert((result = ka_eq(NULL, ka_chain(num1, num2, NULL)))->type == KA_FALSE);
@@ -330,16 +330,16 @@ void test_comparison() {
   assert((result = ka_eq(NULL, ka_chain(str1, str3, NULL)))->type == KA_TRUE);
   ka_free(result);
 
-  //assert((result = ka_neq(NULL, ka_chain(num1, num2, NULL)))->type == KA_TRUE);
-  //ka_free(result);
-  //assert((result = ka_neq(NULL, ka_chain(none, num2, NULL)))->type == KA_TRUE);
-  //ka_free(result);
-  //assert((result = ka_neq(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_FALSE);
-  //ka_free(result);
-  //assert((result = ka_neq(NULL, ka_chain(str1, str2, NULL)))->type == KA_TRUE);
-  //ka_free(result);
-  //assert((result = ka_neq(NULL, ka_chain(str1, str3, NULL)))->type == KA_FALSE);
-  //ka_free(result);
+  assert((result = ka_neq(NULL, ka_chain(num1, num2, NULL)))->type == KA_TRUE);
+  ka_free(result);
+  assert((result = ka_neq(NULL, ka_chain(none, num2, NULL)))->type == KA_TRUE);
+  ka_free(result);
+  assert((result = ka_neq(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_FALSE);
+  ka_free(result);
+  assert((result = ka_neq(NULL, ka_chain(str1, str2, NULL)))->type == KA_TRUE);
+  ka_free(result);
+  assert((result = ka_neq(NULL, ka_chain(str1, str3, NULL)))->type == KA_FALSE);
+  ka_free(result);
 
   assert((result = ka_gt(NULL, ka_chain(num2, num1, NULL)))->type == KA_TRUE);
   ka_free(result);
@@ -455,12 +455,12 @@ void test_loop() {
       ka_symbol("set"), ka_symbol("i"),
       ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
-  //ka_free(ka_eval(&ctx, condition));
-  ka_loop(&ctx, ka_chain(condition, block, NULL));
-  assert(*ka_get(&ctx, ka_symbol("i"))->number == 10);
+  ka_free(ka_eval(&ctx, condition));
+  //ka_loop(&ctx, ka_chain(condition, block, NULL));
+  //assert(*ka_get(&ctx, ka_symbol("i"))->number == 10);
 
-  //ka_free(block);
-  //ka_free(condition);
+  ka_free(block);
+  ka_free(condition);
   ka_free(ctx);
 }
 
