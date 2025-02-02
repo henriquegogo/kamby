@@ -129,7 +129,7 @@ static inline KaNode *ka_list(KaNode *arg, ...) {
 
   for (KaNode *curr = node->children = arg;
       (curr->next = va_arg(args, KaNode *)); 
-      curr = curr->next->next ? curr->next = ka_copy(curr->next) : curr->next);
+      curr = curr->next->key ? curr->next = ka_copy(curr->next) : curr->next);
 
   va_end(args);
   return node;
