@@ -9,40 +9,40 @@ void print_node(KaNode *node) {
   for (int i = 0; i < print_level; i++) printf("  ");
   switch (node->type) {
     case KA_NUMBER:
-      printf("(ref %d) number %s: %.Lf\n", *node->refcount, node->key ? node->key : "", *node->number);
+      printf("number %s: %.Lf\n", node->key ? node->key : "", *node->number);
       break;
     case KA_STRING:
-      printf("(ref %d) string %s: %s\n", *node->refcount, node->key ? node->key : "", node->string);
+      printf("string %s: %s\n", node->key ? node->key : "", node->string);
       break;
     case KA_SYMBOL:
-      printf("(ref %d) symbol %s\n", *node->refcount, node->key);
+      printf("symbol %s\n", node->key);
       break;
     case KA_FUNC:
-      printf("(ref %d) func %s: %p\n", *node->refcount, node->key, node->func);
+      printf("func %s: %p\n", node->key, node->func);
       break;
     case KA_LIST:
-      printf("(ref %d) list %s:\n", *node->refcount, node->key);
+      printf("list %s:\n", node->key);
       print_level++;
       child = node->children;
       while (child) { print_node(child); child = child->next; }
       print_level--;
       break;
     case KA_EXPR:
-      printf("(ref %d) expr %s:\n", *node->refcount, node->key);
+      printf("expr %s:\n", node->key);
       print_level++;
       child = node->children;
       while (child) { print_node(child); child = child->next; }
       print_level--;
       break;
     case KA_BLOCK:
-      printf("(ref %d) block %s:\n", *node->refcount, node->key);
+      printf("block %s:\n", node->key);
       print_level++;
       child = node->children;
       while (child) { print_node(child); child = child->next; }
       print_level--;
       break;
     case KA_NONE:
-      printf("(ref %d) none %s\n", *node->refcount, node->key);
+      printf("none %s\n", node->key);
       break;
     default:;
   }
