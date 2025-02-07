@@ -327,14 +327,11 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   // Eval expressions and get variables
   for (KaNode *curr = nodes; curr; curr = curr->next) {
     if (curr->type == KA_SYMBOL) {
-      last->next = ka_copy(ka_get(ctx, ka_symbol(curr->key)));
-      if (last->next->type == KA_NONE) {
-        ka_free(last->next);
-        last->next = ka_symbol(curr->key);
-      }
-      last = last->next;
+      KaNode *variable = ka_get(ctx, ka_symbol(curr->key));
+      last = last->next = variable ? ka_copy(variable) : ka_symbol(curr->key);
     } else if (curr->type == KA_LIST) {
       last = last->next = ka_new(curr->type);
+      last->key = curr->key ? strdup(curr->key) : NULL;
       last->children = ka_eval(ctx, curr->children);
     } else if (curr->type == KA_EXPR) {
       last = last->next = ka_eval(ctx, curr->children);
