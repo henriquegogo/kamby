@@ -20,7 +20,6 @@ typedef struct KaNode {
     struct KaNode *children;
     void *value;
   };
-  int *refcount;
   struct KaNode *next;
 } KaNode;
 
@@ -29,7 +28,6 @@ typedef struct KaNode {
 static inline KaNode *ka_new(KaType type) {
   KaNode *node = (KaNode *)calloc(1, sizeof(KaNode));
   node->type = type;
-  node->refcount = (int *)calloc(1, sizeof(int));
   return node;
 }
 
@@ -53,11 +51,8 @@ static inline void ka_free(KaNode *node) {
     KaType type = node->type;
     curr = node->next;
 
-    if ((*node->refcount)-- <= 0) {
-      type >= KA_LIST ? ka_free((KaNode *)node->value) :
-      type == KA_FUNC ? (void)0 : free(node->value);
-      free(node->refcount);
-    }
+    type >= KA_LIST ? ka_free((KaNode *)node->value) :
+    type == KA_FUNC ? (void)0 : free(node->value);
 
     free(node->key);
     free(node);
@@ -112,10 +107,11 @@ static inline KaNode *ka_copy(KaNode *node) {
     node->type == KA_FUNC ? ka_func(node->func) : ka_new(node->type);
 
   if (copy->type >= KA_LIST) {
-    free(copy->refcount);
-    copy->value = node->value;
-    copy->refcount = node->refcount;
-    (*node->refcount)++;
+    KaNode **last = &copy->children;
+    for (KaNode *curr = node->children; curr; curr = curr->next) {
+      *last = ka_copy(curr);
+      last = &(*last)->next;
+    }
   }
 
   copy->key = node->key ? strdup(node->key) : NULL;
@@ -193,7 +189,6 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   node->value = data->value;
 
   free(data->key);
-  free(data->refcount);
   free(data);
   return node;
 }

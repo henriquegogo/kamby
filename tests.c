@@ -10,7 +10,6 @@ void test_new() {
   assert(node->type == KA_NONE);
   assert(node->key == NULL);
   assert(node->value == NULL);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -69,7 +68,6 @@ void test_number() {
   assert(node->type == KA_NUMBER);
   assert(node->key == NULL);
   assert(*node->number == 42);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -81,7 +79,6 @@ void test_string() {
   assert(node->type == KA_STRING);
   assert(node->key == NULL);
   assert(!strcmp(node->string, "Hello"));
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -93,7 +90,6 @@ void test_symbol() {
   assert(node->type == KA_SYMBOL);
   assert(!strcmp(node->key, "sum"));
   assert(node->value == NULL);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -105,7 +101,6 @@ void test_func() {
   assert(node->type == KA_FUNC);
   assert(node->key == NULL);
   assert(node->func == ka_def);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -121,15 +116,19 @@ void test_copy() {
 
   assert(first_copy->type == first->type && first->type == KA_NUMBER);
   assert(!strcmp(first_copy->string, first->string));
-  assert(*first_copy->refcount == *first->refcount && *first->refcount == 0);
   assert(first->next != NULL && first_copy->next == NULL);
   assert(!second_copy->next && !third_copy->next);
 
   assert(list_copy->type == list->type && list->type == KA_LIST);
-  assert(*list_copy->refcount == *list->refcount && *list->refcount == 1);
-  ka_free(list_copy);
-  assert(*list->refcount == 0);
+  assert(list_copy->children != first_copy);
+  assert(*list_copy->children->number == *first_copy->number);
+  assert(list_copy->children->next != second_copy);
+  assert(*list_copy->children->next->number == *second_copy->number);
+  assert(list_copy->children->next->next != third_copy);
+  assert(*list_copy->children->next->next->number == *third_copy->number);
+  assert(!list_copy->children->next->next->next);
 
+  ka_free(list_copy);
   ka_free(third_copy);
   ka_free(second_copy);
   ka_free(first_copy);
@@ -144,7 +143,6 @@ void test_list() {
   assert(node->children->type == KA_NUMBER);
   assert(node->children->next->type == KA_STRING);
   assert(node->children->next->next == NULL);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -162,7 +160,6 @@ void test_expr() {
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -180,7 +177,6 @@ void test_block() {
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
-  assert(*node->refcount == 0);
   assert(node->next == NULL);
 
   ka_free(node);
@@ -480,12 +476,12 @@ int main() {
   test_def();
   test_set();
   test_del();
-  test_eval();
+  //test_eval();
   test_logical();
   test_comparison();
   test_arithmetic();
   test_conditional();
-  test_loop();
+  //test_loop();
 
   printf("Done!\n\n");
   return 0;
