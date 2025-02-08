@@ -6,7 +6,9 @@ musl:
 	@strip kamby
 
 memcheck: all
-	@valgrind --leak-check=full -s ./kamby
+	@gcc -o tests tests.c
+	@valgrind --leak-check=full -s ./tests
+	@rm -f tests
 
 test:
 	@gcc -o tests tests.c

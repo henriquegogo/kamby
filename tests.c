@@ -88,8 +88,8 @@ void test_symbol() {
   KaNode *node = ka_symbol("sum");
 
   assert(node->type == KA_SYMBOL);
-  assert(!strcmp(node->key, "sum"));
-  assert(node->value == NULL);
+  assert(node->key == NULL);
+  assert(!strcmp(node->symbol, "sum"));
   assert(node->next == NULL);
 
   ka_free(node);
@@ -107,7 +107,7 @@ void test_func() {
 }
 
 void test_copy() {
-  KaNode *list = ka_list(ka_number(1), ka_number(2), ka_number(3), NULL);
+  KaNode *list = ka_list(ka_number(1), ka_string("a"), ka_symbol("b"), NULL);
   KaNode *first = list->children;
   KaNode *list_copy = ka_copy(list);
   KaNode *first_copy = ka_copy(first);
@@ -115,7 +115,7 @@ void test_copy() {
   KaNode *third_copy = ka_copy(list->children->next->next);
 
   assert(first_copy->type == first->type && first->type == KA_NUMBER);
-  assert(!strcmp(first_copy->string, first->string));
+  assert(*first_copy->number == *first->number);
   assert(first->next != NULL && first_copy->next == NULL);
   assert(!second_copy->next && !third_copy->next);
 
@@ -123,9 +123,11 @@ void test_copy() {
   assert(list_copy->children != first_copy);
   assert(*list_copy->children->number == *first_copy->number);
   assert(list_copy->children->next != second_copy);
-  assert(*list_copy->children->next->number == *second_copy->number);
+  assert(!strcmp(list_copy->children->next->string, second_copy->string));
   assert(list_copy->children->next->next != third_copy);
-  assert(*list_copy->children->next->next->number == *third_copy->number);
+  assert(list_copy->children->next->next->type == third_copy->type);
+  assert(third_copy->type == KA_SYMBOL);
+  assert(!strcmp(list_copy->children->next->next->string, third_copy->string));
   assert(!list_copy->children->next->next->next);
 
   ka_free(list_copy);
@@ -154,9 +156,9 @@ void test_expr() {
   assert(node->type == KA_EXPR);
   assert(node->key == NULL);
   assert(node->children->type == KA_SYMBOL);
-  assert(!strcmp(node->children->key, "num"));
+  assert(!strcmp(node->children->symbol, "num"));
   assert(node->children->next->type == KA_SYMBOL);
-  assert(!strcmp(node->children->next->key, "="));
+  assert(!strcmp(node->children->next->symbol, "="));
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
@@ -171,9 +173,9 @@ void test_block() {
   assert(node->type == KA_BLOCK);
   assert(node->key == NULL);
   assert(node->children->type == KA_SYMBOL);
-  assert(!strcmp(node->children->key, "num"));
+  assert(!strcmp(node->children->symbol, "num"));
   assert(node->children->next->type == KA_SYMBOL);
-  assert(!strcmp(node->children->next->key, "="));
+  assert(!strcmp(node->children->next->symbol, "="));
   assert(node->children->next->next->type == KA_NUMBER);
   assert(*node->children->next->next->number == 7);
   assert(node->children->next->next->next == NULL);
@@ -248,29 +250,32 @@ void test_eval() {
 
   // Define a variable into the context
   expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
-  ka_free(ka_eval(&ctx, expr));
+  result = ka_eval(&ctx, expr);
+  
+  assert(!strcmp(ka_get(&ctx, ka_symbol("name"))->string, result->string));
+  assert(!strcmp(result->string, "John"));
+
+  ka_free(result);
   ka_free(expr);
 
-  // WIP: Some problem with eval ka_blocks
- 
   // Define and recover a variable inside a block context
-//  expr = ka_expr(ka_block(
-//        ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
-//        ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
-//        ka_expr(ka_symbol("name"), NULL), NULL), NULL);
-//  result = ka_eval(&ctx, expr);
-//  assert(!strcmp(result->string, "Doe"));
-//
-//  ka_free(expr);
-//  ka_free(result);
-//
-//  // Recover a global variable using a new block
-//  expr = ka_expr(ka_symbol("name"), NULL);
-//  result = ka_eval(&ctx, expr);
-//  assert(!strcmp(result->string, "John"));
-//
-//  ka_free(expr);
-//  ka_free(result);
+  expr = ka_expr(ka_block(
+        ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
+        ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
+        ka_expr(ka_symbol("name"), NULL), NULL), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(!strcmp(result->string, "Doe"));
+
+  ka_free(expr);
+  ka_free(result);
+
+  // Recover a global variable using a new block
+  expr = ka_expr(ka_symbol("name"), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(!strcmp(result->string, "John"));
+
+  ka_free(expr);
+  ka_free(result);
   ka_free(ctx);
 }
 
@@ -478,7 +483,7 @@ int main() {
   test_def();
   test_set();
   test_del();
-  //test_eval();
+  test_eval();
   test_logical();
   test_comparison();
   test_arithmetic();
