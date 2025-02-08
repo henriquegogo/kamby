@@ -248,6 +248,7 @@ void test_eval() {
   KaNode *ctx = ka_new(KA_CTX), *expr, *result;
   ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(5), NULL));
 
   // Define a variable into the context
   expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
@@ -267,24 +268,31 @@ void test_eval() {
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "Doe"));
 
-  ka_free(expr);
   ka_free(result);
+  ka_free(expr);
 
   // Recover a global variable using a new block
   expr = ka_expr(ka_symbol("name"), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "John"));
 
-  ka_free(expr);
   ka_free(result);
+  ka_free(expr);
 
   // Use other kind of functions
-  expr = ka_expr(ka_symbol("lt"), ka_number(1), ka_number(2), NULL);
-  result = ka_eval(&ctx, expr); // WIP: Check why this cause 1 no deallocation
+  expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
 
-  ka_free(expr);
   ka_free(result);
+  ka_free(expr);
+
+  expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr); // This is leaking some memory
+  assert(result->type == KA_TRUE);
+
+  ka_free(result);
+  ka_free(expr);
 
   ka_free(ctx);
 }
@@ -295,25 +303,18 @@ void test_logical() {
   KaNode *numeq1 = ka_number(1);
   KaNode *none = ka_new(KA_NONE);
   KaNode *none2 = ka_new(KA_NONE);
-  KaNode *result;
 
   assert(ka_and(NULL, ka_chain(num1, num2, NULL)) == num2);
-  assert((result = ka_and(NULL, ka_chain(num1, none, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_and(NULL, ka_chain(none, num2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_and(NULL, ka_chain(none, none2, NULL)))->type == KA_FALSE);
-  ka_free(result);
+  assert(ka_and(NULL, ka_chain(num1, none, NULL))->type == KA_FALSE);
+  assert(ka_and(NULL, ka_chain(none, num2, NULL))->type == KA_FALSE);
+  assert(ka_and(NULL, ka_chain(none, none2, NULL))->type == KA_FALSE);
 
   assert(ka_or(NULL, ka_chain(num1, num2, NULL)) == num1);
   assert(ka_or(NULL, ka_chain(none, num2, NULL)) == num2);
-  assert((result = ka_or(NULL, ka_chain(none, none2, NULL)))->type == KA_FALSE);
-  ka_free(result);
+  assert(ka_or(NULL, ka_chain(none, none2, NULL))->type == KA_FALSE);
 
-  assert((result = ka_not(NULL, num1))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_not(NULL, NULL))->type == KA_TRUE);
-  ka_free(result);
+  assert(ka_not(NULL, num1)->type == KA_FALSE);
+  assert(ka_not(NULL, NULL)->type == KA_TRUE);
 
   ka_free(none2);
   ka_free(none);
@@ -330,57 +331,34 @@ void test_comparison() {
   KaNode *str2 = ka_string("World"); str2->key = strdup("key");
   KaNode *str3 = ka_string("Hello"); str3->key = strdup("key");
   KaNode *none = ka_new(KA_NONE); none->key = strdup("key");
-  KaNode *result;
 
-  assert((result = ka_eq(NULL, ka_chain(num1, num2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_eq(NULL, ka_chain(none, num2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_eq(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_eq(NULL, ka_chain(str1, str2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_eq(NULL, ka_chain(str1, str3, NULL)))->type == KA_TRUE);
-  ka_free(result);
+  assert(ka_eq(NULL, ka_chain(num1, num2, NULL))->type == KA_FALSE);
+  assert(ka_eq(NULL, ka_chain(none, num2, NULL))->type == KA_FALSE);
+  assert(ka_eq(NULL, ka_chain(num1, numeq1, NULL))->type == KA_TRUE);
+  assert(ka_eq(NULL, ka_chain(str1, str2, NULL))->type == KA_FALSE);
+  assert(ka_eq(NULL, ka_chain(str1, str3, NULL))->type == KA_TRUE);
 
-  assert((result = ka_neq(NULL, ka_chain(num1, num2, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_neq(NULL, ka_chain(none, num2, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_neq(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_neq(NULL, ka_chain(str1, str2, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_neq(NULL, ka_chain(str1, str3, NULL)))->type == KA_FALSE);
-  ka_free(result);
+  assert(ka_neq(NULL, ka_chain(num1, num2, NULL))->type == KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(none, num2, NULL))->type == KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(num1, numeq1, NULL))->type == KA_FALSE);
+  assert(ka_neq(NULL, ka_chain(str1, str2, NULL))->type == KA_TRUE);
+  assert(ka_neq(NULL, ka_chain(str1, str3, NULL))->type == KA_FALSE);
 
-  assert((result = ka_gt(NULL, ka_chain(num2, num1, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_gt(NULL, ka_chain(num1, num2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_gt(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_FALSE);
-  ka_free(result);
+  assert(ka_gt(NULL, ka_chain(num2, num1, NULL))->type == KA_TRUE);
+  assert(ka_gt(NULL, ka_chain(num1, num2, NULL))->type == KA_FALSE);
+  assert(ka_gt(NULL, ka_chain(num1, numeq1, NULL))->type == KA_FALSE);
 
-  assert((result = ka_lt(NULL, ka_chain(num2, num1, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_lt(NULL, ka_chain(num1, num2, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_lt(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_FALSE);
-  ka_free(result);
+  assert(ka_lt(NULL, ka_chain(num2, num1, NULL))->type == KA_FALSE);
+  assert(ka_lt(NULL, ka_chain(num1, num2, NULL))->type == KA_TRUE);
+  assert(ka_lt(NULL, ka_chain(num1, numeq1, NULL))->type == KA_FALSE);
 
-  assert((result = ka_gte(NULL, ka_chain(num2, num1, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_gte(NULL, ka_chain(num1, num2, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_gte(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_TRUE);
-  ka_free(result);
+  assert(ka_gte(NULL, ka_chain(num2, num1, NULL))->type == KA_TRUE);
+  assert(ka_gte(NULL, ka_chain(num1, num2, NULL))->type == KA_FALSE);
+  assert(ka_gte(NULL, ka_chain(num1, numeq1, NULL))->type == KA_TRUE);
 
-  assert((result = ka_lte(NULL, ka_chain(num2, num1, NULL)))->type == KA_FALSE);
-  ka_free(result);
-  assert((result = ka_lte(NULL, ka_chain(num1, num2, NULL)))->type == KA_TRUE);
-  ka_free(result);
-  assert((result = ka_lte(NULL, ka_chain(num1, numeq1, NULL)))->type == KA_TRUE);
-  ka_free(result);
+  assert(ka_lte(NULL, ka_chain(num2, num1, NULL))->type == KA_FALSE);
+  assert(ka_lte(NULL, ka_chain(num1, num2, NULL))->type == KA_TRUE);
+  assert(ka_lte(NULL, ka_chain(num1, numeq1, NULL))->type == KA_TRUE);
 
   ka_free(none);
   ka_free(str3);
@@ -461,15 +439,15 @@ void test_loop() {
   KaNode *condition = ka_block(
       ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
   
-  KaNode *block = ka_block(
-      ka_symbol("set"), ka_symbol("i"),
-      ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
+  //KaNode *block = ka_block(
+  //    ka_symbol("set"), ka_symbol("i"),
+  //    ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
   ka_free(ka_eval(&ctx, condition));
   //ka_loop(&ctx, ka_chain(condition, block, NULL));
   //assert(*ka_get(&ctx, ka_symbol("i"))->number == 10);
 
-  ka_free(block);
+  //ka_free(block);
   ka_free(condition);
   ka_free(ctx);
 }
