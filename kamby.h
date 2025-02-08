@@ -119,7 +119,6 @@ static inline KaNode *ka_copy(KaNode *node) {
     }
   }
 
-  if (node->key) copy->key = strdup(node->key);
   return copy;
 }
 
@@ -175,7 +174,6 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *arg) {
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   KaNode *data = args->next;
 
-  free(data->key);
   data->key = strdup(args->symbol);
   data->next = *ctx;
 
@@ -193,7 +191,6 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   node->type = data->type;
   node->value = data->value;
 
-  free(data->key);
   free(data);
   return node;
 }
