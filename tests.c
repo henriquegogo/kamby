@@ -247,6 +247,7 @@ void test_del() {
 void test_eval() {
   KaNode *ctx = ka_new(KA_CTX), *expr, *result;
   ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL));
 
   // Define a variable into the context
   expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
@@ -276,6 +277,15 @@ void test_eval() {
 
   ka_free(expr);
   ka_free(result);
+
+  // Use other kind of functions
+  expr = ka_expr(ka_symbol("lt"), ka_number(1), ka_number(2), NULL);
+  result = ka_eval(&ctx, expr); // WIP: Check why this cause 1 no deallocation
+  assert(result->type == KA_TRUE);
+
+  ka_free(expr);
+  ka_free(result);
+
   ka_free(ctx);
 }
 
@@ -450,7 +460,7 @@ void test_loop() {
 
   KaNode *condition = ka_block(
       ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
-
+  
   KaNode *block = ka_block(
       ka_symbol("set"), ka_symbol("i"),
       ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
