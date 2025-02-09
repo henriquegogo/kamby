@@ -282,40 +282,55 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != right->type) return NULL;
-  if (left->type == KA_NUMBER) return ka_number(*left->number + *right->number);
+  KaNode *result = left->type != right->type ? NULL :
+    left->type == KA_NUMBER ? ka_number(*left->number + *right->number) : NULL;
+
   if (left->type == KA_STRING) {
     int size = strlen(left->string) + strlen(right->string) + 1;
     char *str = (char *)calloc(1, size);
-    KaNode *node = ka_string(strcat(strcpy(str, left->string), right->string));
+    result = ka_string(strcat(strcpy(str, left->string), right->string));
     free(str);
-    return node;
   }
-  return NULL;
+
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return ka_number(*left->number - *right->number);
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
+    ka_number(*left->number - *right->number);
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return ka_number(*left->number * *right->number);
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
+    ka_number(*left->number * *right->number);
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return ka_number(*left->number / *right->number);
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
+    ka_number(*left->number / *right->number);
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
   KaNode *right = args->next, *left = ka_first(args);
-  if (left->type != KA_NUMBER || right->type != KA_NUMBER) return NULL;
-  return ka_number((int)*left->number % (int)*right->number);
+  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
+    ka_number((int)*left->number % (int)*right->number);
+  if (!left->key) ka_free(left);
+  if (!right->key) ka_free(right);
+  return result;
 }
 
 // Parser and Interpreter

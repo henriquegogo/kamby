@@ -247,16 +247,15 @@ void test_del() {
 void test_eval() {
   KaNode *ctx = ka_new(KA_CTX), *expr, *result;
   ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL));
+  ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL));
   ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(5), NULL));
 
   // Define a variable into the context
   expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
   result = ka_eval(&ctx, expr);
-  
   assert(!strcmp(ka_get(&ctx, ka_symbol("name"))->string, result->string));
   assert(!strcmp(result->string, "John"));
-
   ka_free(result);
   ka_free(expr);
 
@@ -267,7 +266,6 @@ void test_eval() {
         ka_expr(ka_symbol("name"), NULL), NULL), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "Doe"));
-
   ka_free(result);
   ka_free(expr);
 
@@ -275,7 +273,6 @@ void test_eval() {
   expr = ka_expr(ka_symbol("name"), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "John"));
-
   ka_free(result);
   ka_free(expr);
 
@@ -283,14 +280,18 @@ void test_eval() {
   expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
   result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
-
   ka_free(result);
   ka_free(expr);
 
   expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
-  result = ka_eval(&ctx, expr); // This is leaking some memory
+  result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
+  ka_free(result);
+  ka_free(expr);
 
+  expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr); // Memory leak
+  assert(*result->number == 15);
   ka_free(result);
   ka_free(expr);
 
@@ -370,10 +371,10 @@ void test_comparison() {
 }
 
 void test_arithmetic() {
-  KaNode *num2 = ka_number(2);
-  KaNode *num3 = ka_number(3);
-  KaNode *str1 = ka_string("Hello");
-  KaNode *str2 = ka_string("World");
+  KaNode *num2 = ka_number(2); num2->key = strdup("key");
+  KaNode *num3 = ka_number(3); num3->key = strdup("key");
+  KaNode *str1 = ka_string("Hello"); str1->key = strdup("key");
+  KaNode *str2 = ka_string("World"); str2->key = strdup("key");
   KaNode *result;
 
   assert(*(result = ka_add(NULL, ka_chain(num3, num2, NULL)))->number == 5);
