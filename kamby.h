@@ -404,15 +404,18 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
-  KaNode *block = args->next, *condition = ka_first(args), *condition_result;
+  KaNode *condition = ka_copy(args), *block = ka_copy(args->next),
+         *condition_result;
 
   while ((condition_result = ka_eval(ctx, condition))->type == KA_TRUE) {
     ka_free(condition_result);
     ka_free(ka_eval(ctx, block));
   }
 
+  ka_free(condition_result);
+  ka_free(block);
   ka_free(condition);
-  if (block && !block->key) ka_free(block);
+  ka_free(args);
   return NULL;
 }
 
