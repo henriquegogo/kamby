@@ -267,10 +267,10 @@ void test_eval() {
   // Define a variable into the context
   expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
   result = ka_eval(&ctx, expr);
-  assert(!strcmp(ka_get(&ctx, ka_symbol("name"))->string, result->string));
+  KaNode *var = ka_get(&ctx, ka_symbol("name"));
+  assert(!strcmp(var->string, result->string));
   assert(!strcmp(result->string, "John"));
-  ka_free(result);
-  ka_free(expr);
+  ka_free(var); ka_free(result); ka_free(expr);
 
   // Define and recover a variable inside a block context
   expr = ka_expr(ka_block(
@@ -279,34 +279,29 @@ void test_eval() {
         ka_expr(ka_symbol("name"), NULL), NULL), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "Doe"));
-  ka_free(result);
-  ka_free(expr);
+  ka_free(result); ka_free(expr);
 
   // Recover a global variable using a new block
   expr = ka_expr(ka_symbol("name"), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "John"));
-  ka_free(result);
-  ka_free(expr);
+  ka_free(result); ka_free(expr);
 
   // Use other kind of functions
   expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
   result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
-  ka_free(result);
-  ka_free(expr);
+  ka_free(result); ka_free(expr);
 
   expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
   result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
-  ka_free(result);
-  ka_free(expr);
+  ka_free(result); ka_free(expr);
 
   expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
   result = ka_eval(&ctx, expr); // Memory leak
   assert(*result->number == 15);
-  ka_free(result);
-  ka_free(expr);
+  ka_free(result); ka_free(expr);
 
   ka_free(ctx);
 }
@@ -479,7 +474,7 @@ int main() {
   test_def();
   test_set();
   test_del();
-  //test_eval();
+  test_eval();
   test_logical();
   test_comparison();
   test_arithmetic();
