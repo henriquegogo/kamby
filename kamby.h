@@ -353,7 +353,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   for (KaNode *curr = nodes; curr; curr = curr->next) {
     if (curr->type == KA_SYMBOL) {
       KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
-      last = last->next = var ? ka_copy(var) : ka_symbol(curr->symbol);
+      last = last->next = var ? var : ka_symbol(curr->symbol);
     } else if (curr->type == KA_LIST) {
       last = last->next = ka_new(curr->type);
       last->key = curr->key ? strdup(curr->key) : NULL;
@@ -377,9 +377,9 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   if (head->type == KA_FUNC) {
     KaNode *result = head->func(ctx, head->next);
     ka_free(ka_first(head));
-    return ka_copy(result);
+    return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
+    KaNode *block_ctx = ka_chain(ka_ctx(), *ctx, NULL);
     KaNode *result = ka_eval(&block_ctx, head->children);
     KaNode *last_result = ka_copy(ka_last(result));
     ka_free(result);
