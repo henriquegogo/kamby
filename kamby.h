@@ -1,6 +1,7 @@
 #ifndef KAMBY_H
 #define KAMBY_H
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -223,6 +224,115 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   return NULL;
 }
 
+// Parser and Interpreter
+
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
+  if (!nodes) return NULL;
+  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+
+  // Eval expressions and get variables
+  for (KaNode *curr = nodes; curr; curr = curr->next) {
+    if (curr->type == KA_SYMBOL) {
+      KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
+      last = last->next = var ? var : ka_symbol(curr->symbol);
+    } else if (curr->type == KA_LIST) {
+      last = last->next = ka_new(curr->type);
+      last->key = curr->key ? strdup(curr->key) : NULL;
+      last->children = ka_eval(ctx, curr->children);
+    } else if (curr->type == KA_EXPR) {
+      last = last->next = ka_eval(ctx, curr->children);
+    } else {
+      last = last->next = ka_copy(curr);
+    }
+    // Skip getting the next node's value and treat it as a SYMBOL
+    if (last->func == ka_def || last->func == ka_set || last->func == ka_del) {
+      last = last->next = ka_copy(curr = curr->next);
+    }
+  }
+
+  // Discard first head node
+  head = head->next;
+  ka_free(ka_first(first));
+
+  // Take actions based on node type
+  if (head->type == KA_FUNC) {
+    KaNode *result = head->func(ctx, head->next);
+    ka_free(ka_first(head));
+    return result;
+  } else if (head->type == KA_BLOCK) {
+    KaNode *block_ctx = ka_chain(ka_ctx(), *ctx, NULL);
+    KaNode *result = ka_eval(&block_ctx, head->children);
+    KaNode *last_result = ka_copy(ka_last(result));
+    ka_free(result);
+    ka_free(block_ctx);
+    ka_free(head);
+    return last_result;
+  }
+
+  return head;
+}
+
+static inline KaNode *ka_parser(char *text, int *pos) {
+  int length = strlen(text);
+  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+
+  while (*pos < length) {
+    int start = *pos;
+    KaNode *node = ka_new(KA_NONE);
+
+    switch (text[*pos]) {
+      case ' ': break;
+      case '#': while (text[*pos + 1] != '\n') (*pos)++; break;
+      case '{': node->type = KA_BLOCK;
+      case '[': if (!node->type) node->type = KA_LIST;
+      case '(':
+        if (!node->type) node->type = KA_EXPR;
+        (*pos)++;
+        node->value = ka_parser(text, pos);
+        break;
+      case '\n': case ';': (*pos)++;
+      case ')': case ']': case '}': length = 0; continue;
+      case '\'': case '"':
+        while (text[++(*pos)] != text[start]);
+        node->type = KA_STRING;
+        node->string = (char *)calloc(1, (*pos - start) * sizeof(char));
+        strncpy(node->string, text + start + 1, *pos - start - 1);
+        break;
+      default:
+        // Numbers
+        if (isdigit(text[*pos])) {
+          while (isdigit(text[*pos] + 1)) (*pos)++;
+          node->type = KA_NUMBER;
+          node->number = (long double *)calloc(1, sizeof(long double));
+          *node->number = atoi(text + start);
+        // Symbols
+        } else if (isgraph(text[*pos])) {
+          while (isgraph(text[*pos]) && text[*pos] != ';' &&
+              text[*pos] != '(' && text[*pos] != ')' &&
+              text[*pos] != '[' && text[*pos] != ']' &&
+              text[*pos] != '{' && text[*pos] != '}') (*pos)++;
+          node->type = KA_SYMBOL;
+          node->symbol = (char *)calloc(1, (*pos - start + 1) * sizeof(char));
+          strncpy(node->symbol, text + start, *pos - start);
+          (*pos)--;
+        }
+    }
+
+    if (node->type) last = last->next = node;
+    else ka_free(node);
+
+    (*pos)++;
+  }
+
+  last = last->next = ka_number(42);
+
+  // Discard first head node
+  head = head->next;
+  ka_free(ka_first(first));
+
+  return head;
+}
+
 // Logical operators
 
 static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
@@ -342,54 +452,6 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
     ka_number((int)*left->number % (int)*right->number);
   ka_free(args);
   return result;
-}
-
-// Parser and Interpreter
-
-static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
-  if (!nodes) return NULL;
-  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
-
-  // Eval expressions and get variables
-  for (KaNode *curr = nodes; curr; curr = curr->next) {
-    if (curr->type == KA_SYMBOL) {
-      KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
-      last = last->next = var ? var : ka_symbol(curr->symbol);
-    } else if (curr->type == KA_LIST) {
-      last = last->next = ka_new(curr->type);
-      last->key = curr->key ? strdup(curr->key) : NULL;
-      last->children = ka_eval(ctx, curr->children);
-    } else if (curr->type == KA_EXPR) {
-      last = last->next = ka_eval(ctx, curr->children);
-    } else {
-      last = last->next = ka_copy(curr);
-    }
-    // Skip getting the next node's value and treat it as a SYMBOL
-    if (last->func == ka_def || last->func == ka_set || last->func == ka_del) {
-      last = last->next = ka_copy(curr = curr->next);
-    }
-  }
-
-  // Discard first head node
-  head = head->next;
-  ka_free(ka_first(first));
-
-  // Take actions based on node type
-  if (head->type == KA_FUNC) {
-    KaNode *result = head->func(ctx, head->next);
-    ka_free(ka_first(head));
-    return result;
-  } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = ka_chain(ka_ctx(), *ctx, NULL);
-    KaNode *result = ka_eval(&block_ctx, head->children);
-    KaNode *last_result = ka_copy(ka_last(result));
-    ka_free(result);
-    ka_free(block_ctx);
-    ka_free(head);
-    return last_result;
-  }
-
-  return head;
 }
 
 // Conditional and loops
