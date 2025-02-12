@@ -306,6 +306,15 @@ void test_eval() {
   ka_free(ctx);
 }
 
+void test_parser() {
+  int pos = 0;
+  KaNode *result = ka_parser("print 42", &pos);
+  //assert(*result->number == 42);
+  printf("Symbol: %s\n", result->symbol);
+  printf("Number: %Lf\n", *result->next->number);
+  ka_free(result);
+}
+
 void test_logical() {
   KaNode *result;
 
@@ -473,6 +482,7 @@ int main() {
   test_set();
   test_del();
   test_eval();
+  test_parser();
   test_logical();
   test_comparison();
   test_arithmetic();
