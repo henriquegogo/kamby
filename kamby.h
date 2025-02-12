@@ -121,6 +121,7 @@ static inline KaNode *ka_copy(KaNode *node) {
     }
   }
 
+  if (node->key) copy->key = strdup(node->key);
   return copy;
 }
 
