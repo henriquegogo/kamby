@@ -308,10 +308,20 @@ void test_eval() {
 
 void test_parser() {
   int pos = 0;
-  KaNode *result = ka_parser("print 42", &pos);
-  //assert(*result->number == 42);
-  printf("Symbol: %s\n", result->symbol);
-  printf("Number: %Lf\n", *result->next->number);
+  KaNode *result = ka_parser("42 'John Doe' name (22) {71} [1 2]", &pos);
+  KaNode *number = result, *string = result->next,
+         *symbol = result->next->next,
+         *expr = result->next->next->next,
+         *block = result->next->next->next->next,
+         *list = result->next->next->next->next->next;
+  
+  assert(number->type == KA_NUMBER && *number->number == 42);
+  assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
+  assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
+  assert(expr->type == KA_EXPR && *expr->children->number == 22);
+  assert(block->type == KA_BLOCK && *block->children->number == 71);
+  assert(list->type == KA_LIST);
+  assert(*list->children->number == 1 && *list->children->next->number == 2);
   ka_free(result);
 }
 
