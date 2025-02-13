@@ -283,20 +283,21 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     switch (text[*pos]) {
       case ' ': break;
       case '#': while (text[*pos + 1] != '\n') (*pos)++; break;
-      case '{': node->type = KA_BLOCK;
+      case '{': if (!node->type) node->type = KA_BLOCK;
       case '[': if (!node->type) node->type = KA_LIST;
-      case '(':
-        if (!node->type) node->type = KA_EXPR;
+      case '(': if (!node->type) node->type = KA_EXPR;
         (*pos)++;
-        node->value = ka_parser(text, pos);
+        node->children = ka_parser(text, pos);
         break;
       case '\n': case ';': (*pos)++;
-      case ')': case ']': case '}': length = 0; continue;
+      case ')': case ']': case '}':
+        length = 0;
+        ka_free(node);
+        continue;
       case '\'': case '"':
         while (text[++(*pos)] != text[start]);
         node->type = KA_STRING;
-        node->string = (char *)calloc(1, (*pos - start) * sizeof(char));
-        strncpy(node->string, text + start + 1, *pos - start - 1);
+        node->string = strndup(text + start + 1, *pos - start - 1);
         break;
       default:
         // Numbers
@@ -305,6 +306,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
           node->type = KA_NUMBER;
           node->number = (long double *)calloc(1, sizeof(long double));
           *node->number = atoi(text + start);
+          (*pos)--;
         // Symbols
         } else if (isgraph(text[*pos])) {
           while (isgraph(text[*pos]) && text[*pos] != ';' &&
@@ -312,8 +314,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
               text[*pos] != '[' && text[*pos] != ']' &&
               text[*pos] != '{' && text[*pos] != '}') (*pos)++;
           node->type = KA_SYMBOL;
-          node->symbol = (char *)calloc(1, (*pos - start + 1) * sizeof(char));
-          strncpy(node->symbol, text + start, *pos - start);
+          node->symbol = strndup(text + start, *pos - start);
           (*pos)--;
         }
     }
@@ -323,8 +324,6 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
     (*pos)++;
   }
-
-  last = last->next = ka_number(42);
 
   // Discard first head node
   head = head->next;
