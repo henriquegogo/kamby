@@ -322,6 +322,7 @@ void test_parser() {
   assert(block->type == KA_BLOCK && *block->children->number == 71);
   assert(list->type == KA_LIST);
   assert(*list->children->number == 1 && *list->children->next->number == 2);
+
   ka_free(result);
 }
 
