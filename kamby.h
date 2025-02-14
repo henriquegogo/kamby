@@ -278,46 +278,32 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
   while (*pos < length) {
     int start = *pos;
-    KaNode *node = ka_new(KA_NONE);
+    char c = text[*pos];
+    KaNode *node;
 
-    if (text[*pos] == '#') while (text[*pos + 1] != '\n') (*pos)++;
-    else if (text[*pos] == '\n' || text[*pos] == ';') (*pos)++;
-    else if (text[*pos] == '{') {
-      node->type = KA_BLOCK;
+    if (c == '#') while (text[*pos + 1] != '\n') (*pos)++;
+    else if (c == '\n' || c == ';') (*pos)++;
+    else if (c == '(' || c == '[' || c == '{') {
+      node = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
       node->children = ka_parser(text, ((*pos)++, pos));
-    } else if (text[*pos] == '[') {
-      node->type = KA_LIST;
-      node->children = ka_parser(text, ((*pos)++, pos));
-    } else if (text[*pos] == '(') {
-      node->type = KA_EXPR;
-      node->children = ka_parser(text, ((*pos)++, pos));
-    } else if (text[*pos] == ')' || text[*pos] == ']' || text[*pos] == '}') {
+    } else if (c == ')' || c == ']' || c == '}') {
       length = 0;
-      ka_free(node);
       continue;
-    } else if (text[*pos] == '\'' || text[*pos] == '"') {
+    } else if (c == '\'' || c == '"') {
       while (text[++(*pos)] != text[start]);
-      node->type = KA_STRING;
+      node = ka_new(KA_STRING);
       node->string = strndup(text + start + 1, *pos - start - 1);
-    } else if (isdigit(text[*pos])) {
-      while (isdigit(text[*pos] + 1)) (*pos)++;
-      node->type = KA_NUMBER;
-      node->number = (long double *)calloc(1, sizeof(long double));
-      *node->number = atoi(text + start);
-      (*pos)--;
-    } else if (isgraph(text[*pos])) {
-      while (isgraph(text[*pos]) && text[*pos] != ';' &&
-          text[*pos] != '(' && text[*pos] != ')' &&
-          text[*pos] != '[' && text[*pos] != ']' &&
-          text[*pos] != '{' && text[*pos] != '}') (*pos)++;
-      node->type = KA_SYMBOL;
+    } else if (isdigit(c)) {
+      while (isdigit(text[*pos + 1])) (*pos)++;
+      node = ka_number(atoi(text + start));
+    } else if (isgraph(c)) {
+      while (isgraph(c) && c != ';' && c != '(' && c != ')' && c != '[' &&
+          c != ']' && c != '{' && c != '}') c = text[++(*pos)];
+      node = ka_new(KA_SYMBOL);
       node->symbol = strndup(text + start, *pos - start);
-      (*pos)--;
     }
 
     if (node->type) last = last->next = node;
-    else ka_free(node);
-
     (*pos)++;
   }
 
