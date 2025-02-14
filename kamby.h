@@ -8,7 +8,8 @@
 
 typedef enum {
   KA_NONE, KA_FALSE, KA_TRUE, KA_CTX,
-  KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC, KA_LIST, KA_EXPR, KA_BLOCK
+  KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
+  KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
 typedef struct KaNode {
@@ -281,7 +282,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     char c = text[*pos];
     KaNode *node;
 
-    if (c == '#') while (text[*pos + 1] != '\n') (*pos)++;
+    if (c == '#') while (text[(*pos)++] != '\n');
     else if (c == '\n' || c == ';') (*pos)++;
     else if (c == '(' || c == '[' || c == '{') {
       node = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
@@ -303,7 +304,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       node->symbol = strndup(text + start, *pos - start);
     }
 
-    if (node->type) last = last->next = node;
+    if (node) last = last->next = node;
     (*pos)++;
   }
 
