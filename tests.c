@@ -329,12 +329,16 @@ void test_parser() {
   assert(*result->next->number == 42);
   ka_free(result);
 
-  result = ka_parser("age;42 'John Doe' 21;na;me", (pos = 0, &pos));
+  result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
+  assert(!strcmp(result->string, "It\'s John Doe. Backslash: \\ OK"));
+  ka_free(result);
+
+  result = ka_parser("age;42 'John Doe' 21;name", (pos = 0, &pos));
   assert(!strcmp(result->symbol, "age"));
   assert(*result->next->number == 42);
   assert(!strcmp(result->next->next->string, "John Doe"));
   assert(*result->next->next->next->number == 21);
-  assert(!strcmp(result->next->next->next->next->symbol, "na"));
+  assert(!strcmp(result->next->next->next->next->symbol, "name"));
   ka_free(result);
 
   result = ka_parser("42 'John Doe' name (22) {71} [1 2]", (pos = 0, &pos));

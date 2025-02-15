@@ -289,9 +289,14 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       length = 0;
       continue;
     } else if (c == '\'' || c == '"') {
-      while (text[++(*pos)] != text[start]);
+      while (text[++(*pos)] != text[start] ||
+          (text[*pos - 1] == '\\' && text[*pos - 2] != '\\'));
       node = ka_new(KA_STRING);
-      node->string = strndup(text + start + 1, *pos - start - 1);
+      char *value = node->string = strndup(text + start + 1, *pos - start - 1);
+      for (char *str = value; *str; str++)
+        if (*str != '\\' || (str[1] != text[start] && str[1] != '\\'))
+          *value++ = *str;
+      *value = '\0';
     } else if (isdigit(c)) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       node = ka_number(strtold(text + start, NULL));
