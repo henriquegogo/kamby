@@ -329,31 +329,29 @@ void test_parser() {
   assert(*result->next->number == 42);
   ka_free(result);
 
-  result = ka_parser("age;42 'John Doe' 21;name", (pos = 0, &pos));
+  result = ka_parser("age;42 'John Doe' 21;na;me", (pos = 0, &pos));
   assert(!strcmp(result->symbol, "age"));
   assert(*result->next->number == 42);
   assert(!strcmp(result->next->next->string, "John Doe"));
   assert(*result->next->next->next->number == 21);
-  //printf("%s\n", result->next->next->next->next->symbol);
-  //assert(!strcmp(result->next->next->next->next->symbol, "name"));
+  assert(!strcmp(result->next->next->next->next->symbol, "na"));
   ka_free(result);
 
-  //result = ka_parser("42 'John Doe' name (22) {71} [1 2]", (pos = 0, &pos));
-  //KaNode *number = result, *string = result->next,
-  //       *symbol = result->next->next,
-  //       *expr = result->next->next->next,
-  //       *block = result->next->next->next->next,
-  //       *list = result->next->next->next->next->next;
-  //
-  //assert(number->type == KA_NUMBER && *number->number == 42);
-  //assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
-  //assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
-  //assert(expr->type == KA_EXPR && *expr->children->number == 22);
-  //assert(block->type == KA_BLOCK && *block->children->number == 71);
-  //assert(list->type == KA_LIST);
-  //assert(*list->children->number == 1 && *list->children->next->number == 2);
-
-  //ka_free(result);
+  result = ka_parser("42 'John Doe' name (22) {71} [1 2]", (pos = 0, &pos));
+  KaNode *number = result, *string = result->next,
+         *symbol = result->next->next,
+         *expr = result->next->next->next,
+         *block = result->next->next->next->next,
+         *list = result->next->next->next->next->next;
+  
+  assert(number->type == KA_NUMBER && *number->number == 42);
+  assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
+  assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
+  assert(expr->type == KA_EXPR && *expr->children->number == 22);
+  assert(block->type == KA_BLOCK && *block->children->number == 71);
+  assert(list->type == KA_LIST);
+  assert(*list->children->number == 1 && *list->children->next->number == 2);
+  ka_free(result);
 }
 
 void test_logical() {
