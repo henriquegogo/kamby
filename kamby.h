@@ -295,7 +295,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     } else if (isdigit(c)) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       node = ka_number(strtold(text + start, NULL));
-    } else if (isgraph(c)) {
+    } else if (isgraph(c) && c != ';') {
       while (isgraph(c) && c != ';' && c != '(' && c != ')' && c != '[' &&
           c != ']' && c != '{' && c != '}') c = text[++(*pos)];
       node = ka_new(KA_SYMBOL);
