@@ -274,16 +274,14 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 }
 
 static inline KaNode *ka_parser(char *text, int *pos) {
-  int length = strlen(text);
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
 
-  while (*pos < length) {
+  for (int length = strlen(text); *pos < length; (*pos)++) {
     int start = *pos;
     char c = text[*pos];
-    KaNode *node;
+    KaNode *node = NULL;
 
-    if (c == '#') while (text[(*pos)++] != '\n');
-    else if (c == '\n' || c == ';') (*pos)++;
+    if (c == '#') while (text[++(*pos)] != '\n');
     else if (c == '(' || c == '[' || c == '{') {
       node = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
       node->children = ka_parser(text, ((*pos)++, pos));
@@ -295,8 +293,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       node = ka_new(KA_STRING);
       node->string = strndup(text + start + 1, *pos - start - 1);
     } else if (isdigit(c)) {
-      while (isdigit(text[*pos + 1])) (*pos)++;
-      node = ka_number(atoi(text + start));
+      while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
+      node = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
       while (isgraph(c) && c != ';' && c != '(' && c != ')' && c != '[' &&
           c != ']' && c != '{' && c != '}') c = text[++(*pos)];
@@ -305,7 +303,6 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
 
     if (node) last = last->next = node;
-    (*pos)++;
   }
 
   // Discard first head node
