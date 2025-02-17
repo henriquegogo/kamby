@@ -38,17 +38,6 @@ static inline KaNode *ka_true() { return ka_new(KA_TRUE); }
 
 static inline KaNode *ka_false() { return ka_new(KA_FALSE); }
 
-static inline KaNode *ka_first(KaNode *nodes) {
-  KaNode *first = nodes;
-  first->next = NULL;
-  return first;
-}
-
-static inline KaNode *ka_last(KaNode *nodes) {
-  while (nodes->next) nodes = nodes->next;
-  return nodes;
-}
-
 static inline void ka_free(KaNode *node) {
   for (KaNode *curr; node; node = curr) {
     KaType type = node->type;
@@ -69,7 +58,7 @@ static inline KaNode *ka_chain(KaNode *args, ...) {
 
   if (!args) return NULL;
   for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *))
-    curr = ka_last(curr);
+    while (curr->next) curr = curr->next;
 
   va_end(vargs);
   return args;
@@ -221,7 +210,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   if (!node) return NULL;
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
   ka_free(args);
-  ka_free(ka_first(node));
+  ka_free((node->next = NULL, node));
   return NULL;
 }
 
@@ -253,21 +242,23 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 
   // Discard first head node
   head = head->next;
-  ka_free(ka_first(first));
+  ka_free((first->next = NULL, first));
 
   // Take actions based on node type
   if (head->type == KA_FUNC) {
     KaNode *result = head->func(ctx, head->next);
-    ka_free(ka_first(head));
+    ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
     KaNode *block_ctx = ka_chain(ka_ctx(), *ctx, NULL);
-    KaNode *result = ka_eval(&block_ctx, head->children);
-    KaNode *last_result = ka_copy(ka_last(result));
-    ka_free(result);
+    KaNode *block_result = ka_eval(&block_ctx, head->children);
+    KaNode *result = block_result;
+    while (result->next) result = result->next;
+    result = ka_copy(result);
+    ka_free(block_result);
     ka_free(block_ctx);
     ka_free(head);
-    return last_result;
+    return result;
   }
 
   return head;
@@ -313,7 +304,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
   // Discard first head node
   head = head->next;
-  ka_free(ka_first(first));
+  ka_free((first->next = NULL, first));
 
   return head;
 }

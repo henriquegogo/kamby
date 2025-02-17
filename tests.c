@@ -69,31 +69,6 @@ void test_new() {
   ka_free(node);
 }
 
-void test_first() {
-  KaNode *node = ka_new(KA_NONE);
-  KaNode *next = node->next = ka_new(KA_NONE);
-
-  assert(node);
-  assert(node->next);
-  assert(!ka_first(node)->next);
-  assert(ka_first(node));
-
-  ka_free(next);
-  ka_free(node);
-}
-
-void test_last() {
-  KaNode *node = ka_new(KA_NONE);
-  node->next = ka_new(KA_NONE);
-  node->next->next = ka_new(KA_NONE);
-
-  assert(node);
-  assert(node->next);
-  assert(ka_last(node) == node->next->next);
-
-  ka_free(node);
-}
-
 void test_chain() {
   KaNode *node = ka_chain(
       ka_new(KA_NUMBER),
@@ -562,8 +537,6 @@ int main() {
   printf("\nStarting tests...\n");
 
   test_new();
-  test_first();
-  test_last();
   test_chain();
   test_ctx();
   test_number();
