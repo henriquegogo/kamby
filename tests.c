@@ -4,6 +4,60 @@
 
 #include "kamby.h"
 
+int print_level = 0;
+void print_node(KaNode *node) {
+  if (!node) return;
+  KaNode *child;
+  for (int i = 0; i < print_level; i++) printf("  ");
+  switch (node->type) {
+    case KA_NUMBER:
+      printf("number %s: %.Lf\n", node->key ? node->key : "", *node->number);
+      break;
+    case KA_STRING:
+      printf("string %s: %s\n", node->key ? node->key : "", node->string);
+      break;
+    case KA_SYMBOL:
+      printf("symbol : %s\n", node->symbol);
+      break;
+    case KA_FUNC:
+      printf("func %s: %p\n", node->key, node->func);
+      break;
+    case KA_LIST:
+      printf("list %s:\n", node->key);
+      print_level++;
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
+      print_level--;
+      break;
+    case KA_EXPR:
+      printf("expr %s:\n", node->key);
+      print_level++;
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
+      print_level--;
+      break;
+    case KA_BLOCK:
+      printf("block %s:\n", node->key);
+      print_level++;
+      child = node->children;
+      while (child) { print_node(child); child = child->next; }
+      print_level--;
+      break;
+    case KA_NONE:
+      printf("none %s\n", node->key);
+      break;
+    default:;
+  }
+}
+
+void print_chain(KaNode *chain) {
+  KaNode *current = chain;
+  while (current) {
+    print_node(current);
+    current = current->next;
+  }
+}
+
 void test_new() {
   KaNode *node = ka_new(KA_NONE);
 
