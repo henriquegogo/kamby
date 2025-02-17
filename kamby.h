@@ -46,8 +46,7 @@ static inline void ka_free(KaNode *node) {
     type >= KA_LIST ? ka_free((KaNode *)node->value) :
     type == KA_FUNC ? (void)0 : free(node->value);
 
-    free(node->key);
-    free(node);
+    free(node->key), free(node);
     if (type == KA_CTX) break;
   }
 }
@@ -209,8 +208,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
 
   if (!node) return NULL;
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
-  ka_free(args);
-  ka_free((node->next = NULL, node));
+  ka_free(args), ka_free((node->next = NULL, node));
   return NULL;
 }
 
@@ -255,9 +253,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     KaNode *result = block_result;
     while (result->next) result = result->next;
     result = ka_copy(result);
-    ka_free(block_result);
-    ka_free(block_ctx);
-    ka_free(head);
+    ka_free(block_result), ka_free(block_ctx), ka_free(head);
     return result;
   }
 
@@ -436,9 +432,7 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   KaType condition = args->type;
   KaNode *block = ka_copy(args->next), *else_block = ka_copy(args->next->next);
   KaNode *result = ka_eval(ctx, condition == KA_TRUE ? block : else_block);
-  ka_free(else_block);
-  ka_free(block);
-  ka_free(args);
+  ka_free(else_block), ka_free(block), ka_free(args);
   return result;
 }
 
@@ -447,14 +441,10 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
          *condition_result;
 
   while ((condition_result = ka_eval(ctx, condition))->type == KA_TRUE) {
-    ka_free(condition_result);
-    ka_free(ka_eval(ctx, block));
+    ka_free(condition_result), ka_free(ka_eval(ctx, block));
   }
 
-  ka_free(condition_result);
-  ka_free(block);
-  ka_free(condition);
-  ka_free(args);
+  ka_free(condition_result), ka_free(block), ka_free(condition), ka_free(args);
   return NULL;
 }
 
