@@ -171,9 +171,7 @@ void test_copy() {
   assert(!list_copy->children->next->next->next);
 
   ka_free(list_copy);
-  ka_free(third_copy);
-  ka_free(second_copy);
-  ka_free(first_copy);
+  ka_free(third_copy), ka_free(second_copy), ka_free(first_copy);
   ka_free(list);
 }
 
@@ -299,7 +297,7 @@ void test_eval() {
   KaNode *var = ka_get(&ctx, ka_symbol("name"));
   assert(!strcmp(var->string, result->string));
   assert(!strcmp(result->string, "John"));
-  ka_free(var); ka_free(result); ka_free(expr);
+  ka_free(var), ka_free(result), ka_free(expr);
 
   // Define and recover a variable inside a block context
   expr = ka_expr(ka_block(
@@ -308,29 +306,29 @@ void test_eval() {
         ka_expr(ka_symbol("name"), NULL), NULL), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "Doe"));
-  ka_free(result); ka_free(expr);
+  ka_free(result), ka_free(expr);
 
   // Recover a global variable using a new block
   expr = ka_expr(ka_symbol("name"), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "John"));
-  ka_free(result); ka_free(expr);
+  ka_free(result), ka_free(expr);
 
   // Use other kind of functions
   expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
   result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
-  ka_free(result); ka_free(expr);
+  ka_free(result), ka_free(expr);
 
   expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
   result = ka_eval(&ctx, expr);
   assert(result->type == KA_TRUE);
-  ka_free(result); ka_free(expr);
+  ka_free(result), ka_free(expr);
 
   expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
   result = ka_eval(&ctx, expr); // Memory leak
   assert(*result->number == 15);
-  ka_free(result); ka_free(expr);
+  ka_free(result), ka_free(expr);
 
   ka_free(ctx);
 }
@@ -507,9 +505,7 @@ void test_conditional() {
   assert(result == NULL);
   ka_free(result);
 
-  ka_free(else_block);
-  ka_free(block);
-  ka_free(ctx);
+  ka_free(else_block), ka_free(block), ka_free(ctx);
 }
 
 void test_loop() {
