@@ -301,10 +301,11 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       node = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c) && c != ';') {
-      while (isgraph(c) && c != ';' && c != '(' && c != ')' && c != '[' &&
-          c != ']' && c != '{' && c != '}') c = text[++(*pos)];
+      while (isgraph(c = text[*pos + 1]) && c != ';' &&
+          c != '(' && c != ')' && c != '[' &&
+          c != ']' && c != '{' && c != '}') (*pos)++;
       node = ka_new(KA_SYMBOL);
-      node->symbol = strndup(text + start, *pos - start);
+      node->symbol = strndup(text + start, *pos - start + 1);
     }
 
     if (node) last = last->next = node;
