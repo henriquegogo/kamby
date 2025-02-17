@@ -54,11 +54,8 @@ static inline void ka_free(KaNode *node) {
 static inline KaNode *ka_chain(KaNode *args, ...) {
   va_list vargs;
   va_start(vargs, args);
-
-  if (!args) return NULL;
   for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *))
     while (curr->next) curr = curr->next;
-
   va_end(vargs);
   return args;
 }
@@ -170,7 +167,7 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
   KaNode *curr = *ctx;
-  for (; curr && strcmp(args->symbol, curr->key); curr = curr->next);
+  while (curr && strcmp(args->symbol, curr->key)) curr = curr->next;
   ka_free(args);
   return ka_copy(curr);
 }
@@ -185,7 +182,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
-  for (; node && strcmp(args->symbol, node->key); node = node->next);
+  while (node && strcmp(args->symbol, node->key)) node = node->next;
   if (!node) return ka_def(ctx, args);
 
   KaNode *data = ka_copy(args->next);
