@@ -258,48 +258,56 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 }
 
 static inline KaNode *ka_parser(char *text, int *pos) {
-  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+  KaNode *head = ka_new(KA_NONE), *last = head;
+  int length = strlen(text);
 
-  for (int length = strlen(text); *pos < length; (*pos)++) {
+  // If at the initial position, use a negative position as a flag to wrap
+  // sentences, parsing each one as a separate expression node.
+  if (*pos == 0) {
+    for (*pos = -1; *pos < length;) {
+      last = last->next = ka_new(KA_EXPR);
+      last->children = ka_parser(text, pos);
+    }
+  }
+
+  // Parse each character, recognize types and create nodes.
+  // If position is negative, start at the beginning.
+  for (*pos = *pos < 0 ? 0 : *pos; *pos < length; (*pos)++) {
     int start = *pos;
     char c = text[*pos];
-    KaNode *node = NULL;
 
     if (c == '#') while (text[++(*pos)] != '\n');
     else if (c == '(' || c == '[' || c == '{') {
-      node = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
-      node->children = ka_parser(text, ((*pos)++, pos));
-    } else if (c == ')' || c == ']' || c == '}') {
+      last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
+      last = last->next;
+      last->children = ka_parser(text, ((*pos)++, pos));
+    } else if (c == ')' || c == ']' || c == '}' || c == ';') {
       length = 0;
       continue;
     } else if (c == '\'' || c == '"') {
       while (text[++(*pos)] != text[start] ||
           (text[*pos - 1] == '\\' && text[*pos - 2] != '\\'));
-      node = ka_new(KA_STRING);
-      char *value = node->string = strndup(text + start + 1, *pos - start - 1);
+      last = last->next = ka_new(KA_STRING);
+      char *value = last->string = strndup(text + start + 1, *pos - start - 1);
       for (char *str = value; *str; str++)
         if (*str != '\\' || (str[1] != text[start] && str[1] != '\\'))
           *value++ = *str;
       *value = '\0';
     } else if (isdigit(c)) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
-      node = ka_number(strtold(text + start, NULL));
+      last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c) && c != ';') {
       while (isgraph(c = text[*pos + 1]) && c != ';' &&
           c != '(' && c != ')' && c != '[' &&
           c != ']' && c != '{' && c != '}') (*pos)++;
-      node = ka_new(KA_SYMBOL);
-      node->symbol = strndup(text + start, *pos - start + 1);
+      last = last->next = ka_new(KA_SYMBOL);
+      last->symbol = strndup(text + start, *pos - start + 1);
     }
-
-    if (node) last = last->next = node;
   }
 
-  // Discard first head node
-  head = head->next;
-  ka_free((first->next = NULL, first));
-
-  return head;
+  KaNode *result = head->next;
+  ka_free((head->next = NULL, head));
+  return result;
 }
 
 // Logical operators
