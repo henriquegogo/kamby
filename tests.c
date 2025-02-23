@@ -338,42 +338,43 @@ void test_parser() {
   int pos;
 
   result = ka_parser("# This is a comment", (pos = 0, &pos));
-  assert(!result);
+  assert(!result->children);
+  ka_free(result);
 
   result = ka_parser("42.21 # This is a comment", (pos = 0, &pos));
-  assert(*result->number == 42.21);
-  assert(!result->next);
+  assert(*result->children->number == 42.21);
+  assert(!result->children->next);
   ka_free(result);
 
   result = ka_parser("42.21 age # This is a comment", (pos = 0, &pos));
-  assert(*result->number == 42.21);
-  assert(!strcmp(result->next->symbol, "age"));
-  assert(!result->next->next);
+  assert(*result->children->number == 42.21);
+  assert(!strcmp(result->children->next->symbol, "age"));
+  assert(!result->children->next->next);
   ka_free(result);
 
   result = ka_parser("age\n# This is a comment\n42", (pos = 0, &pos));
-  assert(!strcmp(result->symbol, "age"));
-  assert(*result->next->number == 42);
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->children->next->number == 42);
   ka_free(result);
 
   result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
-  assert(!strcmp(result->string, "It\'s John Doe. Backslash: \\ OK"));
+  assert(!strcmp(result->children->string, "It\'s John Doe. Backslash: \\ OK"));
   ka_free(result);
 
   result = ka_parser("age;42 'John Doe' 21;name", (pos = 0, &pos));
-  assert(!strcmp(result->symbol, "age"));
-  assert(*result->next->number == 42);
-  assert(!strcmp(result->next->next->string, "John Doe"));
-  assert(*result->next->next->next->number == 21);
-  assert(!strcmp(result->next->next->next->next->symbol, "name"));
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->next->children->number == 42);
+  assert(!strcmp(result->next->children->next->string, "John Doe"));
+  assert(*result->next->children->next->next->number == 21);
+  assert(!strcmp(result->next->next->children->symbol, "name"));
   ka_free(result);
 
   result = ka_parser("42 'John Doe' name (22) {71} [1 2]", (pos = 0, &pos));
-  KaNode *number = result, *string = result->next,
-         *symbol = result->next->next,
-         *expr = result->next->next->next,
-         *block = result->next->next->next->next,
-         *list = result->next->next->next->next->next;
+  KaNode *number = result->children, *string = result->children->next,
+         *symbol = result->children->next->next,
+         *expr = result->children->next->next->next,
+         *block = result->children->next->next->next->next,
+         *list = result->children->next->next->next->next->next;
   
   assert(number->type == KA_NUMBER && *number->number == 42);
   assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
@@ -530,8 +531,6 @@ void test_loop() {
 }
 
 int main() {
-  printf("\nStarting tests...\n");
-
   test_new();
   test_chain();
   test_ctx();
@@ -555,6 +554,6 @@ int main() {
   test_conditional();
   test_loop();
 
-  printf("Done!\n\n");
+  printf("All tests passed!\n");
   return 0;
 }
