@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,7 +12,7 @@ void print_node(KaNode *node) {
   for (int i = 0; i < print_level; i++) printf("  ");
   switch (node->type) {
     case KA_NUMBER:
-      printf("number %s: %.Lf\n", node->key ? node->key : "", *node->number);
+      printf("number %s: %.2Lf\n", node->key ? node->key : "", *node->number);
       break;
     case KA_STRING:
       printf("string %s: %s\n", node->key ? node->key : "", node->string);
@@ -342,12 +343,12 @@ void test_parser() {
   ka_free(result);
 
   result = ka_parser("42.21 # This is a comment", (pos = 0, &pos));
-  assert(*result->children->number == 42.21);
+  assert(fabsl(*result->children->number - 42.21) < 1e-10);
   assert(!result->children->next);
   ka_free(result);
 
   result = ka_parser("42.21 age # This is a comment", (pos = 0, &pos));
-  assert(*result->children->number == 42.21);
+  assert(fabsl(*result->children->number - 42.21) < 1e-10);
   assert(!strcmp(result->children->next->symbol, "age"));
   assert(!result->children->next->next);
   ka_free(result);
@@ -554,6 +555,6 @@ int main() {
   test_conditional();
   test_loop();
 
-  printf("All tests passed!\n");
+  printf("\nAll tests passed!\n\n");
   return 0;
 }

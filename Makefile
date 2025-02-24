@@ -1,22 +1,22 @@
+BINNAME = kamby
+TESTNAME = tests
+
 all:
-	@gcc -o kamby kamby.c
+	@$(CC) -o $(BINNAME) $(BINNAME).c
 
-musl:
-	@musl-gcc -static -o kamby kamby.c
-	@strip kamby
-
-memcheck: all
-	@gcc -o tests tests.c
-	@valgrind --leak-check=full -s ./tests
-	@rm -f tests
+run: all
+	@./$(BINNAME)
 
 test:
-	@gcc -o tests tests.c
-	@valgrind ./tests
-	@rm -f tests
+	@$(CC) -o $(TESTNAME) $(TESTNAME).c
+	@./$(TESTNAME)
+	@$(MAKE) --no-print-directory clean
+
+testmemory:
+	@$(CC) -o $(TESTNAME) $(TESTNAME).c
+	@valgrind ./$(TESTNAME)
+	@$(MAKE) --no-print-directory clean
 
 clean:
-	@rm -f kamby
-	@rm -f tests
-
-.PHONY : all musl memcheck test clean
+	@rm -f $(BINNAME)
+	@rm -f $(TESTNAME)
