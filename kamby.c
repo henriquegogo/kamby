@@ -68,9 +68,9 @@ int main() {
 
   printf("Valid keywords:\n  ");
   int cols = 0;
-  for (KaNode *node = ctx; node->key; node = node->next) {
-    printf("%s ", node->key);
-    if ((cols += strlen(node->key) + 1) > 50) { printf("\n  "); cols = 0; }
+  for (KaNode *curr = ctx; curr->key; curr = curr->next) {
+    printf("%s ", curr->key);
+    if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
   }
   printf("\n\n");
 
@@ -83,7 +83,7 @@ int main() {
     fflush(stdout);
     fgets(input, 8192, stdin);
     KaNode *expr = ka_parser(input, (pos = 0, &pos));
-    ka_free(ka_eval(&ctx, expr->children));
+    ka_free(ka_eval(&ctx, expr));
     ka_free(expr);
     input[0] = '\0';
   }

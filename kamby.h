@@ -210,7 +210,6 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
 }
 
 // Parser and Interpreter
-
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
   if (!nodes) return head;
