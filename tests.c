@@ -232,7 +232,8 @@ void test_get() {
   ka_free(result);
   assert(!strcmp((result = ka_get(&ctx, ka_symbol("name")))->string, "John"));
   ka_free(result);
-  assert(ka_get(&ctx, ka_symbol("inexistent")) == NULL);
+  assert((result = ka_get(&ctx, ka_symbol("inexistent")))->type == KA_NONE);
+  ka_free(result);
 
   ka_free(ctx);
 }
@@ -275,11 +276,11 @@ void test_del() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL)));
 
-  ka_del(&ctx, ka_symbol("message"));
+  ka_free(ka_del(&ctx, ka_symbol("message")));
   assert(!strcmp(ctx->key, "age"));
   assert(!strcmp(ctx->next->key, "name"));
 
-  ka_del(&ctx, ka_symbol("name"));
+  ka_free(ka_del(&ctx, ka_symbol("name")));
   assert(ctx->next->type == KA_CTX);
 
   ka_free(ctx);
@@ -504,7 +505,7 @@ void test_conditional() {
   result = ka_if(&ctx, ka_chain(
         ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block), NULL));
-  assert(result == NULL);
+  assert(result->type == KA_NONE);
   ka_free(result);
 
   ka_free(else_block), ka_free(block), ka_free(ctx);
@@ -524,7 +525,7 @@ void test_loop() {
       ka_symbol("set"), ka_symbol("i"),
       ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
-  ka_loop(&ctx, ka_chain(condition, block, NULL));
+  ka_free(ka_loop(&ctx, ka_chain(condition, block, NULL)));
   KaNode *var = ka_get(&ctx, ka_symbol("i"));
   assert(*var->number == 10); ka_free(var);
 

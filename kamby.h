@@ -92,7 +92,7 @@ static inline KaNode *ka_func(KaNode *(*func)(KaNode **ctx, KaNode *args)) {
 }
 
 static inline KaNode *ka_copy(KaNode *node) {
-  if (!node) return NULL;
+  if (!node) return ka_new(KA_NONE);
 
   KaNode *copy =
     node->type == KA_NUMBER ? ka_number(*node->number) :
@@ -167,7 +167,7 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
   KaNode *curr = *ctx;
-  while (curr && strcmp(args->symbol, curr->key)) curr = curr->next;
+  while (curr && strcmp(args->symbol, curr->key ?: "")) curr = curr->next;
   ka_free(args);
   return ka_copy(curr);
 }
@@ -203,23 +203,23 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
     node = node->next;
   }
 
-  if (!node) return NULL;
+  if (!node) return ka_new(KA_NONE);
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
   ka_free(args), ka_free((node->next = NULL, node));
-  return NULL;
+  return ka_new(KA_NONE);
 }
 
 // Parser and Interpreter
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
-  if (!nodes) return NULL;
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+  if (!nodes) return head;
 
   // Eval expressions and get variables
   for (KaNode *curr = nodes; curr; curr = curr->next) {
     if (curr->type == KA_SYMBOL) {
       KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
-      last = last->next = var ? var : ka_symbol(curr->symbol);
+      last = last->next = var->type ? var : ka_copy(curr);
     } else if (curr->type == KA_LIST) {
       last = last->next = ka_new(curr->type);
       last->key = curr->key ? strdup(curr->key) : NULL;
@@ -450,7 +450,7 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
   }
 
   ka_free(condition_result), ka_free(block), ka_free(condition), ka_free(args);
-  return NULL;
+  return ka_new(KA_NONE);
 }
 
 #endif
