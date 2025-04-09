@@ -363,7 +363,7 @@ void test_parser() {
   assert(!strcmp(result->children->string, "It\'s John Doe. Backslash: \\ OK"));
   ka_free(result);
 
-  result = ka_parser("age;42 'John Doe' 21;name", (pos = 0, &pos));
+  result = ka_parser("age; 42 'John Doe' 21;name", (pos = 0, &pos));
   assert(!strcmp(result->children->symbol, "age"));
   assert(*result->next->children->number == 42);
   assert(!strcmp(result->next->children->next->string, "John Doe"));
@@ -377,7 +377,6 @@ void test_parser() {
          *expr = result->children->next->next->next,
          *block = result->children->next->next->next->next,
          *list = result->children->next->next->next->next->next;
-  
   assert(number->type == KA_NUMBER && *number->number == 42);
   assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
   assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
