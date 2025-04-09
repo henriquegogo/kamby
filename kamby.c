@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "kamby.h"
 
-KaNode *print(KaNode **ctx, KaNode *args) {
+KaNode *_print_(KaNode **ctx, KaNode *args) {
   for (KaNode *arg = args; arg != NULL; arg = arg->next) {
     switch (arg->type) {
       case KA_NUMBER:
@@ -22,15 +22,53 @@ KaNode *print(KaNode **ctx, KaNode *args) {
   return ka_new(KA_NONE);
 }
 
+KaNode *_exit_(KaNode **ctx, KaNode *args) {
+  ka_free(args);
+  exit(0);
+  return ka_new(KA_NONE);
+}
+
 int main() {
   KaNode *ctx = ka_new(KA_CTX);
   int pos = 0;
-  char input[1024];
+  char input[8192];
 
+  // Variables
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("print"), ka_func(print), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("del"), ka_func(ka_del), NULL)));
 
-  printf("Valid keywords: def, print\n");
+  // Logical operators
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("and"), ka_func(ka_and), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("or"),  ka_func(ka_or),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("not"), ka_func(ka_not), NULL)));
+
+  // Comparison operators
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("eq"),  ka_func(ka_eq),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("neq"), ka_func(ka_neq), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("gt"),  ka_func(ka_gt),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"),  ka_func(ka_lt),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("gte"), ka_func(ka_gte), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lte"), ka_func(ka_lte), NULL)));
+
+  // Arithmetic operators
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("sub"), ka_func(ka_sub), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("mul"), ka_func(ka_mul), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("div"), ka_func(ka_div), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("mod"), ka_func(ka_mod), NULL)));
+
+  // Conditional and loops
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("if"),   ka_func(ka_if),   NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("loop"), ka_func(ka_loop), NULL)));
+
+  // Standard functions
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("print"), ka_func(_print_), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("exit"), ka_func(_exit_), NULL)));
+
+  printf("Valid keywords:\n\
+  def, set, del, and, or, not, eq, neq, gt, lt, gte, lte,\n\
+  add, sub, mul, div, mod, if, loop, print, exit\n\n");
   printf("Usage:\n");
   printf("  def <symbol> <number|string>\n");
   printf("  print <symbol>\n\n");
@@ -38,7 +76,7 @@ int main() {
   while (1) {
     printf("kamby> ");
     fflush(stdout);
-    fgets(input, 1024, stdin);
+    fgets(input, 8192, stdin);
     KaNode *expr = ka_parser(input, (pos = 0, &pos));
     ka_free(ka_eval(&ctx, expr->children));
     ka_free(expr);
