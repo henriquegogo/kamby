@@ -64,11 +64,16 @@ int main() {
 
   // Standard functions
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("print"), ka_func(_print_), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("exit"), ka_func(_exit_), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("exit"),  ka_func(_exit_), NULL)));
 
-  printf("Valid keywords:\n\
-  def, set, del, and, or, not, eq, neq, gt, lt, gte, lte,\n\
-  add, sub, mul, div, mod, if, loop, print, exit\n\n");
+  printf("Valid keywords:\n  ");
+  int cols = 0;
+  for (KaNode *node = ctx; node->key; node = node->next) {
+    printf("%s ", node->key);
+    if ((cols += strlen(node->key) + 1) > 50) { printf("\n  "); cols = 0; }
+  }
+  printf("\n\n");
+
   printf("Usage:\n");
   printf("  def <symbol> <number|string>\n");
   printf("  print <symbol>\n\n");
