@@ -1,19 +1,25 @@
 #include <stdio.h>
-
 #include "kamby.h"
 
 KaNode *print(KaNode **ctx, KaNode *args) {
-  switch (args->type) {
-    case KA_NUMBER:
-      printf("%.2Lf\n", *args->number);
-      break;
-    case KA_STRING:
-      printf("%s\n", args->string);
-      break;
-    default:;
+  for (KaNode *arg = args; arg != NULL; arg = arg->next) {
+    switch (arg->type) {
+      case KA_NUMBER:
+        if (*arg->number == (long long)(*arg->number)) {
+          printf("%lld", (long long)(*arg->number));
+        } else {
+          printf("%.2Lf", *arg->number);
+        }
+        break;
+      case KA_STRING:
+        printf("%s", arg->string);
+        break;
+      default:;
+    }
   }
+  printf("\n");
   ka_free(args);
-  return NULL;
+  return ka_new(KA_NONE);
 }
 
 int main() {
@@ -34,8 +40,8 @@ int main() {
     fflush(stdout);
     fgets(input, 1024, stdin);
     KaNode *expr = ka_parser(input, (pos = 0, &pos));
-    KaNode *result = ka_eval(&ctx, expr->children);
-    ka_free(result), ka_free(expr);
+    ka_free(ka_eval(&ctx, expr->children));
+    ka_free(expr);
     input[0] = '\0';
   }
 
