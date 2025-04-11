@@ -210,6 +210,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
 }
 
 // Parser and Interpreter
+
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
   if (!nodes) return head;
@@ -309,8 +310,24 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
+  // Reorder expression nodes
+  KaNode *prev = NULL, *a = head;
+  while (a && a->next && a->next->next) {
+    KaNode *op = a->next, *b = op->next, *next = b->next;
+    char *symbol = op->symbol;
+    if (op->type == KA_SYMBOL && ispunct(symbol[strlen(symbol) - 1])) {
+      KaNode *expr = ka_new(KA_EXPR);
+      expr->children = (op->next = a, a->next = b, b->next = NULL, op);
+      expr->next = next;
+      a = prev ? (prev->next = expr) : (head = expr);
+    } else {
+      a = (prev = a)->next;
+    }
+  }
+
   KaNode *result = head->next;
   ka_free((head->next = NULL, head));
+
   return result;
 }
 
