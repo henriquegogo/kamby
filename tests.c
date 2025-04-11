@@ -371,12 +371,13 @@ void test_parser() {
   assert(!strcmp(result->next->next->children->symbol, "name"));
   ka_free(result);
 
-  result = ka_parser("42 'John Doe' name (22) {71; 72} [1 2]", (pos = 0, &pos));
-  KaNode *number = result->children, *string = result->children->next,
-         *symbol = result->children->next->next,
-         *expr = result->children->next->next->next,
-         *block = result->children->next->next->next->next,
-         *list = result->children->next->next->next->next->next;
+  result = ka_parser("42 'John Doe'; name (22) {71; 72} [1 2]", (pos = 0, &pos));
+  KaNode *number = result->children,
+         *string = result->children->next,
+         *symbol = result->next->children,
+         *expr = result->next->children->next,
+         *block = result->next->children->next->next,
+         *list = result->next->children->next->next->next;
   assert(number->type == KA_NUMBER && *number->number == 42);
   assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
   assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
