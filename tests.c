@@ -387,6 +387,12 @@ void test_parser() {
   assert(list->type == KA_LIST);
   assert(*list->children->number == 1 && *list->children->next->number == 2);
   ka_free(result);
+
+  result = ka_parser("print 1 + 2; 5 + 6 + 7 >= 18 eq? true", (pos = 0, &pos));
+  print_chain(result);
+  printf("\n");
+
+  ka_free(result);
 }
 
 void test_logical() {
