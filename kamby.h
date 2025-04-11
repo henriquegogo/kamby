@@ -262,10 +262,11 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
   // If at the initial position, use a negative position as a flag to wrap
   // sentences, parsing each one as a separate expression node.
-  if (*pos == 0) {
-    for (*pos = -1; *pos < length;) {
+  if (*pos == 0 && --(*pos)) {
+    while (*pos < length) {
       last = last->next = ka_new(KA_EXPR);
       last->children = ka_parser(text, pos);
+      if (text[*pos - 1] == '}') length = 0;
     }
   }
 
@@ -276,10 +277,14 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     char c = text[*pos];
 
     if (c == '#') while (text[++(*pos)] != '\n');
-    else if (c == '(' || c == '[' || c == '{') {
-      last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
-      last = last->next;
+    else if (c == '(' || c == '[') {
+      last = last->next = ka_new(c == '(' ? KA_EXPR : KA_LIST);
       last->children = ka_parser(text, ((*pos)++, pos));
+    } else if (c == '{') {
+      int blockpos = 0;
+      last = last->next = ka_new(KA_BLOCK);
+      last->children = ka_parser(text + *pos + 1, &blockpos);
+      *pos += blockpos;
     } else if (c == ')' || c == ']' || c == '}' || c == ';') {
       length = 0;
       continue;
