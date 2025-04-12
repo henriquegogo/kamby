@@ -37,26 +37,28 @@ int main() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("del"), ka_func(ka_del), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(":="),  ka_func(ka_def), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("="),   ka_func(ka_set), NULL)));
 
   // Logical operators
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("and"), ka_func(ka_and), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("or"),  ka_func(ka_or),  NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("not"), ka_func(ka_not), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("&&"), ka_func(ka_and), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("||"), ka_func(ka_or),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("!"),  ka_func(ka_not), NULL)));
 
   // Comparison operators
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("eq"),  ka_func(ka_eq),  NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("neq"), ka_func(ka_neq), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("gt"),  ka_func(ka_gt),  NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"),  ka_func(ka_lt),  NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("gte"), ka_func(ka_gte), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lte"), ka_func(ka_lte), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("=="), ka_func(ka_eq),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("!="), ka_func(ka_neq), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(">"),  ka_func(ka_gt),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("<"),  ka_func(ka_lt),  NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(">="), ka_func(ka_gte), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("<="), ka_func(ka_lte), NULL)));
 
   // Arithmetic operators
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("sub"), ka_func(ka_sub), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("mul"), ka_func(ka_mul), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("div"), ka_func(ka_div), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("mod"), ka_func(ka_mod), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("+"), ka_func(ka_add), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("-"), ka_func(ka_sub), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("*"), ka_func(ka_mul), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("/"), ka_func(ka_div), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("%"), ka_func(ka_mod), NULL)));
 
   // Conditional and loops
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("if"),   ka_func(ka_if),   NULL)));

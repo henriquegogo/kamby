@@ -388,10 +388,19 @@ void test_parser() {
   assert(*list->children->number == 1 && *list->children->next->number == 2);
   ka_free(result);
 
-  result = ka_parser("print 1 + 2; 5 + 6 + 7 >= 18 eq? true", (pos = 0, &pos));
-  print_chain(result);
-  printf("\n");
-
+  result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
+  KaNode *expr_set = result->children,
+         *expr_mul = result->children->next->next->children,
+         *expr_sub = result->next->children->children,
+         *expr_sum = result->next->children->children->next->children;
+  assert(expr_set->type == KA_SYMBOL && !strcmp(expr_set->symbol, "="));
+  assert(!strcmp(expr_set->next->symbol, "i"));
+  assert(expr_mul->type == KA_SYMBOL && !strcmp(expr_mul->symbol, "*"));
+  assert(*expr_mul->next->number == 1 && *expr_mul->next->next->number == 2);
+  assert(expr_sub->type == KA_SYMBOL && !strcmp(expr_sub->symbol, "-"));
+  assert(*expr_sub->next->next->number == 7);
+  assert(expr_sum->type == KA_SYMBOL && !strcmp(expr_sum->symbol, "+"));
+  assert(*expr_sum->next->number == 5 && *expr_sum->next->next->number == 6);
   ka_free(result);
 }
 
