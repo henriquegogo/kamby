@@ -311,13 +311,17 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   }
 
   // Reorder expression nodes
-  KaNode *prev = NULL, *a = head;
-  while (a && a->next && a->next->next) {
+  for (KaNode *prev = NULL, *a = head; a && a->next && a->next->next;) {
     KaNode *op = a->next, *b = op->next, *next = b->next;
-    char *symbol = op->symbol;
-    if (op->type == KA_SYMBOL && ispunct(symbol[strlen(symbol) - 1])) {
+    char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
+
+    if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "="))) {
+      (op->next = a, a->next = b);
+      a = prev ? (prev->next = op) : (head = op);
+    } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
       KaNode *expr = ka_new(KA_EXPR);
-      expr->children = (op->next = a, a->next = b, b->next = NULL, op);
+      expr->children =
+        (op->next = a,a->next = b, b->next = NULL, op);
       expr->next = next;
       a = prev ? (prev->next = expr) : (head = expr);
     } else {
