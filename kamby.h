@@ -177,7 +177,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   data->key = strdup(args->symbol);
   data->next = *ctx;
   ka_free(args);
-  return ka_copy(*ctx = data);
+  return (*ctx = data)->type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(data);
 }
 
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
@@ -192,7 +192,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 
   free(data);
   ka_free(args);
-  return ka_copy(node);
+  return node->type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(node);
 }
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
@@ -320,8 +320,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       a = prev ? (prev->next = op) : (head = op);
     } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
       KaNode *expr = ka_new(KA_EXPR);
-      expr->children =
-        (op->next = a,a->next = b, b->next = NULL, op);
+      expr->children = (op->next = a,a->next = b, b->next = NULL, op);
       expr->next = next;
       a = prev ? (prev->next = expr) : (head = expr);
     } else {

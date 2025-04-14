@@ -239,7 +239,8 @@ void test_get() {
 }
 
 void test_def() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_ctx(), *result;
+  result = ka_def(&ctx, ka_chain(ka_symbol("block"), ka_block(NULL), NULL));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("Doe"), NULL)));
@@ -250,12 +251,16 @@ void test_def() {
   assert(*ctx->next->number == 42);
   assert(!strcmp(ctx->next->next->key, "name"));
   assert(!strcmp(ctx->next->next->string, "John"));
+  assert(result->type == KA_NONE && ctx->next->next->next->type == KA_BLOCK);
 
+  ka_free(result);
   ka_free(ctx);
 }
 
 void test_set() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_ctx(), *result;
+  ka_free(ka_set(&ctx, ka_chain(ka_symbol("block"), ka_string("NULL"), NULL)));
+  result = ka_set(&ctx, ka_chain(ka_symbol("block"), ka_block(NULL), NULL));
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("name"),
       ka_list(ka_string("John"), ka_string("Doe"), NULL), NULL)));
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
@@ -266,7 +271,9 @@ void test_set() {
   assert(ctx->next->type == KA_STRING);
   assert(!strcmp(ctx->next->key, "name"));
   assert(!strcmp(ctx->next->string, "Foo"));
+  assert(result->type == KA_NONE && ctx->next->next->type == KA_BLOCK);
 
+  ka_free(result);
   ka_free(ctx);
 }
 
