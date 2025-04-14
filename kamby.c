@@ -29,7 +29,7 @@ KaNode *_exit_(KaNode **ctx, KaNode *args) {
 }
 
 int main() {
-  KaNode *ctx = ka_new(KA_CTX);
+  KaNode *ctx = ka_ctx();
   int pos = 0;
   char input[8192];
 
@@ -70,7 +70,7 @@ int main() {
 
   printf("Valid keywords:\n  ");
   int cols = 0;
-  for (KaNode *curr = ctx; curr->key; curr = curr->next) {
+  for (KaNode *curr = ctx; curr->key && curr->next; curr = curr->next) {
     printf("%s ", curr->key);
     if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
   }
