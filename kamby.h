@@ -165,11 +165,19 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 // Variables
 
-static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
+static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *curr = *ctx;
-  while (curr && strcmp(args->symbol, curr->key ?: "")) curr = curr->next;
+  if (args->symbol[0] == '$') {
+    for (int i = atoi(args->symbol + 1); curr && i-- > 0; curr = curr->next);
+  } else {
+    while (curr && strcmp(args->symbol, curr->key ?: "")) curr = curr->next;
+  }
   ka_free(args);
-  return ka_copy(curr);
+  return curr;
+}
+
+static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
+  return ka_copy(ka_ref(ctx, args));
 }
 
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
@@ -181,8 +189,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
-  KaNode *node = *ctx;
-  while (node && strcmp(args->symbol, node->key)) node = node->next;
+  KaNode *node = ka_ref(ctx, ka_copy(args));
   if (!node) return ka_def(ctx, args);
 
   KaNode *data = ka_copy(args->next);
@@ -197,8 +204,10 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   KaNode *prev = *ctx, *node = *ctx;
+  int i = atoi(args->symbol + 1);
 
-  while (node && strcmp(args->symbol, node->key)) {
+  while (node && args->symbol[0] == '$' ? i-- > 0 :
+      strcmp(args->symbol, node->key)) {
     prev = node;
     node = node->next;
   }
@@ -310,7 +319,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
-  // Reorder expression nodes
+  // Reorder expression nodes when symbols ends with a punctuation.
   for (KaNode *prev = NULL, *a = head; a && a->next && a->next->next;) {
     KaNode *op = a->next, *b = op->next, *next = b->next;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
@@ -320,7 +329,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       a = prev ? (prev->next = op) : (head = op);
     } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
       KaNode *expr = ka_new(KA_EXPR);
-      expr->children = (op->next = a,a->next = b, b->next = NULL, op);
+      expr->children = (op->next = a, a->next = b, b->next = NULL, op);
       expr->next = next;
       a = prev ? (prev->next = expr) : (head = expr);
     } else {

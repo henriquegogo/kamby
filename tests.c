@@ -223,6 +223,18 @@ void test_block() {
   ka_free(node);
 }
 
+void test_ref() {
+  KaNode *ctx = ka_ctx(), *result;
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
+
+  assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 42);
+  assert(!strcmp((result = ka_ref(&ctx, ka_symbol("name")))->string, "John"));
+  assert(!(ka_ref(&ctx, ka_symbol("inexistent"))));
+
+  ka_free(ctx);
+}
+
 void test_get() {
   KaNode *ctx = ka_ctx(), *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
@@ -264,7 +276,7 @@ void test_set() {
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("name"),
       ka_list(ka_string("John"), ka_string("Doe"), NULL), NULL)));
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
-  ka_free(ka_set(&ctx, ka_chain(ka_symbol("name"), ka_string("Foo"), NULL)));
+  ka_free(ka_set(&ctx, ka_chain(ka_symbol("$1"), ka_string("Foo"), NULL)));
 
   assert(!strcmp(ctx->key, "age"));
   assert(*ctx->number == 42);
@@ -288,7 +300,11 @@ void test_del() {
   assert(!strcmp(ctx->next->key, "name"));
 
   ka_free(ka_del(&ctx, ka_symbol("name")));
+  assert(!strcmp(ctx->key, "age"));
   assert(ctx->next->type == KA_CTX);
+
+  ka_free(ka_del(&ctx, ka_symbol("$0")));
+  assert(ctx->type == KA_CTX);
 
   ka_free(ctx);
 }
@@ -567,6 +583,7 @@ int main() {
   test_list();
   test_expr();
   test_block();
+  test_ref();
   test_get();
   test_def();
   test_set();
