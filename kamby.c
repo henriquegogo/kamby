@@ -34,6 +34,7 @@ int main() {
   char input[8192];
 
   // Variables
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("get"), ka_func(ka_get), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("del"), ka_func(ka_del), NULL)));
