@@ -489,6 +489,10 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_exit(KaNode **ctx, KaNode *args) {
   ka_free(args);
+  for (KaNode *curr = *ctx; curr; curr = curr->next) {
+    if (curr->type == KA_CTX) curr->type = KA_NONE;
+  }
+  ka_free(*ctx);
   exit(0);
 }
 
