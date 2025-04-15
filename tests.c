@@ -252,14 +252,14 @@ void test_get() {
   assert((result = ka_get(&ctx, ka_symbol("inexistent")))->type == KA_NONE);
   ka_free(result);
 
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("newctx"), ka_new(KA_CTX), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("ctx"), ka_new(KA_CTX), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(78), NULL)));
 
   assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 78);
   assert(*(ka_ref(&ctx, ka_symbol("$0")))->number == 78);
   assert(ka_ref(&ctx, ka_symbol("$1")) == NULL);
 
-  ka_free(ka_del(&ctx, ka_symbol("newctx")));
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
 
@@ -584,6 +584,38 @@ void test_loop() {
   ka_free(ctx);
 }
 
+void test_init() {
+  KaNode *ctx = ka_init();
+  ctx->key = strdup("ctx");
+
+  assert(!strcmp(ctx->next->key, "get"));
+  assert(!strcmp(ctx->next->next->key, "def"));
+  assert(!strcmp(ctx->next->next->next->key, "set"));
+  assert(!strcmp(ctx->next->next->next->next->key, "del"));
+
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
+void test_code() {
+  KaNode *ctx = ka_init();
+  ctx->key = strdup("ctx");
+  int pos = 0;
+
+  char *code = "\
+    def i 2;\n\
+  ";
+
+  KaNode *expr = ka_parser(code, &pos);
+  KaNode *result = ka_eval(&ctx, expr);
+
+  assert(*result->number == 2);
+
+  ka_free(result), ka_free(expr);
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
 int main() {
   test_new();
   test_chain();
@@ -608,6 +640,8 @@ int main() {
   test_arithmetic();
   test_conditional();
   test_loop();
+  test_init();
+  test_code();
 
   printf("\nAll tests passed!\n\n");
   return 0;
