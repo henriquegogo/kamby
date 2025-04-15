@@ -3,15 +3,13 @@
 
 int main() {
   KaNode *ctx = ka_init();
+  ctx->key = strdup("ctx");
   int pos = 0;
   char input[8192];
 
-  // Context separator
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""),  ka_new(KA_CTX), NULL)));
-
   printf("Valid keywords:\n  ");
   int cols = 0;
-  for (KaNode *curr = ctx; curr->key && curr->next; curr = curr->next) {
+  for (KaNode *curr = ctx->next; curr->key && curr->next; curr = curr->next) {
     if (strlen(curr->key) > 0) printf("%s ", curr->key);
     if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
   }
@@ -26,11 +24,12 @@ int main() {
     fflush(stdout);
     fgets(input, 8192, stdin);
     KaNode *expr = ka_parser(input, (pos = 0, &pos));
-    ka_free(ka_eval(&ctx, expr));
-    ka_free(expr);
+    KaNode *result = ka_eval(&ctx, expr);
+    ka_free(result), ka_free(expr);
     input[0] = '\0';
   }
 
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
   return 0;
 }
