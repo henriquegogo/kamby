@@ -168,7 +168,9 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *curr = *ctx;
   if (args->symbol[0] == '$') {
-    for (int i = atoi(args->symbol + 1); curr && i-- > 0; curr = curr->next);
+    int i = atoi(args->symbol + 1);
+    while (curr && curr->type != KA_CTX && i-- > 0) curr = curr->next;
+    if (curr && curr->type == KA_CTX) curr = NULL;
   } else {
     while (curr && strcmp(args->symbol, curr->key ?: "")) curr = curr->next;
   }
