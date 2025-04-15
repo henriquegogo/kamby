@@ -603,7 +603,8 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def i 2;\n\
+    def (i) 2;\n\
+    (age = 30 + 4);\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
