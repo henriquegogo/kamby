@@ -69,6 +69,9 @@ int main() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("print"), ka_func(_print_), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("exit"),  ka_func(_exit_), NULL)));
 
+  // Context separator
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""),  ka_ctx(), NULL)));
+
   printf("Valid keywords:\n  ");
   int cols = 0;
   for (KaNode *curr = ctx; curr->key && curr->next; curr = curr->next) {

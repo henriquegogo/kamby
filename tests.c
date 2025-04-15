@@ -231,6 +231,15 @@ void test_ref() {
   assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 42);
   assert(!strcmp((result = ka_ref(&ctx, ka_symbol("name")))->string, "John"));
   assert(!(ka_ref(&ctx, ka_symbol("inexistent"))));
+  assert(ka_ref(&ctx, ka_symbol("$0"))->type == KA_NUMBER);
+  assert(ka_ref(&ctx, ka_symbol("$1"))->type == KA_STRING);
+
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""), ka_ctx(), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(78), NULL)));
+
+  assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 78);
+  assert(*(ka_ref(&ctx, ka_symbol("$0")))->number == 78);
+  assert(ka_ref(&ctx, ka_symbol("$1")) == NULL);
 
   ka_free(ctx);
 }
