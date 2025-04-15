@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -482,6 +483,80 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
 
   ka_free(condition_result), ka_free(block), ka_free(condition), ka_free(args);
   return ka_new(KA_NONE);
+}
+
+// I/O functions
+
+static inline KaNode *ka_exit(KaNode **ctx, KaNode *args) {
+  ka_free(args);
+  exit(0);
+}
+
+static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
+  for (KaNode *arg = args; arg != NULL; arg = arg->next) {
+    switch (arg->type) {
+      case KA_NUMBER:
+        if (*arg->number == (long long)(*arg->number)) {
+          printf("%lld", (long long)(*arg->number));
+        } else {
+          printf("%.2Lf", *arg->number);
+        }
+        break;
+      case KA_STRING:
+        printf("%s", arg->string);
+        break;
+      default:;
+    }
+  }
+  printf("\n");
+  ka_free(args);
+  return ka_new(KA_NONE);
+}
+
+// Initialize context with built-in functions
+
+static inline KaNode *ka_init() {
+  KaNode *ctx = ka_new(KA_CTX);
+
+  ka_free(ka_chain(
+    // Variables
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)),
+
+    // Logical operators
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"||"), ka_func(ka_or),  NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"!"),  ka_func(ka_not), NULL)),
+
+    // Comparison operators
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"=="), ka_func(ka_eq),  NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"!="), ka_func(ka_neq), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)">"),  ka_func(ka_gt),  NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"<"),  ka_func(ka_lt),  NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)">="), ka_func(ka_gte), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"<="), ka_func(ka_lte), NULL)),
+
+    // Arithmetic operators
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"+"), ka_func(ka_add), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"-"), ka_func(ka_sub), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"*"), ka_func(ka_mul), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"/"), ka_func(ka_div), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"%"), ka_func(ka_mod), NULL)),
+
+    // Conditional and loops
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),   ka_func(ka_if),   NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"loop"), ka_func(ka_loop), NULL)),
+    
+    // I/O functions
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit),  NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print), NULL)),
+  NULL));
+
+  return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }
 
 #endif
