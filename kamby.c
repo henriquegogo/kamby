@@ -29,7 +29,7 @@ KaNode *_exit_(KaNode **ctx, KaNode *args) {
 }
 
 int main() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_new(KA_CTX);
   int pos = 0;
   char input[8192];
 
@@ -70,7 +70,7 @@ int main() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("exit"),  ka_func(_exit_), NULL)));
 
   // Context separator
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""),  ka_ctx(), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""),  ka_new(KA_CTX), NULL)));
 
   printf("Valid keywords:\n  ");
   int cols = 0;

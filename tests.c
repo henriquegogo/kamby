@@ -12,10 +12,10 @@ void print_node(KaNode *node) {
   for (int i = 0; i < print_level; i++) printf("  ");
   switch (node->type) {
     case KA_NUMBER:
-      printf("number %s: %.2Lf\n", node->key ? node->key : "", *node->number);
+      printf("number %s: %.2Lf\n", node->key ?: "", *node->number);
       break;
     case KA_STRING:
-      printf("string %s: %s\n", node->key ? node->key : "", node->string);
+      printf("string %s: %s\n", node->key ?: "", node->string);
       break;
     case KA_SYMBOL:
       printf("symbol : %s\n", node->symbol);
@@ -43,6 +43,9 @@ void print_node(KaNode *node) {
       child = node->children;
       while (child) { print_node(child); child = child->next; }
       print_level--;
+      break;
+    case KA_CTX:
+      printf("ctx %s\n", node->key);
       break;
     case KA_NONE:
       printf("none %s\n", node->key);
@@ -93,10 +96,10 @@ void test_chain() {
 }
 
 void test_ctx() {
-  KaNode *node = ka_ctx();
+  KaNode *node = ka_new(KA_CTX);
 
   assert(node->type == KA_CTX);
-  assert(!strcmp(node->key, ""));
+  assert(node->key == NULL);
   assert(node->value == NULL);
   assert(node->next == NULL);
 
@@ -224,7 +227,7 @@ void test_block() {
 }
 
 void test_ref() {
-  KaNode *ctx = ka_ctx(), *result;
+  KaNode *ctx = ka_new(KA_CTX), *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
 
@@ -234,18 +237,11 @@ void test_ref() {
   assert(ka_ref(&ctx, ka_symbol("$0"))->type == KA_NUMBER);
   assert(ka_ref(&ctx, ka_symbol("$1"))->type == KA_STRING);
 
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol(""), ka_ctx(), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(78), NULL)));
-
-  assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 78);
-  assert(*(ka_ref(&ctx, ka_symbol("$0")))->number == 78);
-  assert(ka_ref(&ctx, ka_symbol("$1")) == NULL);
-
   ka_free(ctx);
 }
 
 void test_get() {
-  KaNode *ctx = ka_ctx(), *result;
+  KaNode *ctx = ka_new(KA_CTX), *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
 
@@ -256,11 +252,19 @@ void test_get() {
   assert((result = ka_get(&ctx, ka_symbol("inexistent")))->type == KA_NONE);
   ka_free(result);
 
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("newctx"), ka_new(KA_CTX), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(78), NULL)));
+
+  assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 78);
+  assert(*(ka_ref(&ctx, ka_symbol("$0")))->number == 78);
+  assert(ka_ref(&ctx, ka_symbol("$1")) == NULL);
+
+  ka_free(ka_del(&ctx, ka_symbol("newctx")));
   ka_free(ctx);
 }
 
 void test_def() {
-  KaNode *ctx = ka_ctx(), *result;
+  KaNode *ctx = ka_new(KA_CTX), *result;
   result = ka_def(&ctx, ka_chain(ka_symbol("block"), ka_block(NULL), NULL));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
@@ -279,7 +283,7 @@ void test_def() {
 }
 
 void test_set() {
-  KaNode *ctx = ka_ctx(), *result;
+  KaNode *ctx = ka_new(KA_CTX), *result;
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("block"), ka_string("NULL"), NULL)));
   result = ka_set(&ctx, ka_chain(ka_symbol("block"), ka_block(NULL), NULL));
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("name"),
@@ -299,7 +303,7 @@ void test_set() {
 }
 
 void test_del() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_new(KA_CTX);
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL)));
@@ -319,7 +323,7 @@ void test_del() {
 }
 
 void test_eval() {
-  KaNode *ctx = ka_ctx(), *expr, *result;
+  KaNode *ctx = ka_new(KA_CTX), *expr, *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
@@ -533,7 +537,7 @@ void test_arithmetic() {
 }
 
 void test_conditional() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_new(KA_CTX);
   KaNode *block = ka_block(ka_number(42), NULL);
   KaNode *else_block = ka_block(ka_number(27), NULL);
   KaNode *result;
@@ -560,7 +564,7 @@ void test_conditional() {
 }
 
 void test_loop() {
-  KaNode *ctx = ka_ctx();
+  KaNode *ctx = ka_new(KA_CTX);
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL)));

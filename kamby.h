@@ -60,12 +60,6 @@ static inline KaNode *ka_chain(KaNode *args, ...) {
   return args;
 }
 
-static inline KaNode *ka_ctx() {
-  KaNode *node = ka_new(KA_CTX);
-  node->key = strdup("");
-  return node;
-}
-
 static inline KaNode *ka_number(long double value) {
   KaNode *node = ka_new(KA_NUMBER);
   node->number = (long double *)calloc(1, sizeof(long double));
@@ -209,7 +203,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   int i = atoi(args->symbol + 1);
 
   while (node && args->symbol[0] == '$' ? i-- > 0 :
-      strcmp(args->symbol, node->key)) {
+      strcmp(args->symbol, node->key ?: "")) {
     prev = node;
     node = node->next;
   }
@@ -256,11 +250,13 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = ka_chain(ka_ctx(), *ctx, NULL);
+    KaNode *block_ctx = !head->next ? ka_chain(ka_new(KA_CTX), *ctx, NULL) :
+      ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
     KaNode *block_result = ka_eval(&block_ctx, head->children);
     KaNode *result = block_result;
     while (result->next) result = result->next;
     result = ka_copy(result);
+    head->next = NULL;
     ka_free(block_result), ka_free(block_ctx), ka_free(head);
     return result;
   }
@@ -297,7 +293,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       last = last->next = ka_new(KA_BLOCK);
       last->children = ka_parser(text + *pos + 1, &blockpos);
       *pos += blockpos;
-    } else if (c == ')' || c == ']' || c == '}' || c == ';') {
+    } else if (c == ')' || c == ']' || c == '}' || c == ';' || c== ',') {
       length = 0;
       continue;
     } else if (c == '\'' || c == '"') {
@@ -312,8 +308,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     } else if (isdigit(c)) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       last = last->next = ka_number(strtold(text + start, NULL));
-    } else if (isgraph(c) && c != ';') {
-      while (isgraph(c = text[*pos + 1]) && c != ';' &&
+    } else if (isgraph(c) && c != ';' && c != ',') {
+      while (isgraph(c = text[*pos + 1]) && c != ';' && c != ',' &&
           c != '(' && c != ')' && c != '[' &&
           c != ']' && c != '{' && c != '}') (*pos)++;
       last = last->next = ka_new(KA_SYMBOL);
