@@ -395,6 +395,11 @@ void test_parser() {
   assert(*result->children->next->number == 42);
   ka_free(result);
 
+  result = ka_parser("age\n/* Multiline\ncomment */\n42", (pos = 0, &pos));
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->children->next->number == 42);
+  ka_free(result);
+
   result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
   assert(!strcmp(result->children->string, "It\'s John Doe. Backslash: \\ OK"));
   ka_free(result);
