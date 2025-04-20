@@ -275,28 +275,24 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     while (*pos < length) {
       last = last->next = ka_new(KA_EXPR);
       last->children = ka_parser(text, pos);
-      if (text[*pos - 1] == '}') length = 0;
+      if (strchr(")]}", text[*pos - 1])) length = 0;
     }
   }
 
   // Parse each character, recognize types and create nodes.
   // If position is negative, start at the beginning.
   for (*pos = *pos < 0 ? 0 : *pos; *pos < length; (*pos)++) {
-    int start = *pos;
+    int start = *pos, childpos = 0;
     char c = text[*pos];
 
     if (c == '#' || (c == '/' && text[*pos + 1] == '/'))
       while (text[++(*pos)] != '\n');
-    else if (strchr(";,)]}", c)) length = 0;
-    else if (strchr("([", c)) {
-      last = last->next = ka_new(c == '(' ? KA_EXPR : KA_LIST);
-      last->children = ka_parser(text, ((*pos)++, pos));
-      (*pos)--;
-    } else if (c == '{') {
-      int blockpos = 0;
-      last = last->next = ka_new(KA_BLOCK);
-      last->children = ka_parser(text + *pos + 1, &blockpos);
-      *pos += blockpos;
+    else if (strchr(";,)]}", c) || text[*pos - 1] == '}') length = 0;
+    else if (strchr("([{", c)) {
+      last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
+      last->next->children = ka_parser(text + *pos + 1, &childpos);
+      last = last->next;
+      *pos += childpos;
     } else if (strchr("'\"", c)) {
       while (text[++(*pos)] != text[start] ||
           (text[*pos - 1] == '\\' && text[*pos - 2] != '\\'));
