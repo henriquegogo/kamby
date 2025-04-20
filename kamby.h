@@ -550,6 +550,8 @@ static inline KaNode *ka_init() {
     // Conditional and loops
     ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),   ka_func(ka_if),   NULL)),
     ka_def(&ctx, ka_chain(ka_symbol((char *)"loop"), ka_func(ka_loop), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),  ka_func(ka_loop), NULL)),
     
     // I/O functions
     ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit),  NULL)),
