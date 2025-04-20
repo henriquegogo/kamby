@@ -612,7 +612,7 @@ void test_code() {
     def i 2;\n\
     def hello { print \"1st: \" $0 \", 2nd: \" $1 }\n\
     hello(33, age = 34);\n\
-    add 2 2;\n\
+    print i;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
