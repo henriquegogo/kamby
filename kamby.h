@@ -287,6 +287,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
     if (c == '#' || (c == '/' && text[*pos + 1] == '/'))
       while (text[++(*pos)] != '\n');
+    else if (c == '/' && text[*pos + 1] == '*')
+      while (!(text[++(*pos)] == '*' && text[++(*pos)] == '/'));
     else if (strchr(";,)]}", c) || text[*pos - 1] == '}') length = 0;
     else if (strchr("([{", c)) {
       last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
