@@ -384,13 +384,13 @@ void test_parser() {
   assert(!result->children->next);
   ka_free(result);
 
-  result = ka_parser("42.21 age # This is a comment", (pos = 0, &pos));
+  result = ka_parser("42.21 age // This is a comment", (pos = 0, &pos));
   assert(fabsl(*result->children->number - 42.21) < 1e-10);
   assert(!strcmp(result->children->next->symbol, "age"));
   assert(!result->children->next->next);
   ka_free(result);
 
-  result = ka_parser("age\n# This is a comment\n42", (pos = 0, &pos));
+  result = ka_parser("age\n// This is a comment\n42", (pos = 0, &pos));
   assert(!strcmp(result->children->symbol, "age"));
   assert(*result->children->next->number == 42);
   ka_free(result);
@@ -603,8 +603,13 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def (i) 2;\n\
+    def i 2;\n\
     (age = 30 + 4);\n\
+    def hello { print \"1st: \" $0 \", 2nd: \" $1 };\n\
+    hello (name = 31) (age = 32);\n\
+    hello (name, age);\n\
+    // hello (name = 33, age = 34);\n\
+    2 + 2;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
