@@ -407,21 +407,22 @@ void test_parser() {
   assert(!strcmp(result->next->next->children->symbol, "name"));
   ka_free(result);
 
-  result = ka_parser("42 'John Doe'; name (22) {71; 72} [1 2]", (pos = 0, &pos));
+  result = ka_parser("42 'John Doe'; name (22) [1 2] {71; 72}", (pos = 0, &pos));
   KaNode *number = result->children,
          *string = result->children->next,
          *symbol = result->next->children,
-         *expr = result->next->children->next,
-         *block = result->next->children->next->next,
-         *list = result->next->children->next->next->next;
+         *expr = result->next->children->next->children,
+         *list = result->next->children->next->next,
+         *block = result->next->children->next->next->next;
   assert(number->type == KA_NUMBER && *number->number == 42);
   assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
   assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
   assert(expr->type == KA_EXPR && *expr->children->number == 22);
+  assert(list->type == KA_LIST);
+  assert(*list->children->children->number == 1);
+  assert(*list->children->children->next->number == 2);
   assert(block->type == KA_BLOCK && *block->children->children->number == 71);
   assert(block->type == KA_BLOCK && *block->children->next->children->number == 72);
-  assert(list->type == KA_LIST);
-  assert(*list->children->number == 1 && *list->children->next->number == 2);
   ka_free(result);
 
   result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
@@ -604,12 +605,9 @@ void test_code() {
 
   char *code = "\
     def i 2;\n\
-    (age = 30 + 4);\n\
-    def hello { print \"1st: \" $0 \", 2nd: \" $1 };\n\
-    hello (name = 31) (age = 32);\n\
-    hello (name, age);\n\
-    // hello (name = 33, age = 34);\n\
-    2 + 2;\n\
+    def hello { print \"1st: \" $0 \", 2nd: \" $1 }\n\
+    hello(33, age = 34);\n\
+    add 2 2;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
