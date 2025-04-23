@@ -308,6 +308,11 @@ void test_del() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL)));
 
+  ka_free(ka_del(&ctx, ka_symbol("unknown")));
+  assert(!strcmp(ctx->key, "message"));
+  assert(!strcmp(ctx->next->key, "age"));
+  assert(!strcmp(ctx->next->next->key, "name"));
+
   ka_free(ka_del(&ctx, ka_symbol("message")));
   assert(!strcmp(ctx->key, "age"));
   assert(!strcmp(ctx->next->key, "name"));
