@@ -229,9 +229,11 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
       KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
       last = last->next = var->type ? var : ka_copy(curr);
     } else if (curr->type == KA_LIST) {
+      KaNode *list_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
       last = last->next = ka_new(curr->type);
       last->key = curr->key ? strdup(curr->key) : NULL;
-      last->children = ka_eval(ctx, curr->children);
+      last->children = ka_eval(&list_ctx, curr->children);
+      ka_free(list_ctx);
     } else if (curr->type == KA_EXPR) {
       last = last->next = ka_eval(ctx, curr->children);
     } else {
