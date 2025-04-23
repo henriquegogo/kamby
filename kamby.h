@@ -226,8 +226,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   // Eval expressions and get variables
   for (KaNode *curr = nodes; curr; curr = curr->next) {
     if (curr->type == KA_SYMBOL) {
-      KaNode *var = ka_get(ctx, ka_symbol(curr->symbol));
-      last = last->next = var->type ? var : ka_copy(curr);
+      last = last->next = ka_get(ctx, ka_symbol(curr->symbol));
     } else if (curr->type == KA_LIST) {
       KaNode *list_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
       last = last->next = ka_new(curr->type);
