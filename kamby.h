@@ -255,7 +255,9 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = !head->next ? ka_chain(ka_new(KA_CTX), *ctx, NULL) :
+    KaNode *block_ctx = !head->next ?
+      ka_chain(ka_new(KA_CTX), *ctx, NULL) : head->next->type == KA_LIST ?
+      ka_chain(head->next->children, ka_new(KA_CTX), *ctx, NULL) :
       ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
     KaNode *block_result = ka_eval(&block_ctx, head->children);
     KaNode *result = block_result;
