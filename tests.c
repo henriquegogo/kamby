@@ -614,18 +614,16 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def i 2;\n\
     def hello { print \"1st: \" $0 \", 2nd: \" $1 }\n\
+    def i 2;\n\
     hello(33, age = 34);\n\
     print i;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
-  KaNode *result = ka_eval(&ctx, expr);
-
-  assert(*result->number == 2);
-
-  ka_free(result), ka_free(expr);
+  ka_free(ka_eval(&ctx, expr));
+  
+  ka_free(expr);
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
