@@ -204,14 +204,15 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   int i = atoi(args->symbol + 1);
 
   while (node && args->symbol[0] == '$' ? i-- > 0 :
-      strcmp(args->symbol, node->key ?: "")) {
+      node && strcmp(args->symbol, node->key ?: "")) {
     prev = node;
     node = node->next;
   }
 
+  ka_free(args);
   if (!node) return ka_new(KA_NONE);
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
-  ka_free(args), ka_free((node->next = NULL, node));
+  ka_free((node->next = NULL, node));
   return ka_new(KA_NONE);
 }
 
