@@ -263,6 +263,19 @@ void test_get() {
   ka_free(ctx);
 }
 
+void test_key() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+  result = ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL));
+
+  assert(ctx->type == KA_CTX);
+  assert(result->type == KA_NUMBER);
+  assert(*result->number == 2);
+  assert(!strcmp(result->key, "two"));
+
+  ka_free(result);
+  ka_free(ctx);
+}
+
 void test_def() {
   KaNode *ctx = ka_new(KA_CTX), *result;
   result = ka_def(&ctx, ka_chain(ka_symbol("block"), ka_block(NULL), NULL));
@@ -619,17 +632,18 @@ void test_code() {
     list = [\
       1,\
       i,\
-      third = 3,\
+      third : 3,\
       4\
     ];\n\
-    hello[first = 33, age = 34];\n\
+    hello(first : 33, age : 34);\n\
+    print first age;\n\
     print i;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
   ka_free(ka_eval(&ctx, expr));
 
-//  print_chain(ctx);
+  print_chain(ctx);
 //  print_chain(expr);
   
   ka_free(expr);
@@ -651,6 +665,7 @@ int main() {
   test_block();
   test_ref();
   test_get();
+  test_key();
   test_def();
   test_set();
   test_del();
