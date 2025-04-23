@@ -177,6 +177,13 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
   return ka_copy(ka_ref(ctx, args));
 }
 
+static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
+  KaNode *data = ka_copy(args->next);
+  data->key = strdup(args->symbol);
+  ka_free(args);
+  return data;
+}
+
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   KaNode *data = ka_copy(args->next);
   data->key = strdup(args->symbol);
@@ -228,18 +235,17 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     if (curr->type == KA_SYMBOL) {
       last = last->next = ka_get(ctx, ka_symbol(curr->symbol));
     } else if (curr->type == KA_LIST) {
-      KaNode *list_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
       last = last->next = ka_new(curr->type);
       last->key = curr->key ? strdup(curr->key) : NULL;
-      last->children = ka_eval(&list_ctx, curr->children);
-      ka_free(list_ctx);
+      last->children = ka_eval(ctx, curr->children);
     } else if (curr->type == KA_EXPR) {
       last = last->next = ka_eval(ctx, curr->children);
     } else {
       last = last->next = ka_copy(curr);
     }
     // Skip getting the next node's value and treat it as a SYMBOL
-    if (last->func == ka_def || last->func == ka_set || last->func == ka_del) {
+    if (last->func == ka_key || last->func == ka_def ||
+        last->func == ka_set || last->func == ka_del) {
       last = last->next = ka_copy(curr = curr->next);
     }
   }
@@ -254,9 +260,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = !head->next ?
-      ka_chain(ka_new(KA_CTX), *ctx, NULL) : head->next->type == KA_LIST ?
-      ka_chain(head->next->children, ka_new(KA_CTX), *ctx, NULL) :
+    KaNode *block_ctx = !head->next ? ka_chain(ka_new(KA_CTX), *ctx, NULL) : 
       ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
     KaNode *block_result = ka_eval(&block_ctx, head->children);
     KaNode *result = block_result;
@@ -529,6 +533,7 @@ static inline KaNode *ka_init() {
     ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def), NULL)),
     ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)),
     ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)),
+    ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)),
     ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)),
     ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)),
 
