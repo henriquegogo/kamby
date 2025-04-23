@@ -182,7 +182,8 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   data->key = strdup(args->symbol);
   data->next = *ctx;
   ka_free(args);
-  return (*ctx = data)->type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(data);
+  KaType type = (*ctx = data)->type;
+  return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(data);
 }
 
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
@@ -191,12 +192,12 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 
   KaNode *data = ka_copy(args->next);
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
-  node->type = data->type;
   node->value = data->value;
+  KaType type = node->type = data->type;
 
   free(data);
   ka_free(args);
-  return node->type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(node);
+  return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
 }
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
