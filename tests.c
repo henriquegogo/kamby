@@ -614,22 +614,23 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { print \"1st: \" $0 \", 2nd: \" $1 }\n\
+    def hello { print \"1st: \" $1 \", 2nd: \" first }\n\
     def i 2;\n\
     list = [\
       1,\
-      2,\
+      i,\
       third = 3,\
       4\
     ];\n\
-    hello(33, age = 34);\n\
+    hello[first = 33, age = 34];\n\
     print i;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
   ka_free(ka_eval(&ctx, expr));
 
-  print_chain(ctx);
+//  print_chain(ctx);
+//  print_chain(expr);
   
   ka_free(expr);
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
