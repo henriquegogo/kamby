@@ -614,13 +614,17 @@ void test_loop() {
 }
 
 void test_init() {
-  KaNode *ctx = ka_init();
+  KaNode *ctx = ka_init(), *first = ctx, *second;
   ctx->key = strdup("ctx");
+  while (first->next) second = first, first = first->next;
 
-  assert(!strcmp(ctx->next->key, "get"));
-  assert(!strcmp(ctx->next->next->key, "def"));
-  assert(!strcmp(ctx->next->next->next->key, "set"));
-  assert(!strcmp(ctx->next->next->next->next->key, "del"));
+  assert(ctx->type == KA_CTX);
+  assert(ctx->next->type == KA_FUNC);
+  assert(strlen(ctx->next->key) > 0);
+  assert(first->type == KA_CTX);
+  assert(second->type == KA_FUNC);
+  assert(second->func == ka_get);
+  assert(!strcmp(second->key, "get"));
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
