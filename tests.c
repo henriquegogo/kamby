@@ -227,15 +227,18 @@ void test_block() {
 }
 
 void test_ref() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
+  KaNode *ctx = ka_new(KA_CTX);
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("key"), ka_string("name"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
 
   assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 42);
-  assert(!strcmp((result = ka_ref(&ctx, ka_symbol("name")))->string, "John"));
+  assert(!strcmp(ka_ref(&ctx, ka_symbol("name"))->string, "John"));
   assert(!(ka_ref(&ctx, ka_symbol("inexistent"))));
   assert(ka_ref(&ctx, ka_symbol("$0"))->type == KA_NUMBER);
   assert(ka_ref(&ctx, ka_symbol("$1"))->type == KA_STRING);
+  assert(ka_ref(&ctx, ka_symbol("$key"))->type == KA_STRING);
+  assert(!strcmp(ka_ref(&ctx, ka_symbol("$key"))->string, "John"));
 
   ka_free(ctx);
 }
@@ -638,13 +641,14 @@ void test_code() {
     hello(first : 33, age : 34);\n\
     print first age;\n\
     print i;\n\
+    key = 'i';\n\
+    print 'two: ' $key;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
-  ka_free(ka_eval(&ctx, expr));
-
-  print_chain(ctx);
 //  print_chain(expr);
+  ka_free(ka_eval(&ctx, expr));
+//  print_chain(ctx);
   
   ka_free(expr);
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
