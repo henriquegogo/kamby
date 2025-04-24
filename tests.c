@@ -614,9 +614,9 @@ void test_loop() {
 }
 
 void test_init() {
-  KaNode *ctx = ka_init(), *last = ctx, *prev;
+  KaNode *ctx = ka_init(), *last, *prev;
   ctx->key = strdup("ctx");
-  while (last->next) prev = last, last = last->next;
+  for (last = ctx; last->next; last = last->next) prev = last;
 
   assert(ctx->type == KA_CTX);
   assert(ctx->next->type == KA_FUNC);
