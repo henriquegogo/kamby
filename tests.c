@@ -632,7 +632,7 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { print \"1st: \" $1 \", 2nd: \" first }\n\
+    def hello { print \"1st: \" $1 \", 2nd: \" first };\n\
     def i 2;\n\
     text = 'Hello, world!';\n\
     list = [\
@@ -647,6 +647,8 @@ void test_code() {
     key = 'i';\n\
     print 'two: ' $key;\n\
     print 'stack: ' $i;\n\
+    if 1 == 1 { print 'true' } { 2 == 2 ? { print 'false' } };\n\
+    print 'Bye';\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
