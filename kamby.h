@@ -505,6 +505,7 @@ static inline KaNode *ka_exit(KaNode **ctx, KaNode *args) {
   }
   ka_free(*ctx);
   exit(0);
+  return NULL;
 }
 
 static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
@@ -532,47 +533,46 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_init() {
   KaNode *ctx = ka_new(KA_CTX);
+  void (*f)(KaNode *) = ka_free;
 
-  ka_free(ka_chain(
-    // Variables
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)),
+  // Variables
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
 
-    // Logical operators
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"||"), ka_func(ka_or),  NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"!"),  ka_func(ka_not), NULL)),
+  // Logical operators
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"||"), ka_func(ka_or),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"!"),  ka_func(ka_not), NULL)));
 
-    // Comparison operators
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"=="), ka_func(ka_eq),  NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"!="), ka_func(ka_neq), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)">"),  ka_func(ka_gt),  NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"<"),  ka_func(ka_lt),  NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)">="), ka_func(ka_gte), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"<="), ka_func(ka_lte), NULL)),
+  // Comparison operators
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"=="), ka_func(ka_eq),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"!="), ka_func(ka_neq), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)">"),  ka_func(ka_gt),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"<"),  ka_func(ka_lt),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)">="), ka_func(ka_gte), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"<="), ka_func(ka_lte), NULL)));
 
-    // Arithmetic operators
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"+"), ka_func(ka_add), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"-"), ka_func(ka_sub), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"*"), ka_func(ka_mul), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"/"), ka_func(ka_div), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"%"), ka_func(ka_mod), NULL)),
+  // Arithmetic operators
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"+"), ka_func(ka_add), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"-"), ka_func(ka_sub), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"*"), ka_func(ka_mul), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"/"), ka_func(ka_div), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%"), ka_func(ka_mod), NULL)));
 
-    // Conditional and loops
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),   ka_func(ka_if),   NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"loop"), ka_func(ka_loop), NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),  ka_func(ka_loop), NULL)),
+  // Conditional and loops
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),   ka_func(ka_if),   NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"loop"), ka_func(ka_loop), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),  ka_func(ka_loop), NULL)));
     
-    // I/O functions
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit),  NULL)),
-    ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print), NULL)),
-  NULL));
+  // I/O functions
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }
