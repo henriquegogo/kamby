@@ -163,17 +163,18 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
   char *sym = args->symbol;
-  if (sym[0] == '$' && !isdigit(sym[1])) {
+  if (sym[0] == '$' && sym[1] && !isdigit(sym[1])) {
     char num[4096];
     KaNode *ref = ka_ref(ctx, ka_symbol(sym + 1));
     if (ref->type == KA_NUMBER) sprintf(num, "%d", (int)*ref->number);
     node = ka_ref(ctx, ka_symbol(ref->type != KA_NUMBER ? ref->symbol : num));
+  } else if (sym[0] == '$' && sym[1] && isdigit(sym[1])) {
+    node = ka_ref(ctx, ka_symbol(sym + 1));
   } else if (isdigit(sym[0])) {
     int i = atoi(sym);
     while (node && node->type != KA_CTX && i-- > 0) node = node->next;
     if (node && node->type == KA_CTX) node = NULL;
-  } else if (sym[0] == '$') node = ka_ref(ctx, ka_symbol(sym + 1));
-  else while (node && strcmp(sym, node->key ?: "")) node = node->next;
+  } else while (node && strcmp(sym, node->key ?: "")) node = node->next;
   ka_free(args);
   return node;
 }
