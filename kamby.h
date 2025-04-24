@@ -161,16 +161,19 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 // Variables
 
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
-  KaNode *curr = *ctx;
-  if (args->symbol[0] == '$') {
+  KaNode *node = *ctx;
+  if (args->symbol[0] == '$' && !isdigit(args->symbol[1])) {
+    KaNode *value = ka_ref(ctx, ka_symbol(args->symbol + 1));
+    node = ka_ref(ctx, ka_symbol(value->symbol));
+  } else if (args->symbol[0] == '$') {
     int i = atoi(args->symbol + 1);
-    while (curr && curr->type != KA_CTX && i-- > 0) curr = curr->next;
-    if (curr && curr->type == KA_CTX) curr = NULL;
+    while (node && node->type != KA_CTX && i-- > 0) node = node->next;
+    if (node && node->type == KA_CTX) node = NULL;
   } else {
-    while (curr && strcmp(args->symbol, curr->key ?: "")) curr = curr->next;
+    while (node && strcmp(args->symbol, node->key ?: "")) node = node->next;
   }
   ka_free(args);
-  return curr;
+  return node;
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
