@@ -568,6 +568,7 @@ void test_arithmetic() {
 void test_conditional() {
   KaNode *ctx = ka_new(KA_CTX);
   KaNode *block = ka_block(ka_number(42), NULL);
+  KaNode *elseif_block = ka_block(ka_number(71), NULL);
   KaNode *else_block = ka_block(ka_number(27), NULL);
   KaNode *result;
 
@@ -589,7 +590,23 @@ void test_conditional() {
   assert(result->type == KA_NONE);
   ka_free(result);
 
-  ka_free(else_block), ka_free(block), ka_free(ctx);
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block),
+        ka_gt(NULL, ka_chain(ka_number(2), ka_number(1), NULL)),
+        ka_copy(elseif_block), ka_copy(else_block), NULL));
+  assert(*result->number == 71);
+  ka_free(result);
+
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block),
+        ka_gt(NULL, ka_chain(ka_number(2), ka_number(3), NULL)),
+        ka_copy(elseif_block), ka_copy(else_block), NULL));
+  assert(*result->number == 27);
+  ka_free(result);
+
+  ka_free(elseif_block), ka_free(else_block), ka_free(block), ka_free(ctx);
 }
 
 void test_loop() {
