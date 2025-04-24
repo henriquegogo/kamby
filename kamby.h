@@ -170,8 +170,8 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
     node = ka_ref(ctx, ka_symbol(ref->type != KA_NUMBER ? ref->symbol : num));
   } else if (sym[0] == '$' && sym[1] && isdigit(sym[1])) {
     node = ka_ref(ctx, ka_symbol(sym + 1));
-  } else if (isdigit(sym[0])) {
-    int i = atoi(sym);
+  } else if (isdigit(sym[0]) || args->type == KA_NUMBER) {
+    int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
     while (node && node->type != KA_CTX && i-- > 0) node = node->next;
     if (node && node->type == KA_CTX) node = NULL;
   } else while (node && strcmp(sym, node->key ?: "")) node = node->next;
@@ -180,7 +180,8 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
-  return ka_copy(ka_ref(ctx, args));
+  return ka_copy(args->type == KA_LIST ?
+      ka_ref(&args->children, args->next) : ka_ref(ctx, args));
 }
 
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
@@ -543,6 +544,7 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),   ka_func(ka_get), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
 
