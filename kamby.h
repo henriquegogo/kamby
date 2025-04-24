@@ -303,7 +303,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       while (text[++(*pos)] != '\n');
     else if (c == '/' && text[*pos + 1] == '*')
       while (!(text[++(*pos)] == '*' && text[++(*pos)] == '/'));
-    else if (strchr(";,)]}", c) || text[*pos - 1] == '}') length = 0;
+    else if (strchr(";,)]}", c)) length = 0;
     else if (strchr("([{", c)) {
       last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
       last->next->children = ka_parser(text + *pos + 1, &childpos);
@@ -333,7 +333,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     KaNode *op = a->next, *b = op->next, *next = b->next;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
 
-    if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "="))) {
+    if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "=") ||
+          !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
     } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
