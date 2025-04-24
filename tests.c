@@ -229,6 +229,7 @@ void test_block() {
 void test_ref() {
   KaNode *ctx = ka_new(KA_CTX);
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("key"), ka_string("name"), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(1), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
 
@@ -239,6 +240,7 @@ void test_ref() {
   assert(ka_ref(&ctx, ka_symbol("$1"))->type == KA_STRING);
   assert(ka_ref(&ctx, ka_symbol("$key"))->type == KA_STRING);
   assert(!strcmp(ka_ref(&ctx, ka_symbol("$key"))->string, "John"));
+  assert(!strcmp(ka_ref(&ctx, ka_symbol("$i"))->string, "John"));
 
   ka_free(ctx);
 }
@@ -632,6 +634,7 @@ void test_code() {
   char *code = "\
     def hello { print \"1st: \" $1 \", 2nd: \" first }\n\
     def i 2;\n\
+    text = 'Hello, world!';\n\
     list = [\
       1,\
       i,\
@@ -643,6 +646,7 @@ void test_code() {
     print i;\n\
     key = 'i';\n\
     print 'two: ' $key;\n\
+    print 'stack: ' $i;\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
