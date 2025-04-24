@@ -477,10 +477,11 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
-  KaType condition = args->type;
-  KaNode *block = ka_copy(args->next), *else_block = ka_copy(args->next->next);
-  KaNode *result = ka_eval(ctx, condition == KA_TRUE ? block : else_block);
-  ka_free(else_block), ka_free(block), ka_free(args);
+  KaNode *curr = args, *prev;
+  while (curr->next && curr->type != KA_TRUE) prev = curr, curr = curr->next;
+  KaNode *block = ka_copy(curr->next ?: prev->type != KA_FALSE ? curr : NULL);
+  KaNode *result = ka_eval(ctx, block);
+  ka_free(block), ka_free(args);
   return result;
 }
 
