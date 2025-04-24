@@ -668,7 +668,7 @@ void test_code() {
     key = 'i';\n\
     print 'two: ' $key;\n\
     print 'stack: ' $i;\n\
-    if 1 == 1 { print 'true' } { 2 == 2 ? { print 'false' } };\n\
+    print(1 != 1 ? 'one' 2 == 2 'two' if 'three');\n\
     print 'Bye';\n\
   ";
 
