@@ -657,10 +657,10 @@ void test_code() {
     def i 2;\n\
     text = 'Hello, world!';\n\
     list = [\
-      1,\
+      'one',\
       i,\
-      third : 3,\
-      4\
+      third : 'three',\
+      'four'\
     ];\n\
     hello(first : 33, age : 34);\n\
     print first age;\n\
@@ -668,6 +668,7 @@ void test_code() {
     key = 'i';\n\
     print 'two: ' $key;\n\
     print 'stack: ' $i;\n\
+    print list . 'third';\n\
     print(1 != 1 ? 'one' 2 == 2 'two' if 'three');\n\
     print 'Bye';\n\
   ";
