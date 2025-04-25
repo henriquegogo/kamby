@@ -180,8 +180,10 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
-  return ka_copy(args->type == KA_LIST ?
-      ka_ref(&args->children, args->next) : ka_ref(ctx, args));
+  KaNode *node = ka_copy(
+      ka_ref(args->next ? &args->children : ctx, ka_copy(args->next ?: args)));
+  ka_free(args);
+  return node;
 }
 
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
