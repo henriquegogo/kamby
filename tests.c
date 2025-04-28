@@ -415,12 +415,12 @@ void test_parser() {
 
   result = ka_parser("age\n// This is a comment\n42", (pos = 0, &pos));
   assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->children->next->number == 42);
+  assert(*result->next->children->number == 42);
   ka_free(result);
 
   result = ka_parser("age\n/* Multiline\ncomment */\n42", (pos = 0, &pos));
   assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->children->next->number == 42);
+  assert(*result->next->next->children->number == 42);
   ka_free(result);
 
   result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
@@ -653,24 +653,24 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { print \"1st: \" $1 \", 2nd: \" first };\n\
-    def i 2;\n\
-    text = 'Hello, world!';\n\
+    def hello { print \"1st: \" $1 \", 2nd: \" first }\n\
+    def i 2\n\
+    text = 'Hello, world!'\n\
     list = [\
       'one',\
       i,\
       third : 'three',\
       'four'\
-    ];\n\
-    hello(first : 33, age : 34);\n\
-    print first age;\n\
-    print i;\n\
-    key = 'i';\n\
-    print 'two: ' $key;\n\
-    print 'stack: ' $i;\n\
-    print list . 'third';\n\
-    print(1 != 1 ? 'one' 2 == 2 'two' if 'three');\n\
-    print 'Bye';\n\
+    ]\n\
+    hello(first : 33, age : 34)\n\
+    print first age\n\
+    print i\n\
+    key = 'i'\n\
+    print 'two: ' $key\n\
+    print 'stack: ' $i\n\
+    print list . 'third'\n\
+    print(1 != 1 ? 'one' 2 == 2 'two' if 'three')\n\
+    print 'Bye'\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
