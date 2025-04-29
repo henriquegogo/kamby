@@ -260,9 +260,12 @@ void test_get() {
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("ctx"), ka_new(KA_CTX), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(78), NULL)));
 
-  assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 78);
-  assert(*(ka_ref(&ctx, ka_symbol("$0")))->number == 78);
-  assert(ka_ref(&ctx, ka_symbol("$1")) == NULL);
+  assert(*(result = ka_get(&ctx, ka_symbol("age")))->number == 78);
+  ka_free(result);
+  assert(*(result = ka_get(&ctx, ka_symbol("$0")))->number == 78);
+  ka_free(result);
+  assert((result = ka_get(&ctx, ka_symbol("$1")))->type == KA_NONE);
+  ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -387,7 +390,7 @@ void test_eval() {
   ka_free(result), ka_free(expr);
 
   expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
-  result = ka_eval(&ctx, expr); // Memory leak
+  result = ka_eval(&ctx, expr);
   assert(*result->number == 15);
   ka_free(result), ka_free(expr);
 
@@ -653,8 +656,10 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { print \"1st: \" $1 \", 2nd: \" first }\n\
-    def i 2\n\
+    def hello { \n\
+      print \"prop1: \" $1 \", prop2: \" first\n\
+    }\n\
+    i = 2\n\
     text = 'Hello, world!'\n\
     list = [\
       'one',\
@@ -663,14 +668,14 @@ void test_code() {
       'four'\
     ]\n\
     hello(first : 33, age : 34)\n\
-    print first age\n\
-    print i\n\
+    print 'Previous args should be local, not global (blank)' first age\n\
     key = 'i'\n\
-    print 'two: ' $key\n\
-    print 'stack: ' $i\n\
-    print list . 'third'\n\
-    print(1 != 1 ? 'one' 2 == 2 'two' if 'three')\n\
-    print 'Bye'\n\
+    print 'Number two: ' $key\n\
+    print 'Stack by var number: ' $i\n\
+    print 'List item: ' list . third\n\
+    print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' else 'three'))\n\
+    obj = [name : 'Henrique', age : 40, sayName : { print obj . name }]\n\
+    print ['item1', second : 'item2', 'item3'] . second\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);

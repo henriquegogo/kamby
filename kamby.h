@@ -239,8 +239,11 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
   if (!nodes) return head;
 
-  // Eval expressions and get variables
-  for (KaNode *curr = nodes; curr; curr = curr->next) {
+  // Evaluate expressions and resolve variables
+  for (KaNode *curr = nodes, *skip = NULL; curr; curr = curr->next) {
+    // Flagged node skip processing
+    if (curr == skip && (last = last->next = ka_copy(curr))) continue;
+    // Process node based on its type
     if (curr->type == KA_SYMBOL) {
       last = last->next = ka_get(ctx, ka_symbol(curr->symbol));
     } else if (curr->type == KA_LIST) {
@@ -252,10 +255,14 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     } else {
       last = last->next = ka_copy(curr);
     }
-    // Skip getting the next node's value and treat it as a SYMBOL
+    // Flag next node for special treatment
     if (last->func == ka_key || last->func == ka_def ||
         last->func == ka_set || last->func == ka_del) {
-      last = last->next = ka_copy(curr = curr->next);
+      skip = curr->next;
+    } else if (last->func == ka_get && curr->next->next &&
+        curr->next->next->type == KA_SYMBOL &&
+        curr->next->next->symbol[0] != '$') {
+      skip = curr->next->next;
     }
   }
 
