@@ -439,21 +439,22 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next;
+  KaType ltype = left->type, rtype = right->type;
 
   // Add numbers
-  if (left->type == KA_NUMBER && right->type == KA_NUMBER) {
+  if (ltype == KA_NUMBER && rtype == KA_NUMBER) {
     long double lnum = *left->number, rnum = *right->number;
     ka_free(args);
     return ka_number(lnum + rnum);
   }
 
   // Concatenate strings and numbers
-  char *lstr = left->type == KA_STRING ? strdup(left->string) :
+  char *lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
     (asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
-              0 : 2, *left->number), lstr);
-  char *rstr = right->type == KA_STRING ? strdup(right->string) :
+              0 : 2, *left->number), lstr) : NULL;
+  char *rstr = rtype == KA_STRING ? strdup(right->string) : rtype == KA_NUMBER ?
     (asprintf(&rstr, "%.*Lf", *right->number == (long long)*right->number ?
-              0 : 2, *right->number), rstr);
+              0 : 2, *right->number), rstr) : NULL;
   char *str;
   asprintf(&str, "%s%s", lstr, rstr);
   KaNode *result = ka_string(str);
