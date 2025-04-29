@@ -439,26 +439,25 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
-    ka_number(*left->number + *right->number) : NULL;
 
-  // Concatenate strings
-  if (left->type == KA_STRING) {
-    int size = strlen(left->string) +
-      (right->type == KA_STRING ? strlen(right->string ?: "") : 256) + 1;
-    char *str = (char *)calloc(1, size);
-    if (right->type != KA_NUMBER) {
-      sprintf(str, "%s%s", left->string, right->string ?: "");
-    } else if (*right->number == (long long)(*right->number)) {
-      sprintf(str, "%s%lld", left->string, (long long)(*right->number));
-    } else {
-      sprintf(str, "%s%.2Lf", left->string, *right->number);
-    }
-    result = ka_string(str);
-    free(str);
+  // Add numbers
+  if (left->type == KA_NUMBER && right->type == KA_NUMBER) {
+    long double lnum = *left->number, rnum = *right->number;
+    ka_free(args);
+    return ka_number(lnum + rnum);
   }
 
-  ka_free(args);
+  // Concatenate strings and numbers
+  char *lstr = left->type == KA_STRING ? strdup(left->string) :
+    (asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
+              0 : 2, *left->number), lstr);
+  char *rstr = right->type == KA_STRING ? strdup(right->string) :
+    (asprintf(&rstr, "%.*Lf", *right->number == (long long)*right->number ?
+              0 : 2, *right->number), rstr);
+  char *str;
+  asprintf(&str, "%s%s", lstr, rstr);
+  KaNode *result = ka_string(str);
+  free(str), free(rstr), free(lstr), ka_free(args);
   return result;
 }
 
