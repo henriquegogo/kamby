@@ -1,58 +1,100 @@
 Kamby Language
 ==============
-Kamby is a programming language that transpiles to Scheme. It introduces
-syntactic sugar and conventions to reduce the heavy use of parentheses,
-which is typical in Lisp dialects.
+A small, embeddable and convenient language for who want to use and understand
+what is happening behind the scenes.
 
-Conventions
------------
-- The document implicitly starts with an opening `(`.
-- The end of the document automatically closes any open blocks.
-- Lines are terminated with `;`, which internally closes a block with
-  `)` and starts a new one with `(`.
-- Lists are declared using `[` and `]`.
-- Sequencing blocks (equivalent to `(begin ...)`) are declared using `{`
-  and `}`.
-- Logical and mathematical operators are placed as the second item in an
-  expression (e.g., `2 + 2` becomes `(+ 2 2)`).
-- Variables are declared with `var key` or `var key = value`.
-- Variables are modified with `key = value`.
-- Functions are declared with `func name(args) { ... }`.
+Variables stack
+---------------
+Variables can contain any type of data, including number, strings, lists or even
+blocks of code.
 
-Example
--------
+  message := 'Hello, World!'  # Define a new variable
+  message = 'Bye, bye'        # Edit variable value
+  def message 'Hello again!'  # Append new 'message' in stack ("def" == ":=")
+  del message                 # Remove last 'message' in stack
+  message                     # Message has old value 'Bye, bye'
 
-  var name = "Kamby";
-  name = "Kamby Language";
+Variables are not unique. You can declare multiple values for the same variable
+name using ":=" and append in the stack. If you want to edit the last
+declaration, just user simple "=" operator. To remove the last variable with
+specific name in stack, use "del varname"
 
-  func hello(who age) {
-    print "Hello, " who "!";
-    print "You are " age " years old.";
+You can return the value of some stack item using index instead of var name
+
+  num1 = 12                   // Change num1 value or define if it doesn't exist
+  num2 = 23
+  $0                          // Return last item value from stack. 23
+  $1                          // Return the second item from stack. 12
+
+Atoms like numbers and strings can be named and not saved in the stack.
+This is useful to name a value in a list item.
+
+  list = [fistName : 'John', lastName : 'Doe', age : 25]
+  print(list . firstName)     // John
+  print(list . age)           // 25
+  print(list . 1)             // Doe
+
+Expressions, lists and blocks
+-----------------------------
+Basically those three types of lists has the same structure but act different
+when executed.
+
+  // Expressions will be evaluated an return the value
+  expression = (1 + 2)
+
+  // Binary operators wraps itself in a expression
+  expression = 1 + 2
+
+  /*
+  List items are separated by spaces, comma or semicolon.
+  Expressions return will be attribuited to item
+  */
+  list = ['first item' (1 + 2)]
+
+  // Blocks are lists of expressions that can be called after declaration
+  block = {
+    print(message)
   }
 
-  hello name (3 + 1);
+For source code or blocks, each line is considered an expression. To execute a
+block, just call it as first item of an expression. The arguments are be
+appended to the internal block variables stack.
 
-Behind the scenes
------------------
-Kamby is both a transpiler and an evaluator. It converts Kamby code into
-Scheme, so once you understand the syntax, you can leverage the full
-power of Scheme.
+  sum = { $0 + $1 }
+  sum 2 3
 
-To maximize compatibility with various Scheme implementations, Kamby
-reads input from `stdin`.
+  /* or */
 
-The current implementation supports R5RS, R6RS, and R7RS standards,
-making it compatible with major Scheme implementations like Chicken,
-Chibi, Gambit, Guile, and Chez. The `include-script` directive works
-like `include`, but is only available in R6RS.
+  def sum { first + second }
+  sum(first : 2, second : 3)
 
-Usage
------
-$ scheme --script kamby.scm < example.ka  # Chez Scheme
-$ csi -s kamby.scm < example.ka           # Chicken Scheme
-$ gsi kamby.scm < example.ka              # Gambit Scheme
-$ guile kamby.scm < example.ka            # Guile Scheme
+Context
+-------
+Lists can be sent as a context appended to global variables context.
 
+  name := 'Global name'       // Declare a new variable in current stack
+
+  person = [
+    name : 'Local name'
+    age : 20
+  ]
+
+  name                        // Return 'Global name'
+
+  person . name               // "person" is set as context
+                              // "name" returns list's "name" item
+
+Operators
+---------
+
+  + - * /
+  && || == != >= <= > <
+      
+Operator "+" will sum two numbers, or concatenate two strings.
+
+  1 + 2                    // 3
+  "Kamby" + "Lang"         // KambyLang
+      
 License
 -------
 MIT

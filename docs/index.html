@@ -66,106 +66,132 @@
         <aside>
           <h2>What is Kamby?</h2>
           <p>
-            Kamby is a programming language that transpiles to Scheme. It introduces
-            syntactic sugar and conventions to reduce the heavy use of parentheses,
-            which is typical in Lisp dialects.
+            A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes.
           </p>
           <a href='https://github.com/henriquegogo/kamby'><button>Download</button></a> or <a href='#docs'><small>Read more...</small></a>
         </aside>
         <pre><code class='language-go'>
-var name = "Kamby";
-name = "Kamby Language";
+name = "Kamby Language"
 
-func hello(who age) {
-  print "Hello, " who "!";
-  print "You are " age " years old.";
+def hello {
+  print "Hello, " who "!"
+  print("You are " age " years old.")
 }
 
-hello name (3 + 1);
+hello(who : name, age : 3 + 1)
         </code></pre>
       </section>
     </main>
     <section>
-      <h1>Conventions</h1>
-      <ul>
-        <li>The document implicitly starts with an opening `(`.</li>
-        <li>The end of the document automatically closes any open blocks.</li>
-        <li>Lines are terminated with `;`, which internally closes a block with `)` and starts a new one with `(`.</li>
-        <li>Lists are declared using `[` and `]`.</li>
-        <li>Sequencing blocks (equivalent to `(begin ...)`) are declared using `{` and `}`.</li>
-        <li>Logical and mathematical operators are placed as the second item in an expression (e.g., `2 + 2` becomes `(+ 2 2)`).</li>
-        <li>Variables are declared with `var key` or `var key = value`.</li>
-        <li>Variables are modified with `key = value`.</li>
-        <li>Functions are declared with `func name(args) { ... }`.</li>
-      </ul>
-    </section>
-    <section>
-      <h1>Transpiled code</h1>
-      <div style="display:flex">
-        <pre style="flex:1"><code class='language-go'>
-var name = "Kamby";
-name = "Kamby Language";
-
-func show-item(item) {
-  print "Item: " item;
-}
-
-for-each show-item ["First" "Second" "Third"];
-
-func hello(who age) {
-  print "Hello, " who "!";
-  print "You are " age " years old.";
-}
-
-hello name (3 + 1);
-        </code></pre>
-        <pre style="flex:1"><code class='language-scheme'>
-(define name "Kamby")
-(set! name "Kamby Language")
-
-(define (show-item item )
-  (begin
-    (print "Item: " item )))
-
-(for-each show-item '("First" "Second" "Third"))
-
-(define (hello who age)
-  (begin
-    (print "Hello, " who "!")
-    (print "You are " age " years old." )))
-
-(hello name (+ 3 1))
-        </code></pre>
-      </div>
-      <p>Some aditional macros are prepended to the transpiled code.</p>
-      <p>Kamby is pure Scheme, so you can do everything your Scheme program can.</p>
-    </section>
-    <section>
-      <h1>Usage</h1>
-      <pre><code class='language-shell'>
-$ scheme --script kamby.scm < example.ka  # Chez Scheme
-$ csi -s kamby.scm < example.ka           # Chicken Scheme
-$ gsi kamby.scm < example.ka              # Gambit Scheme
-$ guile kamby.scm < example.ka            # Guile Scheme
+      <h1>Variables stack</h1>
+      <p>
+Variables can contain any type of data, including number, strings, lists or even
+blocks of code.
+      </p>
+      <pre><code class='language-ruby'>
+message := 'Hello, World!'  # Define a new variable
+message = 'Bye, bye'        # Edit variable value
+def message 'Hello again!'  # Append new 'message' in stack ("def" == ":=")
+del message                 # Remove last 'message' in stack
+message                     # Message has old value 'Bye, bye'
+      </code></pre>
+      <p>
+Variables are not unique. You can declare multiple values for the same variable
+name using ":=" and append in the stack. If you want to edit the last
+declaration, just user simple "=" operator. To remove the last variable with
+specific name in stack, use "del varname"
+      </p>
+      <p>
+You can return the value of some stack item using index instead of var name
+      </p>
+      <pre><code class='language-go'>
+num1 = 12                   // Change num1 value or define if it doesn't exist
+num2 = 23
+$0                          // Return last item value from stack. 23
+$1                          // Return the second item from stack. 12
+      </code></pre>
+      <p>
+Atoms like numbers and strings can be named and not saved in the stack.
+This is useful to name a value in a list item.
+      </p>
+      <pre><code class='language-go'>
+list = [fistName : 'John', lastName : 'Doe', age : 25]
+print(list . firstName)     // John
+print(list . age)           // 25
+print(list . 1)             // Doe
       </code></pre>
     </section>
     <section>
-      <h1>Behind the scenes</h1>
+      <h1>Expressions, lists and blocks</h1>
       <p>
-        Kamby is both a transpiler and an evaluator. It converts Kamby code into
-        Scheme, so once you understand the syntax, you can leverage the full
-        power of Scheme.
+Basically those three types of lists has the same structure but act different
+when executed.
       </p>
+      <pre><code class='language-go'>
+// Expressions will be evaluated an return the value
+expression = (1 + 2)
+
+// Binary operators wraps itself in a expression
+expression = 1 + 2
+
+/*
+List items are separated by spaces, comma or semicolon.
+Expressions return will be attribuited to item
+*/
+list = ['first item' (1 + 2)]
+
+// Blocks are lists of expressions that can be called after declaration
+block = {
+  print(message)
+}
+      </code></pre>
       <p>
-        To maximize compatibility with various Scheme implementations, Kamby
-        reads input from `stdin`.
+For source code or blocks, each line is considered an expression. To execute a
+block, just call it as first item of an expression. The arguments are be
+appended to the internal block variables stack.
       </p>
+      <pre><code class='language-go'>
+sum = { $0 + $1 }
+sum 2 3
+
+/* or */
+
+def sum { first + second }
+sum(first : 2, second : 3)
+      </code></pre>
+    </section>
+    <section>
+      <h1>Context</h1>
       <p>
-        The current implementation supports R5RS, R6RS, and R7RS standards,
-        making it compatible with major Scheme implementations like Chicken,
-        Chibi, Gambit, Guile, and Chez. The `include-script` directive works
-        like `include`, but is only available in R6RS.
+Lists can be sent as a context appended to global variables context.
       </p>
+      <pre><code class='language-go'>
+name := 'Global name'       // Declare a new variable in current stack
+
+person = [
+  name : 'Local name'
+  age : 20
+]
+
+name                        // Return 'Global name'
+
+person . name               // "person" is set as context
+                            // "name" returns list's "name" item
+      </code></pre>
+    </section>
+    <section>
+      <h1>Operators</h1>
+      <pre><code class='language-go'>
++ - * /
+&& || == != >= <= > <
+      </code></pre>
+      <p>
+Operator "+" will sum two numbers, or concatenate two strings.
+      </p>
+      <pre><code class='language-go'>
+1 + 2                    // 3
+"Kamby" + "Lang"         // KambyLang
+      </code></pre>
     </section>
     <section>
       <h1>License</h1>
