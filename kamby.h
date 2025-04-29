@@ -439,12 +439,13 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type != right->type ? NULL :
-    left->type == KA_NUMBER ? ka_number(*left->number + *right->number) : NULL;
+  KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
+    ka_number(*left->number + *right->number) : NULL;
 
   // Concatenate strings
   if (left->type == KA_STRING) {
-    int size = strlen(left->string) + strlen(right->string ?: "") + 1;
+    int size = strlen(left->string) +
+      (right->type == KA_STRING ? strlen(right->string ?: "") : 256) + 1;
     char *str = (char *)calloc(1, size);
     if (right->type != KA_NUMBER) {
       sprintf(str, "%s%s", left->string, right->string ?: "");

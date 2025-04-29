@@ -566,6 +566,12 @@ void test_arithmetic() {
 
   result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
   assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
+
+  result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_number(10), NULL));
+  assert(!strcmp(result->string, "Hello10")); ka_free(result);
+
+  result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_number(10.123), NULL));
+  assert(!strcmp(result->string, "Hello10.12")); ka_free(result);
 }
 
 void test_conditional() {
