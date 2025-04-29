@@ -561,17 +561,17 @@ void test_arithmetic() {
   result = ka_mod(NULL, ka_chain(ka_number(3), ka_number(2), NULL));
   assert(*result->number == 1); ka_free(result);
 
-  result = ka_add(NULL, ka_chain(ka_number(2), ka_string("Hello"), NULL));
-  assert(result == NULL); ka_free(result);
+  result = ka_add(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
+  assert(!strcmp(result->string, "2Message")); ka_free(result);
 
   result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
   assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
 
-  result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_number(10), NULL));
-  assert(!strcmp(result->string, "Hello10")); ka_free(result);
+  result = ka_add(NULL, ka_chain(ka_string("Ten"), ka_number(10), NULL));
+  assert(!strcmp(result->string, "Ten10")); ka_free(result);
 
-  result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_number(10.123), NULL));
-  assert(!strcmp(result->string, "Hello10.12")); ka_free(result);
+  result = ka_add(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
+  assert(!strcmp(result->string, "Float10.12")); ka_free(result);
 }
 
 void test_conditional() {
