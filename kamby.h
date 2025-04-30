@@ -163,17 +163,17 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
   char *sym = args->symbol;
-  if (sym[0] == '$' && sym[1] && !isdigit(sym[1])) {
-    char num[4096];
-    KaNode *ref = ka_ref(ctx, ka_symbol(sym + 1));
-    if (ref->type == KA_NUMBER) sprintf(num, "%d", (int)*ref->number);
-    node = ka_ref(ctx, ka_symbol(ref->type != KA_NUMBER ? ref->symbol : num));
-  } else if (sym[0] == '$' && sym[1] && isdigit(sym[1])) {
-    node = ka_ref(ctx, ka_symbol(sym + 1));
-  } else if (isdigit(sym[0]) || args->type == KA_NUMBER) {
+  if (args->type == KA_NUMBER || isdigit(sym[0])) {
     int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
     while (node && node->type != KA_CTX && i-- > 0) node = node->next;
     if (node && node->type == KA_CTX) node = NULL;
+  } else if (sym[0] == '$' && isdigit(sym[1])) {
+    node = ka_ref(ctx, ka_symbol(sym + 1));
+  } else if (sym[0] == '$' && isgraph(sym[1]) &&
+      ((node = ka_ref(ctx, ka_symbol(sym + 1))) || (node = NULL))) {
+    char num[1024];
+    if (node->type == KA_NUMBER) sprintf(num, "%d", (int)*node->number);
+    node = ka_ref(ctx, ka_symbol(node->type == KA_NUMBER ? num : node->symbol));
   } else while (node && strcmp(sym, node->key ?: "")) node = node->next;
   ka_free(args);
   return node;
