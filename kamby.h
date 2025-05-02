@@ -333,7 +333,9 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
-      while (isgraph(c = text[*pos + 1]) && !strchr(";,()[]{}\n", c)) (*pos)++;
+      while (ispunct(c) && !strchr("$_", c) ?
+          ispunct(text[*pos + 1]) && !strchr(";,()[]{}\n", text[*pos + 1]) :
+          (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
       last = last->next = ka_new(KA_SYMBOL);
       last->symbol = strndup(text + start, *pos - start + 1);
     }
@@ -557,14 +559,11 @@ static inline KaNode *ka_init() {
   void (*f)(KaNode *) = ka_free;
 
   // Variables
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),   ka_func(ka_get), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
@@ -587,9 +586,6 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%"), ka_func(ka_mod), NULL)));
 
   // Conditional and loops
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),   ka_func(ka_if),   NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"else"), ka_func(ka_if),   NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"loop"), ka_func(ka_loop), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),  ka_func(ka_loop), NULL)));
     
