@@ -498,23 +498,19 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
-  KaNode *curr = args, *prev;
-  while (curr->next && curr->type != KA_TRUE) curr = (prev = curr)->next;
-  KaNode *block = ka_copy(curr->next ?: prev->type != KA_FALSE ? curr : NULL);
-  KaNode *result = ka_eval(ctx, block);
+  KaNode *cond = args, *block = args->next;
+  while (cond && (cond->type == KA_FALSE || cond->type == KA_NONE))
+    block = (cond = cond->next->next) && cond->next ? cond->next : cond;
+  KaNode *result = ka_eval(ctx, block = ka_copy(block));
   ka_free(block), ka_free(args);
   return result;
 }
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
-  KaNode *condition = ka_copy(args), *block = ka_copy(args->next),
-         *condition_result;
-
-  while ((condition_result = ka_eval(ctx, condition))->type == KA_TRUE) {
-    ka_free(condition_result), ka_free(ka_eval(ctx, block));
-  }
-
-  ka_free(condition_result), ka_free(block), ka_free(condition), ka_free(args);
+  KaNode *cond = ka_copy(args), *block = ka_copy(args->next), *cond_result;
+  while ((cond_result = ka_eval(ctx, cond))->type == KA_TRUE)
+    ka_free(cond_result), ka_free(ka_eval(ctx, block));
+  ka_free(cond_result), ka_free(block), ka_free(cond), ka_free(args);
   return ka_new(KA_NONE);
 }
 

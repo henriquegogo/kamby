@@ -582,35 +582,35 @@ void test_conditional() {
   KaNode *result;
 
   result = ka_if(&ctx, ka_chain(
-        ka_lt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_lt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block), ka_copy(else_block), NULL));
   assert(*result->number == 42);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block), ka_copy(else_block), NULL));
   assert(*result->number == 27);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block), NULL));
   assert(result->type == KA_NONE);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block),
-        ka_gt(NULL, ka_chain(ka_number(2), ka_number(1), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(1), NULL)),
         ka_copy(elseif_block), ka_copy(else_block), NULL));
   assert(*result->number == 71);
   ka_free(result);
 
   result = ka_if(&ctx, ka_chain(
-        ka_gt(NULL, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
         ka_copy(block),
-        ka_gt(NULL, ka_chain(ka_number(2), ka_number(3), NULL)),
+        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(3), NULL)),
         ka_copy(elseif_block), ka_copy(else_block), NULL));
   assert(*result->number == 27);
   ka_free(result);
@@ -682,7 +682,8 @@ void test_code() {
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
-    print(i == 2 ? 'yes' 'no')\n\
+    a ? { print('no') }\n\
+    i ? { print('yes') }\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
