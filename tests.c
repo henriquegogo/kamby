@@ -670,7 +670,7 @@ void test_code() {
     list = [\
       'one',\
       i,\
-      third: 'three',\
+      third:'three',\
       'four'\
     ]\n\
     hello(first : 33, age: 34)\n\
