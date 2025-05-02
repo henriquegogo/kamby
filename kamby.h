@@ -202,6 +202,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
   KaNode *data = ka_copy(args->next);
+  free(data->key);
   data->key = strdup(args->symbol);
   ka_free(args);
   return data;

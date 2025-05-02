@@ -669,7 +669,7 @@ void test_code() {
     text = 'Hello, world!'\n\
     list = [\
       'one',\
-      i,\
+      second: i,\
       third:'three',\
       'four'\
     ]\n\
