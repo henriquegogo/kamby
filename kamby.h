@@ -186,6 +186,20 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
   return node;
 }
 
+static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
+  KaNode *prev = *ctx, *node = *ctx;
+  int i = atoi(args->symbol + 1);
+
+  while (node && args->symbol[0] == '$' ? i-- > 0 :
+      node && strcmp(args->symbol, node->key ?: "")) node = (prev = node)->next;
+
+  ka_free(args);
+  if (!node) return ka_new(KA_NONE);
+  node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
+  ka_free((node->next = NULL, node));
+  return ka_new(KA_NONE);
+}
+
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
   KaNode *data = ka_copy(args->next);
   data->key = strdup(args->symbol);
@@ -205,6 +219,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   KaNode *node = ka_ref(ctx, ka_copy(args));
   if (!node) return ka_def(ctx, args);
+  else if (args->next->type == KA_NONE) return ka_del(ctx, args);
 
   KaNode *data = ka_copy(args->next);
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
@@ -214,23 +229,6 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   free(data);
   ka_free(args);
   return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
-}
-
-static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
-  KaNode *prev = *ctx, *node = *ctx;
-  int i = atoi(args->symbol + 1);
-
-  while (node && args->symbol[0] == '$' ? i-- > 0 :
-      node && strcmp(args->symbol, node->key ?: "")) {
-    prev = node;
-    node = node->next;
-  }
-
-  ka_free(args);
-  if (!node) return ka_new(KA_NONE);
-  node == *ctx ? (*ctx = node->next) : (prev->next = node->next);
-  ka_free((node->next = NULL, node));
-  return ka_new(KA_NONE);
 }
 
 // Parser and Interpreter
@@ -384,7 +382,8 @@ static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *args) {
-  KaNode *result = args == NULL || args->type == KA_FALSE ?
+  KaNode *result = args == NULL || args->type == KA_NONE ||
+    args->type == KA_CTX || args->type == KA_FALSE ?
     ka_true() : ka_false();
   ka_free(args);
   return result;
@@ -500,7 +499,7 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   KaNode *curr = args, *prev;
-  while (curr->next && curr->type != KA_TRUE) prev = curr, curr = curr->next;
+  while (curr->next && curr->type != KA_TRUE) curr = (prev = curr)->next;
   KaNode *block = ka_copy(curr->next ?: prev->type != KA_FALSE ? curr : NULL);
   KaNode *result = ka_eval(ctx, block);
   ka_free(block), ka_free(args);
@@ -563,7 +562,6 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del), NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
