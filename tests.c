@@ -650,7 +650,7 @@ void test_init() {
   assert(last->type == KA_CTX);
   assert(prev->type == KA_FUNC);
   assert(prev->func == ka_get);
-  assert(!strcmp(prev->key, "get"));
+  assert(!strcmp(prev->key, "."));
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -662,7 +662,7 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { \n\
+    hello = { \n\
       print \"prop1: \" $1 \", prop2: \" first\n\
     }\n\
     i = 2\n\
@@ -670,18 +670,18 @@ void test_code() {
     list = [\
       'one',\
       i,\
-      third : 'three',\
+      third: 'three',\
       'four'\
     ]\n\
-    hello(first : 33, age : 34)\n\
+    hello(first : 33, age: 34)\n\
     print 'Previous args should be local, not global (blank)' first age\n\
     key = 'i'\n\
     print 'Number two: ' $key\n\
     print 'Stack by var number: ' $i\n\
-    print 'List item: ' list . third\n\
-    print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' else 'three'))\n\
-    obj = [name : 'Henrique', age : 40, sayName : { print obj . name }]\n\
-    print ['item1', second : 'item2', 'item3'] . second\n\
+    print 'List item: ' list.third\n\
+    print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
+    obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
+    print ['item1', second : 'item2', 'item3'].second\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
