@@ -332,7 +332,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
       while (ispunct(c) && !strchr("$_", c) ?
-          ispunct(text[*pos + 1]) && !strchr(";,()[]{}\n", text[*pos + 1]) :
+          ispunct(text[*pos + 1]) && !strchr(";,()[]{}'\"\n", text[*pos + 1]) :
           (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
       last = last->next = ka_new(KA_SYMBOL);
       last->symbol = strndup(text + start, *pos - start + 1);
