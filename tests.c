@@ -682,6 +682,7 @@ void test_code() {
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
+    print(i == 2 ? 'yes' 'no')\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
@@ -708,10 +709,10 @@ int main() {
   test_block();
   test_ref();
   test_get();
+  test_del();
   test_key();
   test_def();
   test_set();
-  test_del();
   test_eval();
   test_parser();
   test_logical();
