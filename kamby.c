@@ -16,7 +16,7 @@ int main() {
   printf("\n\n");
 
   printf("Usage:\n");
-  printf("  def <symbol> <number|string>\n");
+  printf("  <symbol> = <number|string>\n");
   printf("  print <symbol>\n\n");
 
   while (1) {
