@@ -42,11 +42,9 @@ static inline KaNode *ka_false() { return ka_new(KA_FALSE); }
 static inline void ka_free(KaNode *node) {
   for (KaNode *curr; node; node = curr) {
     KaType type = node->type;
-    curr = node->next;
-
     type >= KA_LIST ? ka_free((KaNode *)node->value) :
     type == KA_FUNC ? (void)0 : free(node->value);
-
+    curr = node->next;
     free(node->key), free(node);
     if (type == KA_CTX) break;
   }
@@ -97,10 +95,8 @@ static inline KaNode *ka_copy(KaNode *node) {
 
   if (copy->type >= KA_LIST) {
     KaNode **last = &copy->children;
-    for (KaNode *curr = node->children; curr; curr = curr->next) {
-      *last = ka_copy(curr);
-      last = &(*last)->next;
-    }
+    for (KaNode *curr = node->children; curr; curr = curr->next)
+      last = &(*last = ka_copy(curr))->next;
   }
 
   if (node->key) copy->key = strdup(node->key);
@@ -113,12 +109,9 @@ static inline KaNode *ka_list(KaNode *args, ...) {
   for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
   va_end(vargs);
 
-  KaNode *node = ka_new(KA_LIST);
-  KaNode **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next) {
-    *child = ka_copy(curr);
-    child = &(*child)->next;
-  }
+  KaNode *node = ka_new(KA_LIST), **child = &node->children;
+  for (KaNode *curr = args; curr; curr = curr->next) 
+    child = &(*child = ka_copy(curr))->next;
 
   ka_free(args);
   return node;
@@ -130,12 +123,9 @@ static inline KaNode *ka_expr(KaNode *args, ...) {
   for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
   va_end(vargs);
 
-  KaNode *node = ka_new(KA_EXPR);
-  KaNode **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next) {
-    *child = ka_copy(curr);
-    child = &(*child)->next;
-  }
+  KaNode *node = ka_new(KA_EXPR), **child = &node->children;
+  for (KaNode *curr = args; curr; curr = curr->next)
+    child = &(*child = ka_copy(curr))->next;
 
   ka_free(args);
   return node;
@@ -147,12 +137,9 @@ static inline KaNode *ka_block(KaNode *args, ...) {
   for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
   va_end(vargs);
 
-  KaNode *node = ka_new(KA_BLOCK);
-  KaNode **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next) {
-    *child = ka_copy(curr);
-    child = &(*child)->next;
-  }
+  KaNode *node = ka_new(KA_BLOCK), **child = &node->children;
+  for (KaNode *curr = args; curr; curr = curr->next)
+    child = &(*child = ka_copy(curr))->next;
 
   ka_free(args);
   return node;
@@ -163,6 +150,7 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
   char *sym = args->symbol;
+
   if (args->type == KA_NUMBER || isdigit(sym[0])) {
     int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
     while (node && node->type != KA_CTX && i-- > 0) node = node->next;
@@ -175,6 +163,7 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
     if (node->type == KA_NUMBER) sprintf(num, "%d", (int)*node->number);
     node = ka_ref(ctx, ka_symbol(node->type == KA_NUMBER ? num : node->symbol));
   } else while (node && strcmp(sym, node->key ?: "")) node = node->next;
+
   ka_free(args);
   return node;
 }
@@ -316,8 +305,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     else if (strchr(";,)]}\n", c)) length = 0;
     else if (strchr("([{", c)) {
       last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
-      last->next->children = ka_parser(text + *pos + 1, &childpos);
-      last = last->next;
+      (last = last->next)->children = ka_parser(text + *pos + 1, &childpos);
       *pos += childpos;
     } else if (strchr("'\"", c)) {
       while (text[++(*pos)] != text[start] ||
@@ -376,16 +364,15 @@ static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->value ? ka_copy(left) :
-    right->value ? ka_copy(right) : ka_false();
+  KaNode *result = left->value ? ka_copy(left) : right->value ?
+    ka_copy(right) : ka_false();
   ka_free(args);
   return result;
 }
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *args) {
   KaNode *result = args == NULL || args->type == KA_NONE ||
-    args->type == KA_CTX || args->type == KA_FALSE ?
-    ka_true() : ka_false();
+    args->type == KA_CTX || args->type == KA_FALSE ? ka_true() : ka_false();
   ka_free(args);
   return result;
 }
