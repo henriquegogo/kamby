@@ -8,7 +8,7 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_FALSE, KA_TRUE, KA_CTX,
+  KA_NONE, KA_CTX, KA_FALSE, KA_TRUE,
   KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
   KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
@@ -371,8 +371,8 @@ static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_not(KaNode **ctx, KaNode *args) {
-  KaNode *result = args == NULL || args->type == KA_NONE ||
-    args->type == KA_CTX || args->type == KA_FALSE ? ka_true() : ka_false();
+  KaNode *result = args == NULL || args->type <= KA_FALSE ?
+    ka_true() : ka_false();
   ka_free(args);
   return result;
 }
@@ -487,7 +487,7 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   KaNode *cond = args, *block = args->next;
-  while (cond && (cond->type == KA_FALSE || cond->type == KA_NONE))
+  while (cond && cond->type <= KA_FALSE)
     block = (cond = cond->next->next) && cond->next ? cond->next : cond;
   KaNode *result = ka_eval(ctx, block = ka_copy(block));
   ka_free(block), ka_free(args);
