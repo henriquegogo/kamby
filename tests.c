@@ -402,8 +402,7 @@ void test_parser() {
   int pos;
 
   result = ka_parser("# This is a comment", (pos = 0, &pos));
-  assert(!result->children);
-  ka_free(result);
+  assert(!result);
 
   result = ka_parser("42.21 # This is a comment", (pos = 0, &pos));
   assert(fabsl(*result->children->number - 42.21) < 1e-10);
@@ -423,7 +422,7 @@ void test_parser() {
 
   result = ka_parser("age\n/* Multiline\ncomment */\n42", (pos = 0, &pos));
   assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->next->next->children->number == 42);
+  assert(*result->next->children->number == 42);
   ka_free(result);
 
   result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
@@ -667,12 +666,7 @@ void test_code() {
     }\n\
     i = 2\n\
     text = 'Hello, world!'\n\
-    list = [\
-      'one',\
-      second: i,\
-      third:'three',\
-      'four'\
-    ]\n\
+    list = ['one', second: i, third:'three', 'four']\n\
     hello(first : 33, age: 34)\n\
     print 'Previous args should be local, not global (blank)' first age\n\
     key = 'i'\n\

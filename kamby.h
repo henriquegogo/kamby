@@ -286,8 +286,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   // sentences, parsing each one as a separate expression node.
   if (*pos == 0 && --(*pos)) {
     while (*pos < length) {
-      last = last->next = ka_new(KA_EXPR);
-      last->children = ka_parser(text, pos);
+      KaNode *children = ka_parser(text, pos);
+      if (children) (last = last->next = ka_new(KA_EXPR))->children = children;
       if (strchr(")]}", text[*pos - 1])) length = 0;
     }
   }
