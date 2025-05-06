@@ -329,18 +329,21 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   }
 
   // Reorder expression nodes when symbols ends with a punctuation.
-  for (KaNode *prev = NULL, *a = head; a && a->next && a->next->next;) {
-    KaNode *op = a->next, *b = op->next, *next = b->next;
+  for (KaNode *prev = NULL, *a = head; a && a->next;) {
+    KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
 
     if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "=") ||
           !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
+    } else if (symbol && !strcmp(symbol, "!")) {
+      (expr = ka_new(KA_EXPR))->next = next;
+      expr->children = (b->next = NULL, op);
+      a = (prev = a)->next = expr;
     } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
-      KaNode *expr = ka_new(KA_EXPR);
+      (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
-      expr->next = next;
       a = prev ? (prev->next = expr) : (head = expr);
     } else {
       a = (prev = a)->next;
