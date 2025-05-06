@@ -320,7 +320,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
-  // Reorder expression nodes when symbols ends with a punctuation.
+  // Reorder expression nodes based on punctuation symbols
   for (KaNode *prev = NULL, *a = head; a && a->next;) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
