@@ -149,19 +149,12 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
-  char *sym = args->symbol;
+  char *sym = args->key ?: args->symbol;
 
   if (args->type == KA_NUMBER || isdigit(sym[0])) {
     int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
     while (node && node->type != KA_CTX && i-- > 0) node = node->next;
     if (node && node->type == KA_CTX) node = NULL;
-  } else if (sym[0] == '$' && isdigit(sym[1])) {
-    node = ka_ref(ctx, ka_symbol(sym + 1));
-  } else if (sym[0] == '$' && isgraph(sym[1]) &&
-      ((node = ka_ref(ctx, ka_symbol(sym + 1))) || (node = NULL))) {
-    char num[1024];
-    if (node->type == KA_NUMBER) sprintf(num, "%d", (int)*node->number);
-    node = ka_ref(ctx, ka_symbol(node->type == KA_NUMBER ? num : node->symbol));
   } else while (node && strcmp(sym, node->key ?: "")) node = node->next;
 
   ka_free(args);
@@ -177,10 +170,9 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   KaNode *prev = *ctx, *node = *ctx;
-  int i = atoi(args->symbol + 1);
 
-  while (node && args->symbol[0] == '$' ? i-- > 0 :
-      node && strcmp(args->symbol, node->key ?: "")) node = (prev = node)->next;
+  while (node && strcmp(args->key ?: args->symbol, node->key ?: ""))
+    node = (prev = node)->next;
 
   ka_free(args);
   if (!node) return ka_new(KA_NONE);
@@ -244,12 +236,12 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
       last = last->next = ka_copy(curr);
     }
     // Flag next node for special treatment
-    if (last->func == ka_key || last->func == ka_def ||
-        last->func == ka_set || last->func == ka_del) {
-      skip = curr->next;
+    if (curr->next && curr->next->type == KA_SYMBOL &&
+        (last->func == ka_key || last->func == ka_def ||
+        last->func == ka_set || last->func == ka_del)) {
+      skip =  curr->next; 
     } else if (last->func == ka_get && curr->next->next &&
-        curr->next->next->type == KA_SYMBOL &&
-        curr->next->next->symbol[0] != '$') {
+        curr->next->next->type == KA_SYMBOL) {
       skip = curr->next->next;
     }
   }
@@ -320,7 +312,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
       last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
-      while (ispunct(c) && !strchr("$_", c) ?
+      while (ispunct(c) && !strchr("_", c) ?
           ispunct(text[*pos + 1]) && !strchr(";,()[]{}'\"\n", text[*pos + 1]) :
           (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
       last = last->next = ka_new(KA_SYMBOL);
@@ -333,14 +325,17 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
 
+    // Symbolic operators
     if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "=") ||
           !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
-    } else if (symbol && !strcmp(symbol, "!")) {
+    // Unary operators
+    } else if (symbol && (!strcmp(symbol, "$") || !strcmp(symbol, "!"))) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (b->next = NULL, op);
       a = (prev = a)->next = expr;
+    // Binary operators
     } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
@@ -546,6 +541,7 @@ static inline KaNode *ka_init() {
 
   // Variables
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),   ka_func(ka_get), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),   ka_func(ka_get), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
