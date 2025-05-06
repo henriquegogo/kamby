@@ -236,11 +236,8 @@ void test_ref() {
   assert(*(ka_ref(&ctx, ka_symbol("age")))->number == 42);
   assert(!strcmp(ka_ref(&ctx, ka_symbol("name"))->string, "John"));
   assert(!(ka_ref(&ctx, ka_symbol("inexistent"))));
-  assert(ka_ref(&ctx, ka_symbol("$0"))->type == KA_NUMBER);
-  assert(ka_ref(&ctx, ka_symbol("$1"))->type == KA_STRING);
-  assert(ka_ref(&ctx, ka_symbol("$key"))->type == KA_STRING);
-  assert(!strcmp(ka_ref(&ctx, ka_symbol("$key"))->string, "John"));
-  assert(!strcmp(ka_ref(&ctx, ka_symbol("$i"))->string, "John"));
+  assert(ka_ref(&ctx, ka_symbol("0"))->type == KA_NUMBER);
+  assert(ka_ref(&ctx, ka_symbol("1"))->type == KA_STRING);
 
   ka_free(ctx);
 }
@@ -262,9 +259,9 @@ void test_get() {
 
   assert(*(result = ka_get(&ctx, ka_symbol("age")))->number == 78);
   ka_free(result);
-  assert(*(result = ka_get(&ctx, ka_symbol("$0")))->number == 78);
+  assert(*(result = ka_get(&ctx, ka_symbol("0")))->number == 78);
   ka_free(result);
-  assert((result = ka_get(&ctx, ka_symbol("$1")))->type == KA_NONE);
+  assert((result = ka_get(&ctx, ka_symbol("1")))->type == KA_NONE);
   ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
@@ -310,7 +307,7 @@ void test_set() {
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("name"),
       ka_list(ka_string("John"), ka_string("Doe"), NULL), NULL)));
   ka_free(ka_set(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
-  ka_free(ka_set(&ctx, ka_chain(ka_symbol("$1"), ka_string("Foo"), NULL)));
+  ka_free(ka_set(&ctx, ka_chain(ka_symbol("1"), ka_string("Foo"), NULL)));
 
   assert(!strcmp(ctx->key, "age"));
   assert(*ctx->number == 42);
@@ -341,9 +338,6 @@ void test_del() {
   ka_free(ka_del(&ctx, ka_symbol("name")));
   assert(!strcmp(ctx->key, "age"));
   assert(ctx->next->type == KA_CTX);
-
-  ka_free(ka_del(&ctx, ka_symbol("$0")));
-  assert(ctx->type == KA_CTX);
 
   ka_free(ctx);
 }
@@ -679,7 +673,7 @@ void test_code() {
     hello(first : 33, age: 34)\n\
     print 'Previous args should be local, not global (blank)' first age\n\
     key = 'i'\n\
-    print 'Number two: ' $key\n\
+    print 'Number two: ' $(key)\n\
     print 'Stack by var number: ' $i\n\
     print 'List item: ' list.third\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
