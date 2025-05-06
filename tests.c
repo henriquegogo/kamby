@@ -469,6 +469,15 @@ void test_parser() {
   assert(expr_sum->type == KA_SYMBOL && !strcmp(expr_sum->symbol, "+"));
   assert(*expr_sum->next->number == 5 && *expr_sum->next->next->number == 6);
   ka_free(result);
+
+  result = ka_parser("!1 && 2", (pos = 0, &pos));
+  KaNode *expr_and = result->children->children,
+         *expr_not = result->children->children->next->children;
+  assert(expr_and->type == KA_SYMBOL && !strcmp(expr_and->symbol, "&&"));
+  assert(expr_not->type == KA_SYMBOL && !strcmp(expr_not->symbol, "!"));
+  assert(*expr_not->next->number == 1);
+  assert(*expr_and->next->next->number == 2);
+  ka_free(result);
 }
 
 void test_logical() {
@@ -678,6 +687,7 @@ void test_code() {
     print ['item1', second : 'item2', 'item3'].second\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
+    print(!1 ? 'ok' 'nok')\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
