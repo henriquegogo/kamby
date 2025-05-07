@@ -483,6 +483,31 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
   return result;
 }
 
+static inline KaNode *ka_addset(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = ka_symbol(args->key);
+  return ka_set(ctx, ka_chain(symbol, ka_add(ctx, args), NULL));
+}
+
+static inline KaNode *ka_subset(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = ka_symbol(args->key);
+  return ka_set(ctx, ka_chain(symbol, ka_sub(ctx, args), NULL));
+}
+
+static inline KaNode *ka_mulset(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = ka_symbol(args->key);
+  return ka_set(ctx, ka_chain(symbol, ka_mul(ctx, args), NULL));
+}
+
+static inline KaNode *ka_divset(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = ka_symbol(args->key);
+  return ka_set(ctx, ka_chain(symbol, ka_div(ctx, args), NULL));
+}
+
+static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
+  KaNode *symbol = ka_symbol(args->key);
+  return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
+}
+
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
@@ -562,11 +587,16 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"<="), ka_func(ka_lte), NULL)));
 
   // Arithmetic operators
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"+"), ka_func(ka_add), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"-"), ka_func(ka_sub), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"*"), ka_func(ka_mul), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"/"), ka_func(ka_div), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%"), ka_func(ka_mod), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"+"),  ka_func(ka_add),    NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"-"),  ka_func(ka_sub),    NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"*"),  ka_func(ka_mul),    NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"/"),  ka_func(ka_div),    NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%"),  ka_func(ka_mod),    NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"+="), ka_func(ka_addset), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"-="), ka_func(ka_subset), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"*="), ka_func(ka_mulset), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"/="), ka_func(ka_divset), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%="), ka_func(ka_modset), NULL)));
 
   // Conditional and loops
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)));

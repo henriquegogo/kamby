@@ -550,7 +550,7 @@ void test_comparison() {
 }
 
 void test_arithmetic() {
-  KaNode *result;
+  KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_add(NULL, ka_chain(ka_number(3), ka_number(2), NULL));
   assert(*result->number == 5); ka_free(result);
@@ -574,6 +574,21 @@ void test_arithmetic() {
 
   result = ka_add(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
   assert(!strcmp(result->string, "Float10.12")); ka_free(result);
+
+  result = ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(2), NULL));
+  result = ka_addset(&ctx, ka_chain(result, ka_number(3), NULL));
+  assert(*result->number == 5);
+  result = ka_subset(&ctx, ka_chain(result, ka_number(1), NULL));
+  assert(*result->number == 4);
+  result = ka_mulset(&ctx, ka_chain(result, ka_number(2), NULL));
+  assert(*result->number == 8);
+  result = ka_divset(&ctx, ka_chain(result, ka_number(2), NULL));
+  assert(*result->number == 4);
+  result = ka_modset(&ctx, ka_chain(result, ka_number(3), NULL));
+  assert(*result->number == 1);
+  ka_free(result);
+
+  ka_free(ctx);
 }
 
 void test_conditional() {
@@ -680,6 +695,8 @@ void test_code() {
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
+    i += 3\n\
+    print i\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
