@@ -149,7 +149,7 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
-  char *sym = args->key ?: args->symbol;
+  char *sym = args->type != KA_STRING && args->key ? args->key : args->symbol;
 
   if (args->type == KA_NUMBER || isdigit(sym[0])) {
     int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
@@ -171,10 +171,8 @@ static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   KaNode *prev = *ctx, *node = *ctx;
-
-  while (node && strcmp(args->key ?: args->symbol, node->key ?: ""))
-    node = (prev = node)->next;
-
+  char *sym = args->type != KA_STRING && args->key ? args->key : args->symbol;
+  while (node && strcmp(sym, node->key ?: "")) node = (prev = node)->next;
   ka_free(args);
   if (!node) return ka_new(KA_NONE);
   node == *ctx ? (*ctx = node->next) : (prev->next = node->next);

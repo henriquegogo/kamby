@@ -684,9 +684,11 @@ void test_code() {
     }\n\
     i = 2\n\
     text = 'Hello, world!'\n\
+    key = 'i'\n\
     list = ['one', second: i, third:'three', 'four']\n\
     hello(first : 33, age: 34)\n\
     print 'Previous args should be local, not global (blank)' first age\n\
+    print 'Number 2: ' $key\n\
     print 'Stack by var number: ' $i\n\
     print 'List item: ' list.third\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
