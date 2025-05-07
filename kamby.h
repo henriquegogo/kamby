@@ -162,8 +162,9 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
-  KaNode *node = ka_copy(
-      ka_ref(args->next ? &args->children : ctx, ka_copy(args->next ?: args)));
+  KaNode *node = args->next ?
+    ka_copy(ka_ref(&args->children, ka_copy(args->next))) :
+    ka_copy(ka_ref(ctx, ka_copy(args)));
   ka_free(args);
   return node;
 }
@@ -256,8 +257,9 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = !head->next ? ka_chain(ka_new(KA_CTX), *ctx, NULL) : 
-      ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
+    KaNode *block_ctx = head->next ?
+      ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL) :
+      ka_chain(ka_new(KA_CTX), *ctx, NULL);
     KaNode *block_result = ka_eval(&block_ctx, head->children);
     KaNode *result = block_result;
     while (result->next) result = result->next;
@@ -325,7 +327,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
 
-    // Symbolic operators
+    // Symbolic operators ordering
     if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "=") ||
           !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
       (op->next = a, a->next = b);
@@ -336,7 +338,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       expr->children = (b->next = NULL, op);
       a = (prev = a)->next = expr;
     // Binary operators
-    } else if (symbol && ispunct(symbol[strlen(symbol) - 1])) {
+    } else if (symbol && ispunct(symbol[0])) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
       a = prev ? (prev->next = expr) : (head = expr);
@@ -362,8 +364,8 @@ static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->value ? ka_copy(left) : right->value ?
-    ka_copy(right) : ka_false();
+  KaNode *result = left->value ? ka_copy(left) :
+    right->value ? ka_copy(right) : ka_false();
   ka_free(args);
   return result;
 }
