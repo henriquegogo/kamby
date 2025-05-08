@@ -242,6 +242,24 @@ void test_ref() {
   ka_free(ctx);
 }
 
+void test_bind() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  KaNode *list = ka_list(
+      ka_key(&ctx, ka_chain(ka_symbol("one"), ka_number(1), NULL)),
+      ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL)), NULL);
+
+  result = ka_get(&ctx, ka_symbol("two"));
+  assert(result->type == KA_NONE); ka_free(result);
+
+  result = ka_bind(&ctx, ka_chain(ka_copy(list), ka_symbol("two"), NULL));
+  assert(*result->number == 2); ka_free(result);
+
+  ka_free(list);
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
 void test_get() {
   KaNode *ctx = ka_new(KA_CTX), *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
@@ -666,7 +684,7 @@ void test_init() {
   assert(strlen(ctx->next->key) > 0);
   assert(last->type == KA_CTX);
   assert(prev->type == KA_FUNC);
-  assert(prev->func == ka_get);
+  assert(prev->func == ka_bind);
   assert(!strcmp(prev->key, "."));
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
@@ -724,6 +742,7 @@ int main() {
   test_expr();
   test_block();
   test_ref();
+  test_bind();
   test_get();
   test_del();
   test_key();
