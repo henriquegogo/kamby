@@ -161,12 +161,17 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   return node;
 }
 
-static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
-  KaNode *node = args->next ?
-    ka_copy(ka_ref(&args->children, ka_copy(args->next))) :
-    ka_copy(ka_ref(ctx, ka_copy(args)));
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
+
+static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
+  KaNode *block_ctx = ka_chain(args->children, ka_new(KA_CTX), *ctx, NULL);
+  KaNode *result = ka_eval(&block_ctx, args->next);
   ka_free(args);
-  return node;
+  return result;
+}
+
+static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
+  return ka_copy(ka_ref(ctx, args));
 }
 
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
@@ -239,7 +244,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
         (last->func == ka_key || last->func == ka_def ||
         last->func == ka_set || last->func == ka_del)) {
       skip =  curr->next; 
-    } else if (last->func == ka_get && curr->next->next &&
+    } else if (last->func == ka_bind && curr->next->next &&
         curr->next->next->type == KA_SYMBOL) {
       skip = curr->next->next;
     }
@@ -565,11 +570,11 @@ static inline KaNode *ka_init() {
   void (*f)(KaNode *) = ka_free;
 
   // Variables
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_get), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),  ka_func(ka_get), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),  ka_func(ka_key), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="), ka_func(ka_def), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),  ka_func(ka_set), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_bind), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),  ka_func(ka_get),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),  ka_func(ka_key),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="), ka_func(ka_def),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),  ka_func(ka_set),  NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
