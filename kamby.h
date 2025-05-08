@@ -313,7 +313,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
       while (ispunct(c) && !strchr("_", c) ?
-          ispunct(text[*pos + 1]) && !strchr(";,()[]{}'\"\n", text[*pos + 1]) :
+          ispunct(text[*pos + 1]) && !strchr("$;,()[]{}'\"\n", text[*pos + 1]) :
           (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
       last = last->next = ka_new(KA_SYMBOL);
       last->symbol = strndup(text + start, *pos - start + 1);
@@ -519,7 +519,7 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
   KaNode *cond = ka_copy(args), *block = ka_copy(args->next), *cond_result;
-  while ((cond_result = ka_eval(ctx, cond))->type == KA_TRUE)
+  while ((cond_result = ka_eval(ctx, cond))->type >= KA_TRUE)
     ka_free(cond_result), ka_free(ka_eval(ctx, block));
   ka_free(cond_result), ka_free(block), ka_free(cond), ka_free(args);
   return ka_new(KA_NONE);
