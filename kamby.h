@@ -565,11 +565,11 @@ static inline KaNode *ka_init() {
   void (*f)(KaNode *) = ka_free;
 
   // Variables
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),   ka_func(ka_get), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),   ka_func(ka_get), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_get), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),  ka_func(ka_get), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),  ka_func(ka_key), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="), ka_func(ka_def), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),  ka_func(ka_set), NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
@@ -597,8 +597,8 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%="), ka_func(ka_modset), NULL)));
 
   // Conditional and loops
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),    ka_func(ka_if),   NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),  ka_func(ka_loop), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),   ka_func(ka_if),   NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."), ka_func(ka_loop), NULL)));
     
   // I/O functions
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit), NULL)));
