@@ -95,8 +95,8 @@ static inline KaNode *ka_copy(KaNode *node) {
 
   if (copy->type >= KA_LIST) {
     KaNode **last = &copy->children;
-    for (KaNode *curr = node->children; curr; curr = curr->next)
-      last = &(*last = ka_copy(curr))->next;
+    for (KaNode *curr = node->children; curr && curr->type != KA_CTX;
+        curr = curr->next) last = &(*last = ka_copy(curr))->next;
   }
 
   if (node->key) copy->key = strdup(node->key);
@@ -162,12 +162,24 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
+static inline KaNode *ka_set(KaNode **ctx, KaNode *nodes);
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
+  KaNode *last = args->children, *sym = NULL;
+  while (last->next) last = last->next;
+
   KaNode *block_ctx = ka_chain(args->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *result = ka_eval(&block_ctx, args->next);
+  KaNode *block_result = ka_eval(&block_ctx, args->next);
+  ka_free(last->next);
+  last->next = NULL;
+
+  if (args->key && args->next->type == KA_BLOCK) {
+    ka_free(block_result);
+    return ka_set(ctx, ka_chain(ka_symbol(args->key), args, NULL));
+  }
+
   ka_free(args);
-  return result;
+  return block_result;
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {

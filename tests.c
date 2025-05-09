@@ -708,10 +708,13 @@ void test_code() {
     print 'Previous args should be local, not global (blank)' first age\n\
     print 'Number 2: ' $key\n\
     print 'Stack by var number: ' $i\n\
-    print 'List item: ' list.third\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
+    print 'List item: ' list.third\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
+//    obj.{ print 'List insider item: ' (age = 30) } \n\
+    print 'List outside item: ' obj.age\n\
+//    obj.{ print 'Internal index: ' $0 }\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
