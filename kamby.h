@@ -165,21 +165,23 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
 static inline KaNode *ka_set(KaNode **ctx, KaNode *nodes);
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
-  KaNode *last = args->children, *sym = NULL;
+  KaNode *left = args, *right = args->next, *last = left->children;
   while (last->next) last = last->next;
 
-  KaNode *block_ctx = ka_chain(args->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *block_result = ka_eval(&block_ctx, args->next);
+  KaNode *block_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
+  KaNode *result = ka_eval(&block_ctx, right->type == KA_BLOCK ?
+      right->children : right);
+
   ka_free(last->next);
   last->next = NULL;
 
-  if (args->key && args->next->type == KA_BLOCK) {
-    ka_free(block_result);
-    return ka_set(ctx, ka_chain(ka_symbol(args->key), args, NULL));
+  if (left->key && right->type == KA_BLOCK) {
+    ka_free(result);
+    return ka_set(ctx, ka_chain(ka_symbol(left->key), left, NULL));
   }
 
   ka_free(args);
-  return block_result;
+  return result;
 }
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
@@ -256,8 +258,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
         (last->func == ka_key || last->func == ka_def ||
         last->func == ka_set || last->func == ka_del)) {
       skip =  curr->next; 
-    } else if (last->func == ka_bind && curr->next->next &&
-        curr->next->next->type == KA_SYMBOL) {
+    } else if (curr->next && last->func == ka_bind) {
       skip = curr->next->next;
     }
   }

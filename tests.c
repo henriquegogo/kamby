@@ -712,9 +712,9 @@ void test_code() {
     print 'List item: ' list.third\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
-//    obj.{ print 'List insider item: ' (age = 30) } \n\
+    obj.{ print 'List insider item: ' (age += 3) } \n\
     print 'List outside item: ' obj.age\n\
-//    obj.{ print 'Internal index: ' $0 }\n\
+    obj.{ print 'Internal index: ' $0 }\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
