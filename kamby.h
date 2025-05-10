@@ -95,8 +95,8 @@ static inline KaNode *ka_copy(KaNode *node) {
 
   if (copy->type >= KA_LIST) {
     KaNode **last = &copy->children;
-    for (KaNode *curr = node->children; curr && curr->type != KA_CTX;
-        curr = curr->next) last = &(*last = ka_copy(curr))->next;
+    for (KaNode *curr = node->children; curr; curr = curr->next)
+      last = &(*last = ka_copy(curr))->next;
   }
 
   if (node->key) copy->key = strdup(node->key);
@@ -170,7 +170,6 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
 
   KaNode *block_ctx = ka_chain(args->children, ka_new(KA_CTX), *ctx, NULL);
   KaNode *block_result = ka_eval(&block_ctx, args->next);
-  ka_free(last->next);
   last->next = NULL;
 
   if (args->key && args->next->type == KA_BLOCK) {
