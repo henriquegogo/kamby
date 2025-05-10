@@ -684,8 +684,8 @@ void test_init() {
   assert(strlen(ctx->next->key) > 0);
   assert(last->type == KA_CTX);
   assert(prev->type == KA_FUNC);
-  assert(prev->func == ka_bind);
-  assert(!strcmp(prev->key, "."));
+  assert(prev->func == ka_get);
+  assert(!strcmp(prev->key, "$"));
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -715,6 +715,7 @@ void test_code() {
     obj.{ print 'List insider item: ' (age += 3) } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ print 'Internal index: ' $0 }\n\
+    [1, 2, 3, 4].{ print 'Unamed list item: ' $1 }\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
