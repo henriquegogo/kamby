@@ -170,6 +170,7 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
 
   KaNode *block_ctx = ka_chain(args->children, ka_new(KA_CTX), *ctx, NULL);
   KaNode *block_result = ka_eval(&block_ctx, args->next);
+  ka_free(last->next);
   last->next = NULL;
 
   if (args->key && args->next->type == KA_BLOCK) {
