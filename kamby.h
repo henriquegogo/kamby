@@ -161,29 +161,6 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   return node;
 }
 
-static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
-static inline KaNode *ka_set(KaNode **ctx, KaNode *nodes);
-
-static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
-  KaNode *left = args, *right = args->next, *last = left->children;
-  while (last->next) last = last->next;
-
-  KaNode *block_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *result = ka_eval(&block_ctx, right->type == KA_BLOCK ?
-      right->children : right);
-
-  ka_free(last->next);
-  last->next = NULL;
-
-  if (left->key && right->type == KA_BLOCK) {
-    ka_free(result);
-    return ka_set(ctx, ka_chain(ka_symbol(left->key), left, NULL));
-  }
-
-  ka_free(args);
-  return result;
-}
-
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
   return ka_copy(ka_ref(ctx, args));
 }
@@ -229,6 +206,28 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   free(data);
   ka_free(args);
   return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
+}
+
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
+
+static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
+  KaNode *left = args, *right = args->next, *last = left->children;
+  while (last->next) last = last->next;
+
+  KaNode *block_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
+  KaNode *result = ka_eval(&block_ctx, right->type == KA_BLOCK ?
+      right->children : right);
+
+  // Detach block context
+  ka_free(last->next);
+  last->next = NULL;
+
+  if (left->key && right->type == KA_BLOCK) {
+    ka_free(ka_set(ctx, ka_chain(ka_symbol(left->key), ka_copy(left), NULL)));
+  }
+
+  ka_free(args);
+  return result;
 }
 
 // Parser and Interpreter
@@ -583,11 +582,11 @@ static inline KaNode *ka_init() {
   void (*f)(KaNode *) = ka_free;
 
   // Variables
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_bind), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),  ka_func(ka_get),  NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),  ka_func(ka_key),  NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="), ka_func(ka_def),  NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),  ka_func(ka_set),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_bind), NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
