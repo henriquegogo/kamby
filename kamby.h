@@ -203,7 +203,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   node->value = data->value;
   KaType type = node->type = data->type;
 
-  free(data);
+  free(data->key), free(data);
   ka_free(args);
   return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
 }
