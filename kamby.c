@@ -2,34 +2,50 @@
 #include <unistd.h>
 #include "kamby.h"
 
-int main() {
+int main(int argc, char *argv[]) {
   KaNode *ctx = ka_init();
   ctx->key = strdup("ctx");
   int pos = 0;
-  char input[8192];
 
-  if (isatty(fileno(stdin))) {
-    printf("Valid keywords:\n  ");
-    int cols = 0;
-    for (KaNode *curr = ctx->next; curr->key && curr->next; curr = curr->next) {
-      if (strlen(curr->key) > 0) printf("%s ", curr->key);
-      if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
-    }
-    printf("\n\n");
-    printf("Usage:\n");
-    printf("  <symbol> = <number|string>\n");
-    printf("  print <symbol>\n\n");
-    printf("kamby> ");
+  // Read file
+  if (argc > 1) {
+    FILE *file = fopen(argv[1], "r");
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+    char *source = calloc(1, size + 1);
+    fread(source, 1, size, file);
+    source[size] = '\0';
+    fclose(file);
+    KaNode *expr = ka_parser(source, &pos);
+    ka_free(ka_eval(&ctx, expr));
+    ka_free(expr);
+    free(source);
   }
 
-  while (fgets(input, 8192, stdin)) {
-    KaNode *expr = ka_parser(input, (pos = 0, &pos));
-    KaNode *result = ka_eval(&ctx, expr);
-    ka_free(result), ka_free(expr);
-    input[0] = '\0';
+  // REPL
+  else {
     if (isatty(fileno(stdin))) {
+      printf("Valid keywords:\n  ");
+      int cols = 0;
+      for (KaNode *curr = ctx->next; curr->key && curr->next; curr = curr->next) {
+        if (strlen(curr->key) > 0) printf("%s ", curr->key);
+        if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
+      }
+      printf("\n\nUse Ctrl+D to exit\n\n");
       printf("kamby> ");
       fflush(stdout);
+    }
+    char input[8192];
+    while (fgets(input, sizeof(input), stdin)) {
+      KaNode *expr = ka_parser(input, (pos = 0, &pos));
+      ka_free(ka_eval(&ctx, expr));
+      ka_free(expr);
+      input[0] = '\0';
+      if (isatty(fileno(stdin))) {
+        printf("kamby> ");
+        fflush(stdout);
+      }
     }
   }
 
