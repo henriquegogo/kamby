@@ -544,16 +544,6 @@ static inline KaNode *ka_loop(KaNode **ctx, KaNode *args) {
 
 // I/O functions
 
-static inline KaNode *ka_exit(KaNode **ctx, KaNode *args) {
-  ka_free(args);
-  for (KaNode *curr = *ctx; curr; curr = curr->next) {
-    if (curr->type == KA_CTX) curr->type = KA_NONE;
-  }
-  ka_free(*ctx);
-  exit(0);
-  return NULL;
-}
-
 static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
   for (KaNode *arg = args; arg != NULL; arg = arg->next) {
     switch (arg->type) {
@@ -618,7 +608,6 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."), ka_func(ka_loop), NULL)));
     
   // I/O functions
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"exit"),  ka_func(ka_exit), NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
