@@ -8,8 +8,7 @@
 #include <string.h>
 
 typedef enum {
-  KA_NONE, KA_CTX, KA_FALSE, KA_TRUE,
-  KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
+  KA_NONE, KA_CTX, KA_FALSE, KA_TRUE, KA_NUMBER, KA_STRING, KA_SYMBOL, KA_FUNC,
   KA_LIST, KA_EXPR, KA_BLOCK
 } KaType;
 
@@ -214,8 +213,8 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next, *last = left->children;
   while (last->next) last = last->next;
 
-  KaNode *block_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *result = ka_eval(&block_ctx,
+  KaNode *blk_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
+  KaNode *result = ka_eval(&blk_ctx,
       right->type == KA_BLOCK ? right->children : right);
 
   // Detach block context
@@ -266,14 +265,12 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
-    if (head->next) block_ctx = ka_chain(head->next, block_ctx, NULL);
-    KaNode *block_result = ka_eval(&block_ctx, head->children);
-    KaNode *result = block_result;
+    KaNode *blk_result, *blk_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
+    if (head->next) blk_ctx = ka_chain(head->next, blk_ctx, NULL);
+    KaNode *result = blk_result = ka_eval(&blk_ctx, head->children);
     while (result->next) result = result->next;
     result = ka_copy(result);
-    head->next = NULL;
-    ka_free(block_result), ka_free(block_ctx), ka_free(head);
+    ka_free(blk_result), ka_free(blk_ctx), ka_free((head->next = NULL, head));
     return result;
   }
 
