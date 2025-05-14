@@ -215,16 +215,15 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
   while (last->next) last = last->next;
 
   KaNode *block_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *result = ka_eval(&block_ctx, right->type == KA_BLOCK ?
-      right->children : right);
+  KaNode *result = ka_eval(&block_ctx,
+      right->type == KA_BLOCK ? right->children : right);
 
   // Detach block context
   ka_free(last->next);
   last->next = NULL;
 
-  if (left->key && right->type == KA_BLOCK) {
+  if (left->key && right->type == KA_BLOCK)
     ka_free(ka_set(ctx, ka_chain(ka_symbol(left->key), ka_copy(left), NULL)));
-  }
 
   ka_free(args);
   return result;
@@ -249,17 +248,12 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
       last->children = ka_eval(ctx, curr->children);
     } else if (curr->type == KA_EXPR) {
       last = last->next = ka_eval(ctx, curr->children);
-    } else {
-      last = last->next = ka_copy(curr);
-    }
+    } else last = last->next = ka_copy(curr);
     // Flag next node for special treatment
     if (curr->next && curr->next->type == KA_SYMBOL &&
         (last->func == ka_key || last->func == ka_def ||
-        last->func == ka_set || last->func == ka_del)) {
-      skip =  curr->next; 
-    } else if (curr->next && last->func == ka_bind) {
-      skip = curr->next->next;
-    }
+        last->func == ka_set || last->func == ka_del)) skip =  curr->next; 
+    else if (curr->next && last->func == ka_bind) skip = curr->next->next;
   }
 
   // Discard first head node
@@ -272,9 +266,8 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
-    KaNode *block_ctx = head->next ?
-      ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL) :
-      ka_chain(ka_new(KA_CTX), *ctx, NULL);
+    KaNode *block_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
+    if (head->next) block_ctx = ka_chain(head->next, block_ctx, NULL);
     KaNode *block_result = ka_eval(&block_ctx, head->children);
     KaNode *result = block_result;
     while (result->next) result = result->next;
@@ -357,14 +350,11 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
       a = prev ? (prev->next = expr) : (head = expr);
-    } else {
-      a = (prev = a)->next;
-    }
+    } else a = (prev = a)->next;
   }
 
   KaNode *result = head->next;
   ka_free((head->next = NULL, head));
-
   return result;
 }
 
@@ -548,11 +538,9 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
   for (KaNode *arg = args; arg != NULL; arg = arg->next) {
     switch (arg->type) {
       case KA_NUMBER:
-        if (*arg->number == (long long)(*arg->number)) {
+        if (*arg->number == (long long)(*arg->number))
           printf("%lld", (long long)(*arg->number));
-        } else {
-          printf("%.2Lf", *arg->number);
-        }
+        else printf("%.2Lf", *arg->number);
         break;
       case KA_STRING:
         printf("%s", arg->string);
