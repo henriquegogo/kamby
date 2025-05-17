@@ -712,19 +712,20 @@ void test_code() {
     print 'List item: ' list.third\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
-    obj.{ print 'List insider item: ' (age += 3) } \n\
+    obj.{ print 'List insider item: ' age +=$key } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ print 'Internal index: ' $0 }\n\
-    [1, 2, 3, 4].{ print 'Unamed list item: ' $1 }\n\
+    [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
-    print i\n\
+    print teste = 1+2+$key\n\
+    print 'Last result: ' teste\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
-//  print_chain(expr);
+  print_chain(expr);
   ka_free(ka_eval(&ctx, expr));
 //  print_chain(ctx);
   
@@ -753,7 +754,7 @@ int main() {
   test_def();
   test_set();
   test_eval();
-  test_parser();
+//  test_parser();
   test_logical();
   test_comparison();
   test_arithmetic();

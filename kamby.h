@@ -327,7 +327,17 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
-  // Reorder expression nodes based on punctuation symbols
+  // Reorder and wrap unary operators in expressions
+  for (KaNode *last = head; last->next; last = last->next) {
+    KaNode *op = last->next, *a = op->next, *next = a ? a->next : NULL;
+    char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
+    if (symbol && (!strcmp(symbol, "$") || !strcmp(symbol, "!"))) {
+      (last->next = ka_new(KA_EXPR))->next = next;
+      last->next->children = (a->next = NULL, op);
+    }
+  }
+
+  // Reorder binary operators
   for (KaNode *prev = NULL, *a = head; a && a->next;) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
@@ -337,11 +347,6 @@ static inline KaNode *ka_parser(char *text, int *pos) {
           !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
-    // Unary operators
-    } else if (symbol && (!strcmp(symbol, "$") || !strcmp(symbol, "!"))) {
-      (expr = ka_new(KA_EXPR))->next = next;
-      expr->children = (b->next = NULL, op);
-      a = (prev = a)->next = expr;
     // Binary operators
     } else if (symbol && ispunct(symbol[0])) {
       (expr = ka_new(KA_EXPR))->next = next;
