@@ -468,8 +468,9 @@ void test_parser() {
   ka_free(result);
 
   result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
-  KaNode *expr_set = result->children,
-         *expr_mul = result->children->next->next->children,
+
+  KaNode *expr_set = result->children->children,
+         *expr_mul = result->children->children->next->next->children,
          *expr_sub = result->next->children->children,
          *expr_sum = result->next->children->children->next->children;
   assert(expr_set->type == KA_SYMBOL && !strcmp(expr_set->symbol, "="));
@@ -754,7 +755,7 @@ int main() {
   test_def();
   test_set();
   test_eval();
-//  test_parser();
+  test_parser();
   test_logical();
   test_comparison();
   test_arithmetic();
