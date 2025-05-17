@@ -327,28 +327,26 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
-  // Reorder and wrap unary operators in expressions
   for (KaNode *last = head; last->next; last = last->next) {
     KaNode *op = last->next, *a = op->next, *next = a ? a->next : NULL;
-    char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
-    if (symbol && (!strcmp(symbol, "$") || !strcmp(symbol, "!"))) {
+    char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
+    // Reorder and wrap unary operators in expressions
+    if (sym && ((strchr("$!", sym[0]) && !sym[1]))) {
       (last->next = ka_new(KA_EXPR))->next = next;
       last->next->children = (a->next = NULL, op);
     }
   }
 
-  // Reorder binary operators
   for (KaNode *prev = NULL, *a = head; a && a->next;) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
-    char *symbol = op->type == KA_SYMBOL ? op->symbol : NULL;
-
-    // Symbolic operators ordering
-    if (symbol && (!strcmp(symbol, ":=") || !strcmp(symbol, "=") ||
-          !strcmp(symbol, ":") || !strcmp(symbol, "?"))) {
+    char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
+    // Reorder operators ? : = += -= *= /= %= :=
+    if (sym && ((strchr("?:=", sym[0]) && !sym[1]) || 
+          (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')))) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
-    // Binary operators
-    } else if (symbol && ispunct(symbol[0])) {
+    // Reorder and wrap binary operators in expressions
+    } else if (sym && ispunct(sym[0])) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
       a = prev ? (prev->next = expr) : (head = expr);
