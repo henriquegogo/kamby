@@ -340,13 +340,26 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   for (KaNode *prev = NULL, *a = head; a && a->next;) {
     KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
     char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
-    // Reorder operators ? : = += -= *= /= %= :=
-    if (sym && ((strchr("?:=", sym[0]) && !sym[1]) || 
-          (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')))) {
+    // Reorder operators ? :
+    if (sym && (strchr("?:", sym[0]) && !sym[1])) {
       (op->next = a, a->next = b);
       a = prev ? (prev->next = op) : (head = op);
-    // Reorder and wrap binary operators in expressions
-    } else if (sym && ispunct(sym[0])) {
+      // Reorder and wrap binary operators in expressions
+    } else if (sym && ispunct(sym[0]) &&
+        !((strchr("=", sym[0]) && !sym[1]) || 
+          (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')))) {
+      (expr = ka_new(KA_EXPR))->next = next;
+      expr->children = (op->next = a, a->next = b, b->next = NULL, op);
+      a = prev ? (prev->next = expr) : (head = expr);
+    } else a = (prev = a)->next;
+  }
+
+  for (KaNode *prev = NULL, *a = head; a && a->next;) {
+    KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
+    char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
+    // Reorder and wrap binary assignment operators = += -= *= /= %= :=
+    if (sym && ((strchr("=", sym[0]) && !sym[1]) || 
+          (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')))) {
       (expr = ka_new(KA_EXPR))->next = next;
       expr->children = (op->next = a, a->next = b, b->next = NULL, op);
       a = prev ? (prev->next = expr) : (head = expr);
