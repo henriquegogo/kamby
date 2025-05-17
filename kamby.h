@@ -327,29 +327,24 @@ static inline KaNode *ka_parser(char *text, int *pos) {
     }
   }
 
-  for (KaNode *last = head; last->next; last = last->next) {
-    KaNode *op = last->next, *a = op->next, *next = a ? a->next : NULL;
-    char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
-    // Reorder and wrap unary operators in expressions
-    if (sym && ((strchr("$!", sym[0]) && !sym[1]))) {
-      (last->next = ka_new(KA_EXPR))->next = next;
-      last->next->children = (a->next = NULL, op);
-    }
-  }
-
-  for (int step = 1; step <= 2; step++) {
+  // Reorder operators by precedence
+  for (int step = 1; step <= 3; step++) {
     for (KaNode *prev = NULL, *a = head; a && a->next;) {
       KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
       char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
       int isassign = sym && ((strchr("=", sym[0]) && !sym[1]) ||
           (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')));
+      // Reorder and wrap unary operators in expressions
+      if (step == 1 && sym && ((strchr("$!", sym[0]) && !sym[1]))) {
+        (a->next = ka_new(KA_EXPR))->next = next;
+        a->next->children = (b->next = NULL, op);
       // Reorder operators ? :
-      if (step == 1 && sym && (strchr("?:", sym[0]) && !sym[1])) {
+      } else if (step == 2 && sym && (strchr("?:", sym[0]) && !sym[1])) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
       // Reorder and wrap binary operators in expressions by precedence
-      } else if ((step == 1 && !isassign && sym && ispunct(sym[0])) ||
-          (step == 2 && isassign)) {
+      } else if ((step == 2 && !isassign && sym && ispunct(sym[0])) ||
+          (step == 3 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
         expr->children = (op->next = a, a->next = b, b->next = NULL, op);
         a = prev ? (prev->next = expr) : (head = expr);
