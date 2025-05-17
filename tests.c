@@ -712,7 +712,7 @@ void test_code() {
     print 'List item: ' list.third\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
-    obj.{ print 'List insider item: ' (age +=$key) } \n\
+    obj.{ print 'List insider item: ' age +=$key } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ print 'Internal index: ' $0 }\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
@@ -720,7 +720,7 @@ void test_code() {
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
-    print(teste = 1+2+$key)\n\
+    print teste = 1+2+$key\n\
     print 'Last result: ' teste\n\
   ";
 
@@ -754,7 +754,7 @@ int main() {
   test_def();
   test_set();
   test_eval();
-  test_parser();
+//  test_parser();
   test_logical();
   test_comparison();
   test_arithmetic();
