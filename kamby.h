@@ -451,7 +451,8 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   char *str;
   asprintf(&str, "%s%s", lstr, rstr);
   KaNode *result = ka_string(str);
-  free(str), free(rstr), free(lstr), ka_free(args);
+  free(str), free(rstr), free(lstr);
+  ka_free(args);
   return result;
 }
 
