@@ -18,34 +18,19 @@ int main(int argc, char *argv[]) {
     source[size] = '\0';
     fclose(file);
     KaNode *expr = ka_parser(source, &pos);
-    ka_free(ka_eval(&ctx, expr));
-    ka_free(expr);
+    ka_free(ka_eval(&ctx, expr)), ka_free(expr);
     free(source);
   }
 
   // REPL
   else {
-    if (isatty(fileno(stdin))) {
-      printf("Valid keywords:\n  ");
-      int cols = 0;
-      for (KaNode *curr = ctx->next; curr->key && curr->next; curr = curr->next) {
-        if (strlen(curr->key) > 0) printf("%s ", curr->key);
-        if ((cols += strlen(curr->key) + 1) > 50) { printf("\n  "); cols = 0; }
-      }
-      printf("\n\nUse Ctrl+D to exit\n\n");
-      printf("kamby> ");
-      fflush(stdout);
-    }
+    if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> ");
     char input[8192];
     while (fgets(input, sizeof(input), stdin)) {
       KaNode *expr = ka_parser(input, (pos = 0, &pos));
-      ka_free(ka_eval(&ctx, expr));
-      ka_free(expr);
+      ka_free(ka_eval(&ctx, expr)), ka_free(expr);
       input[0] = '\0';
-      if (isatty(fileno(stdin))) {
-        printf("kamby> ");
-        fflush(stdout);
-      }
+      if (isatty(fileno(stdin))) printf("> ");
     }
   }
 
