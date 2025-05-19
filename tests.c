@@ -668,7 +668,7 @@ void test_loop() {
       ka_symbol("set"), ka_symbol("i"),
       ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
-  ka_free(ka_loop(&ctx, ka_chain(condition, block, NULL)));
+  ka_free(ka_while(&ctx, ka_chain(condition, block, NULL)));
   KaNode *var = ka_get(&ctx, ka_symbol("i"));
   assert(*var->number == 10); ka_free(var);
 
