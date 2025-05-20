@@ -701,27 +701,26 @@ void test_code() {
     hello = { \n\
       print \"prop1: \" $1 \", prop2: \" first\n\
     }\n\
-    i = 2\n\
+    i = 1\n\
     text = 'Hello, world!'\n\
-    key = 'i'\n\
     list = ['one', second: i, third:'three', 'four']\n\
     hello(first : 33, age: 34)\n\
     print 'Previous args should be local, not global (blank)' first age\n\
-    print 'Number 2: ' $key\n\
     print 'Stack by var number: ' $i\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
-    print 'List item: ' list.third\n\
+    print 'List item: ' list.second\n\
     obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
-    obj.{ print 'List insider item: ' age +=$key } \n\
+    obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
+    obj.{ $0 = 'Soares' }\n\
     obj.{ print 'Internal index: ' $0 }\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
     a ? { print('no') }\n\
     i ? { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
-    print teste = 1+2+$key\n\
+    print teste = 1+2+i\n\
     print 'Last result: ' teste\n\
   ";
 

@@ -148,7 +148,7 @@ static inline KaNode *ka_block(KaNode *args, ...) {
 
 static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   KaNode *node = *ctx;
-  char *sym = args->type != KA_STRING && args->key ? args->key : args->symbol;
+  char *sym = args->key ?: args->symbol;
 
   if (args->type == KA_NUMBER || isdigit(sym[0])) {
     int i = isdigit(sym[0]) ? atoi(sym) : *args->number;
