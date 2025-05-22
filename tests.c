@@ -738,7 +738,7 @@ void test_code() {
     print 'Last result: ' teste\n\
     { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
     final := [1, 2, 3] ... { $0 * 3 }\n\
-    final...{ print $0 }\n\
+    final ... { print $0 }\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
