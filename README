@@ -10,8 +10,8 @@ blocks of code.
 
 |  message := 'Hello, World!'  # Define a new variable
 |  message = 'Bye, bye'        # Edit variable value
-|  def message 'Hello again!'  # Append new 'message' in stack ("def" == ":=")
-|  del message                 # Remove last 'message' in stack
+|  message := 'Hello again! '  # Append new 'message' in stack
+|  message = ()                # Remove last 'message' in stack
 |  message                     # Message has old value 'Bye, bye'
 
 Variables are not unique. You can declare multiple values for the same variable
@@ -29,10 +29,10 @@ You can return the value of some stack item using index instead of var name
 Atoms like numbers and strings can be named and not saved in the stack.
 This is useful to name a value in a list item.
 
-|  list = [fistName : 'John', lastName : 'Doe', age : 25]
-|  print(list . firstName)     // John
-|  print(list . age)           // 25
-|  print(list . 1)             // Doe
+|  list = [fistName: 'John', lastName: 'Doe', age: 25]
+|  print(list.firstName)       // John
+|  print(list.age)             // 25
+|  print(list.1)               // Doe
 
 Expressions, lists and blocks
 -----------------------------
@@ -60,13 +60,13 @@ For source code or blocks, each line is considered an expression. To execute a
 block, just call it as first item of an expression. The arguments are be
 appended to the internal block variables stack.
 
-|  sum = { $0 + $1 }
+|  sum := { $0 + $1 }
 |  sum 2 3
 |
 |  /* or */
 |
-|  def sum { first + second }
-|  sum(first : 2, second : 3)
+|  sum := { first + second }
+|  sum(first: 2, second: 3)
 
 Context
 -------
@@ -75,20 +75,52 @@ Lists can be sent as a context appended to global variables context.
 |  name := 'Global name'       // Declare a new variable in current stack
 |
 |  person = [
-|    name : 'Local name'
-|    age : 20
+|    name: 'Local name'
+|    age: 20
 |  ]
 |
 |  name                        // Return 'Global name'
 |
-|  person . name               // "person" is set as context
+|  person.name                 // "person" is set as context
 |                              // "name" returns list's "name" item
+|
+|  person.{                    // Context blocks uses list as context
+|    name = 'New name'         // Block of code that change "person" values
+|    age = 30
+|  }
+|  person.name                 // Return 'New name'
+
+Conditions
+----------
+Statements are represented by pairs of condition block and execution block.
+The last block is the else block.
+
+|  // Simple condition. Block executed
+|  1 == 1 ? { print('TRUE') }
+|
+|  // False condition. Else block is executed
+|  1 != 1 ? { print('FALSE') } { print('ELSE') }
+|
+|  // First is false. Second condition is true. Second block is executed
+|  1 != 1 ? { print('FALSE') } 2 == 2 { print('TRUE') }
+|
+|  // Two false conditions. Else block is executed
+|  1 != 1 ? { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
+
+Loops
+-----
+While condition block is true, run execution block.
+
+|  i := 0
+|  { (i += 1) <= 10 } ?.. { print i }
 
 Operators
 ---------
 
-|  + - * /
-|  && || == != >= <= > <
+|  $ : := = .
+|  && || ! == != > < >= <=
+|  + - * / % += -= *= /= %=
+|  ? ?..
       
 Operator "+" will sum two numbers, or concatenate two strings.
 
