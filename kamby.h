@@ -534,14 +534,18 @@ static inline KaNode *ka_while(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
+  KaNode *result = ka_new(KA_LIST);
+  KaNode *last = result->children = ka_new(KA_NONE), *children = last;
   KaNode *block = args->next->type == KA_BLOCK ? args->next->children : NULL;
   for (KaNode *curr = args->children; curr; curr = curr->next) {
     KaNode *blk_ctx = ka_chain(ka_copy(curr), ka_new(KA_CTX), *ctx, NULL);
-    ka_free(ka_eval(&blk_ctx, block));
-    ka_free(blk_ctx);
+    KaNode *blk_result = ka_eval(&blk_ctx, block);
+    last = last->next = ka_copy(blk_result);
+    ka_free(blk_result), ka_free(blk_ctx);
   }
-  ka_free(args);
-  return ka_new(KA_NONE);
+  result->children = children->next;
+  ka_free((children->next = NULL, children)), ka_free(args);
+  return result;
 }
 
 // I/O functions

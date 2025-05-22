@@ -676,19 +676,16 @@ void test_while() {
 }
 
 void test_each() {
-  KaNode *ctx = ka_init();
-  ctx->key = strdup("ctx");
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
+  KaNode *ctx = ka_new(KA_NONE);
 
   KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
-  KaNode *block = ka_block(ka_symbol("="), ka_symbol("i"), ka_symbol("0"), NULL);
+  KaNode *block = ka_block(ka_symbol("0"), NULL);
 
-  ka_free(ka_each(&ctx, ka_chain(list, block, NULL)));
+  KaNode *result = ka_each(&ctx, ka_chain(list, block, NULL));
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  ka_free(result);
 
-  KaNode *result = ka_get(&ctx, ka_symbol("i"));
-  assert(*result->number == 2); ka_free(result);
-
-  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
 
@@ -740,7 +737,8 @@ void test_code() {
     print teste = 1+2+i\n\
     print 'Last result: ' teste\n\
     { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
-    [3, 4] ... { print $0 }\n\
+    final := [1, 2, 3] ... { $0 * 3 }\n\
+    final...{ print $0 }\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
