@@ -526,8 +526,9 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_while(KaNode **ctx, KaNode *args) {
   KaNode *cond = ka_copy(args), *cond_result;
+  KaNode *block = args->next->type == KA_BLOCK ? args->next->children : NULL;
   while ((cond_result = ka_eval(ctx, cond))->type >= KA_TRUE)
-    ka_free(cond_result), ka_free(ka_eval(ctx, args->next->children));
+    ka_free(cond_result), ka_free(ka_eval(ctx, block));
   ka_free(cond_result), ka_free(cond), ka_free(args);
   return ka_new(KA_NONE);
 }
