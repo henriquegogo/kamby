@@ -569,6 +569,13 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
   return ka_new(KA_NONE);
 }
 
+static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
+  char input[8192], *end;
+  scanf("%[^\n]", input);
+  long double number = strtold(input, &end);
+  return *end == '\0' ? ka_number(number) : ka_string(input);
+}
+
 // Initialize context with built-in functions
 
 static inline KaNode *ka_init() {
@@ -614,6 +621,7 @@ static inline KaNode *ka_init() {
     
   // I/O functions
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"read"),  ka_func(ka_read),NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }

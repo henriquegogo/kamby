@@ -125,6 +125,7 @@ Operators
 |  && || ! == != > < >= <=
 |  + - * / % += -= *= /= %=
 |  ? ?.. ...
+|  print read
       
 Operator "+" will sum two numbers, or concatenate two strings.
 
