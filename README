@@ -112,7 +112,11 @@ Loops
 While condition block is true, run execution block.
 
 |  i := 0
-|  { (i += 1) <= 10 } ?.. { print i }
+|  { (i += 1) <= 10 } ?.. { print i }     // 1 2 3 4 5 6 7 8 9 10
+
+For each item in list, run execution block.
+|  list = [1, 2, 3, 4, 5]
+|  list...{ print($0) }    // 1 2 3 4 5
 
 Operators
 ---------

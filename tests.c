@@ -610,7 +610,7 @@ void test_arithmetic() {
   ka_free(ctx);
 }
 
-void test_conditional() {
+void test_if() {
   KaNode *ctx = ka_new(KA_CTX);
   KaNode *block = ka_block(ka_number(42), NULL);
   KaNode *elseif_block = ka_block(ka_number(71), NULL);
@@ -654,7 +654,7 @@ void test_conditional() {
   ka_free(elseif_block), ka_free(else_block), ka_free(block), ka_free(ctx);
 }
 
-void test_loop() {
+void test_while() {
   KaNode *ctx = ka_new(KA_CTX);
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
@@ -669,9 +669,26 @@ void test_loop() {
       ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
   ka_free(ka_while(&ctx, ka_chain(condition, block, NULL)));
-  KaNode *var = ka_get(&ctx, ka_symbol("i"));
-  assert(*var->number == 10); ka_free(var);
+  KaNode *result = ka_get(&ctx, ka_symbol("i"));
+  assert(*result->number == 10); ka_free(result);
 
+  ka_free(ctx);
+}
+
+void test_each() {
+  KaNode *ctx = ka_init();
+  ctx->key = strdup("ctx");
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
+
+  KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
+  KaNode *block = ka_block(ka_symbol("="), ka_symbol("i"), ka_symbol("0"), NULL);
+
+  ka_free(ka_each(&ctx, ka_chain(list, block, NULL)));
+
+  KaNode *result = ka_get(&ctx, ka_symbol("i"));
+  assert(*result->number == 2); ka_free(result);
+
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
 
@@ -722,6 +739,8 @@ void test_code() {
     i += 3\n\
     print teste = 1+2+i\n\
     print 'Last result: ' teste\n\
+    { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
+    [3, 4] ... { print $0 }\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
@@ -758,8 +777,9 @@ int main() {
   test_logical();
   test_comparison();
   test_arithmetic();
-  test_conditional();
-  test_loop();
+  test_if();
+  test_while();
+  test_each();
   test_init();
   test_code();
 
