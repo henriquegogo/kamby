@@ -116,7 +116,7 @@ While condition block is true, run execution block.
 
 For each item in list, run execution block.
 |  list := [1, 2, 3] ... { $0 * 2 }
-|  list...{ print($0) }    // 2 4 6
+|  list ... { print($0) }                 // 2 4 6
 
 Operators
 ---------
@@ -124,7 +124,7 @@ Operators
 |  $ : := = .
 |  && || ! == != > < >= <=
 |  + - * / % += -= *= /= %=
-|  ? ?..
+|  ? ?.. ...
       
 Operator "+" will sum two numbers, or concatenate two strings.
 
