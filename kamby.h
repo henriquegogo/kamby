@@ -621,7 +621,7 @@ static inline KaNode *ka_init() {
     
   // I/O functions
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"read"),  ka_func(ka_read),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"read"),  ka_func(ka_read), NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }
