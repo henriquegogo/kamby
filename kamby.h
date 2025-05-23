@@ -195,7 +195,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   KaNode *node = ka_ref(ctx, ka_copy(args));
   if (!node) return ka_def(ctx, args);
-  else if (args->next->type == KA_NONE) return ka_del(ctx, args);
+  else if (!args->next->type) return ka_del(ctx, args);
 
   KaNode *data = ka_copy(args->next);
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
@@ -342,6 +342,9 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       } else if (step == 2 && sym && (strchr("?:", sym[0]) && !sym[1])) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
+      // Accept punctuation operators at beginning of expressions
+      } else if (step == 2 && !prev && sym && ispunct(sym[0])) {
+        a = (prev = head)->next;
       // Reorder and wrap binary operators in expressions by precedence
       } else if ((step == 2 && !isassign && sym && ispunct(sym[0])) ||
           (step == 3 && isassign)) {
@@ -572,6 +575,7 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
   char input[8192], *end;
   scanf("%[^\n]", input);
+  getchar();
   long double number = strtold(input, &end);
   return *end == '\0' ? ka_number(number) : ka_string(input);
 }
