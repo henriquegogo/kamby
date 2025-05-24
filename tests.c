@@ -712,7 +712,7 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    hello = { \n\
+    def hello { \n\
       print \"prop1: \" $1 \", prop2: \" first\n\
     }\n\
     i = 1\n\
@@ -730,8 +730,8 @@ void test_code() {
     obj.{ $0 = 'Soares' }\n\
     obj.{ print 'Internal index: ' $0 }\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
-    a ? { print('no') }\n\
-    i ? { print('yes') }\n\
+    if a { print('no') }\n\
+    if i { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
     print teste = 1+2+i\n\
