@@ -587,11 +587,14 @@ static inline KaNode *ka_init() {
   void (*f)(KaNode *) = ka_free;
 
   // Variables
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),  ka_func(ka_get),  NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),  ka_func(ka_key),  NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="), ka_func(ka_def),  NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),  ka_func(ka_set),  NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),  ka_func(ka_bind), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"$"),   ka_func(ka_get),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":"),   ka_func(ka_key),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)":="),  ka_func(ka_def),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"="),   ka_func(ka_set),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"."),   ka_func(ka_bind), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set),  NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
@@ -619,9 +622,12 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"%="), ka_func(ka_modset), NULL)));
 
   // Conditional and loops
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),   ka_func(ka_if),    NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?.."), ka_func(ka_while), NULL)));
-  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."), ka_func(ka_each),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?"),     ka_func(ka_if),   NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"?.."),   ka_func(ka_while),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"..."),   ka_func(ka_each), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"if"),    ka_func(ka_if),   NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"while"), ka_func(ka_while),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"each"),  ka_func(ka_each), NULL)));
     
   // I/O functions
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));

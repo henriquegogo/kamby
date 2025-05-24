@@ -13,6 +13,13 @@ blocks of code.
 |  message := 'Hello again! '  # Append new 'message' in stack
 |  message = ()                # Remove last 'message' in stack
 |  message                     # Message has old value 'Bye, bye'
+|
+|  /* or */
+|
+|  def message 'Hello, World!'
+|  set message 'Bye, bye'
+|  def message 'Hello again! '
+|  set message ()
 
 Variables are not unique. You can declare multiple values for the same variable
 name using ":=" and append in the stack. If you want to edit the last
@@ -52,7 +59,7 @@ when executed.
 |  list = ['first item' (1 + 2)]
 |
 |  // Blocks are lists of expressions that can be called after declaration
-|  block = {
+|  def block {
 |    print(message)
 |  }
 
@@ -60,7 +67,7 @@ For source code or blocks, each line is considered an expression. To execute a
 block, just call it as first item of an expression. The arguments are be
 appended to the internal block variables stack.
 
-|  sum := { $0 + $1 }
+|  def sum { $0 + $1 }
 |  sum 2 3
 |
 |  /* or */
@@ -97,15 +104,23 @@ The last block is the else block.
 
 |  // Simple condition. Block executed
 |  1 == 1 ? { print('TRUE') }
+|  /* or */
+|  if 1 == 1 { print('TRUE') }
 |
 |  // False condition. Else block is executed
 |  1 != 1 ? { print('FALSE') } { print('ELSE') }
+|  /* or */
+|  if 1 != 1 { print('FALSE') } { print('ELSE') }
 |
 |  // First is false. Second condition is true. Second block is executed
 |  1 != 1 ? { print('FALSE') } 2 == 2 { print('TRUE') }
+|  /* or */
+|  if 1 != 1 { print('FALSE') } 2 == 2 { print('TRUE') }
 |
 |  // Two false conditions. Else block is executed
 |  1 != 1 ? { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
+|  /* or */
+|  if 1 != 1 { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
 
 Loops
 -----
@@ -113,10 +128,14 @@ While condition block is true, run execution block.
 
 |  i := 0
 |  { (i += 1) <= 10 } ?.. { print i }     // 1 2 3 4 5 6 7 8 9 10
+|  /* or */
+|  while { (i += 1) <= 10 } { print i }
 
 For each item in list, run execution block.
 |  list := [1, 2, 3] ... { $0 * 2 }
 |  list ... { print($0) }                 // 2 4 6
+|  /* or */
+|  each list { print($0) }
 
 Operators
 ---------
