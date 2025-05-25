@@ -739,6 +739,7 @@ void test_code() {
     { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final ... { print $0 }\n\
+    print 'Name: ' + obj.name\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
