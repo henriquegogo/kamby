@@ -734,11 +734,12 @@ void test_code() {
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
     print 'List item: ' list.second\n\
     name = 'John'\n\
-    obj = [name: 'Henrique', age: 40, sayName: { print name }]\n\
+    obj = [name: 'Henrique', age: 40, sayName: { print 'Say ' obj.name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
     obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ $0 = 'Soares' }\n\
+    obj.sayName\n\
     obj.{ print 'Internal index: ' $0 }\n\
     print 'Global name: ' + name + ', obj name: ' + obj.name\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
@@ -748,9 +749,11 @@ void test_code() {
     i += 3\n\
     print sumnum = 1+2+i\n\
     print 'Last result: ' sumnum\n\
-    { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
+    result = ''\n\
+    { i := 0; while { (i += 1) <= 2 } { result += i + ' ' }}\n\
     final := [1, 2, 3] ... { $0 * 3 }\n\
-    final ... { print $0 }\n\
+    final...{ result += $0 + ' ' }\n\
+    print result\n\
     print 'Name: ' + obj.name\n\
   ";
 
