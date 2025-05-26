@@ -333,29 +333,29 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
       char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
       int isunary = sym && strchr("$!", sym[0]) && !sym[1];
-      int isnowrap = sym && strchr("?:", sym[0]) && !sym[1];
       int isassign = sym && ((strchr("=", sym[0]) && !sym[1]) ||
           (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')));
       int isbinding = sym && strchr(".", sym[0]) && !sym[1];
-      int ispunctuation = sym && ispunct(sym[0]) && !isunary && !isnowrap &&
-        !isassign && !isbinding;
+      int isnowrap = sym && strchr("?:", sym[0]) && !sym[1];
+      int ispunctuation = sym && ispunct(sym[0]) && !isunary &&
+        !isassign && !isbinding && !isnowrap;
       // Reorder and wrap unary operators in expressions
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
         a->next->children = (b->next = NULL, op);
-      // Reorder operators ? :
-      } else if (step == 2 && isnowrap) {
-        (op->next = a, a->next = b);
-        a = prev ? (prev->next = op) : (head = op);
       // Accept punctuation operators at beginning of expressions
-      } else if (step == 2 && !prev && ispunctuation) {
+      } else if (step == 1 && !prev && ispunctuation) {
         a = (prev = head)->next;
       // Reorder and wrap binary operators in expressions by precedence
-      } else if ((step == 2 && isbinding) || (step == 3 && ispunctuation) ||
-          (step == 4 && isassign)) {
+      } else if ((step == 1 && isbinding) || (step == 2 && ispunctuation) ||
+          (step == 3 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
         expr->children = (op->next = a, a->next = b, b->next = NULL, op);
         a = prev ? (prev->next = expr) : (head = expr);
+      // Reorder operators ? :
+      } else if (step == 4 && isnowrap) {
+        (op->next = a, a->next = b);
+        a = prev ? (prev->next = op) : (head = op);
       } else a = (prev = a)->next;
     }
   }
