@@ -8,20 +8,7 @@ int main(int argc, char *argv[]) {
   int pos = 0;
 
   // Read file
-  if (argc > 1) {
-    FILE *file = fopen(argv[1], "r");
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    rewind(file);
-    char *source = calloc(1, size + 1);
-    fread(source, 1, size, file);
-    source[size] = '\0';
-    fclose(file);
-    KaNode *expr = ka_parser(source, &pos);
-    ka_free(ka_eval(&ctx, expr)), ka_free(expr);
-    free(source);
-  }
-
+  if (argc > 1) ka_load(&ctx, ka_string(argv[1]));
   // REPL
   else {
     if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> ");

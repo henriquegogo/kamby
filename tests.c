@@ -676,7 +676,7 @@ void test_while() {
 }
 
 void test_each() {
-  KaNode *ctx = ka_new(KA_NONE);
+  KaNode *ctx = ka_new(KA_CTX);
 
   KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
   KaNode *block = ka_block(ka_symbol("0"), NULL);
@@ -684,6 +684,16 @@ void test_each() {
   KaNode *result = ka_each(&ctx, ka_chain(list, block, NULL));
   assert(*result->children->number == 1);
   assert(*result->children->next->number == 2);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_read() {
+  KaNode *ctx = ka_new(KA_CTX);
+
+  KaNode *result = ka_read(&ctx, ka_string("README"));
+  assert(!strncmp(result->string, "Kamby Language", 14));
   ka_free(result);
 
   ka_free(ctx);
@@ -732,7 +742,7 @@ void test_code() {
     obj.{ print 'Internal index: ' $0 }\n\
     print 'Global name: ' + name + ', obj name: ' + obj.name\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
-    if a { print('no') }\n\
+    if a { print('no') } { print('else') }\n\
     if i { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
@@ -781,6 +791,7 @@ int main() {
   test_if();
   test_while();
   test_each();
+  test_read();
   test_init();
   test_code();
 

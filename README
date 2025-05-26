@@ -140,11 +140,11 @@ For each item in list, run execution block.
 Operators
 ---------
 
-|  $ : := = .
+|  get def set $ : := = .
 |  && || ! == != > < >= <=
 |  + - * / % += -= *= /= %=
-|  ? ?.. ...
-|  print read
+|  if while each ? ?.. ...
+|  print input read write load
       
 Operator "+" will sum two numbers, or concatenate two strings.
 
