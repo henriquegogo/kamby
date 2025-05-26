@@ -127,9 +127,9 @@ Loops
 While condition block is true, run execution block.
 
 |  i := 0
-|  { (i += 1) <= 10 } ?.. { print i }     // 1 2 3 4 5 6 7 8 9 10
+|  (i += 1) <= 10 ?.. { print i }     // 1 2 3 4 5 6 7 8 9 10
 |  /* or */
-|  while { (i += 1) <= 10 } { print i }
+|  while (i += 1) <= 10 { print i }
 
 For each item in list, run execution block.
 |  list := [1, 2, 3] ... { $0 * 2 }
