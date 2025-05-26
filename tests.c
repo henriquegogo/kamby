@@ -379,7 +379,7 @@ void test_eval() {
   expr = ka_expr(ka_block(
         ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
         ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
-        ka_expr(ka_symbol("name"), NULL), NULL), NULL);
+        ka_expr(ka_symbol("name"), NULL), NULL), ka_new(KA_NONE), NULL);
   result = ka_eval(&ctx, expr);
   assert(!strcmp(result->string, "Doe"));
   ka_free(result), ka_free(expr);
@@ -739,7 +739,7 @@ void test_code() {
     obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ $0 = 'Soares' }\n\
-    obj.sayName\n\
+    obj.sayName()\n\
     obj.{ print 'Internal index: ' $0 }\n\
     print 'Global name: ' + name + ', obj name: ' + obj.name\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
@@ -750,7 +750,7 @@ void test_code() {
     print sumnum = 1+2+i\n\
     print 'Last result: ' sumnum\n\
     result = ''\n\
-    { i := 0; while { (i += 1) <= 2 } { result += i + ' ' }}\n\
+    { i := 0; while { (i += 1) <= 2 } { result += i + ' ' }}()\n\
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final...{ result += $0 + ' ' }\n\
     print result\n\
