@@ -19,7 +19,7 @@ blocks of code.
 |  def message 'Hello, World!'
 |  set message 'Bye, bye'
 |  def message 'Hello again! '
-|  set message ()
+|  del message
 
 Variables are not unique. You can declare multiple values for the same variable
 name using ":=" and append in the stack. If you want to edit the last

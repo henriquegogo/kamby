@@ -739,6 +739,7 @@ void test_code() {
     obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ $0 = 'Soares' }\n\
+    obj.$2()\n\
     obj.sayName()\n\
     obj.{ print 'Internal index: ' $0 }\n\
     print 'Global name: ' + name + ', obj name: ' + obj.name\n\
