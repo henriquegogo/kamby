@@ -264,15 +264,13 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     KaNode *result = head->func(ctx, head->next);
     ka_free((head->next = NULL, head));
     return result;
-  } else if (head->type == KA_BLOCK) {
-    // Deep recursion for block evaluation should be avoided.
-    // Instead, use loop functions (e.g., while, each) to handle.
-    KaNode *blk_result, *blk_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
-    if (head->next) blk_ctx = ka_chain(head->next, blk_ctx, NULL);
-    KaNode *result = blk_result = ka_eval(&blk_ctx, head->children);
+  } else if (head->type == KA_BLOCK && head->next) {
+    // Avoid deep recursion. Use loop functions (e.g., while, each) instead.
+    KaNode *blk_ctx = ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
+    KaNode *blk_ret, *result = blk_ret = ka_eval(&blk_ctx, head->children);
     while (result->next) result = result->next;
     result = ka_copy(result);
-    ka_free(blk_result), ka_free(blk_ctx), ka_free((head->next = NULL, head));
+    ka_free(blk_ret), ka_free(blk_ctx), ka_free((head->next = NULL, head));
     return result;
   }
 
@@ -335,12 +333,12 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
       char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
       int isunary = sym && strchr("$!", sym[0]) && !sym[1];
-      int isassign = sym && ((strchr("=", sym[0]) && !sym[1]) ||
+      int isassign = sym && ((strchr(":=", sym[0]) && !sym[1]) ||
           (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')));
-      int isbinding = sym && strchr(".", sym[0]) && !sym[1];
-      int isnowrap = sym && strchr("?:", sym[0]) && !sym[1];
+      int isbind = sym && strchr(".", sym[0]) && !sym[1];
+      int isif = sym && strchr("?", sym[0]) && !sym[1];
       int ispunctuation = sym && ispunct(sym[0]) && !isunary &&
-        !isassign && !isbinding && !isnowrap;
+        !isassign && !isbind && !isif;
       // Reorder and wrap unary operators in expressions
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
@@ -349,13 +347,13 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       } else if (step == 1 && !prev && ispunctuation) {
         a = (prev = head)->next;
       // Reorder and wrap binary operators in expressions by precedence
-      } else if ((step == 1 && isbinding) || (step == 2 && ispunctuation) ||
+      } else if ((step == 1 && isbind) || (step == 2 && ispunctuation) ||
           (step == 3 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
         expr->children = (op->next = a, a->next = b, b->next = NULL, op);
         a = prev ? (prev->next = expr) : (head = expr);
       // Reorder operators ? :
-      } else if (step == 4 && isnowrap) {
+      } else if (step == 4 && isif) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
       } else a = (prev = a)->next;
@@ -529,7 +527,8 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   KaNode *cond = args, *block = args->next;
   while (cond && cond->type <= KA_FALSE)
     block = (cond = cond->next->next) && cond->next ? cond->next : cond;
-  KaNode *result = ka_eval(ctx, block = ka_copy(block));
+  KaNode *result = ka_eval(ctx, (block = ka_copy(block))->type == KA_BLOCK ?
+      block->children : block);
   ka_free(block), ka_free(args);
   return result;
 }
@@ -537,7 +536,7 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_while(KaNode **ctx, KaNode *args) {
   KaNode *cond = ka_copy(args), *cond_result;
   KaNode *block = args->next->type == KA_BLOCK ? args->next->children : NULL;
-  while ((cond_result = ka_eval(ctx, cond))->type >= KA_TRUE)
+  while ((cond_result = ka_eval(ctx, cond->children))->type >= KA_TRUE)
     ka_free(cond_result), ka_free(ka_eval(ctx, block));
   ka_free(cond_result), ka_free(cond), ka_free(args);
   return ka_new(KA_NONE);
@@ -549,9 +548,9 @@ static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
   KaNode *block = args->next->type == KA_BLOCK ? args->next->children : NULL;
   for (KaNode *curr = args->children; curr; curr = curr->next) {
     KaNode *blk_ctx = ka_chain(ka_copy(curr), ka_new(KA_CTX), *ctx, NULL);
-    KaNode *blk_result = ka_eval(&blk_ctx, block);
-    last = last->next = ka_copy(blk_result);
-    ka_free(blk_result), ka_free(blk_ctx);
+    KaNode *blk_ret = ka_eval(&blk_ctx, block);
+    last = last->next = ka_copy(blk_ret);
+    ka_free(blk_ret), ka_free(blk_ctx);
   }
   result->children = children->next;
   ka_free((children->next = NULL, children)), ka_free(args);
