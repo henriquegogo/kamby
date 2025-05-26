@@ -723,19 +723,21 @@ void test_code() {
     print 'Stack by var number: ' $i\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
     print 'List item: ' list.second\n\
-    obj = [name : 'Henrique', age : 40, sayName : { print obj.name }]\n\
+    name = 'John'\n\
+    obj = [name: 'Henrique', age: 40, sayName: { print name }]\n\
     print ['item1', second : 'item2', 'item3'].second\n\
     obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
     obj.{ $0 = 'Soares' }\n\
     obj.{ print 'Internal index: ' $0 }\n\
+    print 'Global name: ' + name + ', obj name: ' + obj.name\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
     if a { print('no') }\n\
     if i { print('yes') }\n\
     print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
-    print teste = 1+2+i\n\
-    print 'Last result: ' teste\n\
+    print sumnum = 1+2+i\n\
+    print 'Last result: ' sumnum\n\
     { i := 0; { (i += 1) <= 2 } ?.. { print i }}\n\
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final ... { print $0 }\n\
