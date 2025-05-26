@@ -26,6 +26,11 @@ typedef struct KaNode {
   struct KaNode *next;
 } KaNode;
 
+// Function prototypes that will be defined later
+
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
+static inline KaNode *ka_while(KaNode **ctx, KaNode *nodes);
+
 // Constructors
 
 static inline KaNode *ka_new(KaType type) {
@@ -207,8 +212,6 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   return type == KA_BLOCK || type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
 }
 
-static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
-
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
   KaNode *left = args, *right = args->next, *last = left->children;
   while (last->next) last = last->next;
@@ -251,7 +254,8 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     // Flag next node for special treatment
     if (curr->next && curr->next->type == KA_SYMBOL &&
         (last->func == ka_key || last->func == ka_def ||
-        last->func == ka_set || last->func == ka_del)) skip =  curr->next; 
+        last->func == ka_set || last->func == ka_del)) skip = curr->next; 
+    else if (curr->next && last->func == ka_while) skip = curr->next;
     else if (curr->next && last->func == ka_bind) skip = curr->next->next;
   }
 
