@@ -265,6 +265,8 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     ka_free((head->next = NULL, head));
     return result;
   } else if (head->type == KA_BLOCK) {
+    // Deep recursion for block evaluation should be avoided.
+    // Instead, use loop functions (e.g., while, each) to handle.
     KaNode *blk_result, *blk_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
     if (head->next) blk_ctx = ka_chain(head->next, blk_ctx, NULL);
     KaNode *result = blk_result = ka_eval(&blk_ctx, head->children);
@@ -577,12 +579,41 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
   return ka_new(KA_NONE);
 }
 
-static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
+static inline KaNode *ka_input(KaNode **ctx, KaNode *args) {
   char input[8192], *end;
   scanf("%[^\n]", input);
   getchar();
   long double number = strtold(input, &end);
   return *end == '\0' ? ka_number(number) : ka_string(input);
+}
+
+static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
+  FILE *file = fopen(args->string, "r");
+  ka_free(args);
+  if (!file) return ka_new(KA_NONE);
+  fseek(file, 0, SEEK_END);
+  long size = ftell(file);
+  rewind(file);
+  char *source = (char *)calloc(1, size + 1);
+  fread(source, 1, size, file);
+  source[size] = '\0';
+  fclose(file);
+  KaNode *result = ka_string(source);
+  free(source);
+  return result;
+}
+
+static inline KaNode *ka_write(KaNode **ctx, KaNode *args) {
+  return ka_new(KA_NONE);
+}
+
+static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
+  int pos = 0;
+  KaNode *source = ka_read(ctx, ka_copy(args));
+  KaNode *expr = ka_parser(source->string, &pos);
+  KaNode *result = ka_eval(ctx, expr);
+  ka_free(expr), ka_free(source), ka_free(args);
+  return result;
 }
 
 // Initialize context with built-in functions
@@ -636,7 +667,10 @@ static inline KaNode *ka_init() {
     
   // I/O functions
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"print"), ka_func(ka_print),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"input"), ka_func(ka_input),NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"read"),  ka_func(ka_read), NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"write"), ka_func(ka_write),NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"load"),  ka_func(ka_load), NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }
