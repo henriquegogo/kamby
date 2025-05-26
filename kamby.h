@@ -332,7 +332,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   }
 
   // Reorder operators by precedence
-  for (int step = 1; step <= 4; step++) {
+  for (int step = 1; step <= 5; step++) {
     for (KaNode *prev = NULL, *a = head; a && a->next;) {
       KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
       char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
@@ -340,24 +340,24 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       int isassign = sym && ((strchr(":=", sym[0]) && !sym[1]) ||
           (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')));
       int isbind = sym && strchr(".", sym[0]) && !sym[1];
-      int isif = sym && strchr("?", sym[0]) && !sym[1];
+      int isexpr = sym && strchr("?", sym[0]) && !sym[1];
       int ispunctuation = sym && ispunct(sym[0]) && !isunary &&
-        !isassign && !isbind && !isif;
+        !isassign && !isbind && !isexpr;
       // Reorder and wrap unary operators in expressions
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
         a->next->children = (b->next = NULL, op);
       // Accept punctuation operators at beginning of expressions
-      } else if (step == 1 && !prev && ispunctuation) {
+      } else if (step == 2 && !prev && ispunctuation) {
         a = (prev = head)->next;
       // Reorder and wrap binary operators in expressions by precedence
-      } else if ((step == 1 && isbind) || (step == 2 && ispunctuation) ||
-          (step == 3 && isassign)) {
+      } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
+          (step == 4 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
         expr->children = (op->next = a, a->next = b, b->next = NULL, op);
         a = prev ? (prev->next = expr) : (head = expr);
       // Reorder operators ? :
-      } else if (step == 4 && isif) {
+      } else if (step == 4 && isexpr) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
       } else a = (prev = a)->next;
@@ -634,6 +634,7 @@ static inline KaNode *ka_init() {
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"get"), ka_func(ka_get),  NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"def"), ka_func(ka_def),  NULL)));
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"set"), ka_func(ka_set),  NULL)));
+  f(ka_def(&ctx, ka_chain(ka_symbol((char *)"del"), ka_func(ka_del),  NULL)));
 
   // Logical operators
   f(ka_def(&ctx, ka_chain(ka_symbol((char *)"&&"), ka_func(ka_and), NULL)));
