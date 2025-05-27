@@ -132,10 +132,15 @@ While condition block is true, run execution block.
 |  while (i += 1) <= 10 { print i }
 
 For each item in list, run execution block.
-|  list := [1, 2, 3] ... { $0 * 2 }
-|  list ... { print($0) }             // 2 4 6
+|  list := [1, 2, 3] $.. { $0 * 2 }
+|  list $.. { print($0) }             // 2 4 6
 |  /* or */
 |  each list { print($0) }
+
+For loop is used to iterate a range of numbers or a list.
+|  (i := 0; i < 3; i += 1) ... { print(i) }     // 0 1 2
+|  /* or */
+|  for (i := 0; i < 3; i += 1) { print(i) }     // 0 1 2
 
 I/O
 ---
@@ -162,7 +167,7 @@ Operators
 |  get def set $ : := = .
 |  && || ! == != > < >= <=
 |  + - * / % += -= *= /= %=
-|  if while each ? ?.. ...
+|  if while each for ? ?.. $.. ...
 |  print input read write load
       
 Operator "+" will sum two numbers, or concatenate two strings.
