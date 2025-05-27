@@ -133,9 +133,28 @@ While condition block is true, run execution block.
 
 For each item in list, run execution block.
 |  list := [1, 2, 3] ... { $0 * 2 }
-|  list ... { print($0) }                 // 2 4 6
+|  list ... { print($0) }             // 2 4 6
 |  /* or */
 |  each list { print($0) }
+
+I/O
+---
+Input and output are done using print, input, read, write functions.
+
+|  print('Enter your name:')          // Print to console
+|  name = (input)                     // Read user input
+|  write 'file.txt' name              // Write name to file
+|  content = (read 'file.txt')        // Read file content
+
+Load scripts and libraries
+--------------------------
+You can load other scripts or dynamic libraries using the "load" function.
+
+|  load 'script.ka'                   // Read and evaluate scripts
+|  load 'library.so'                  // Load a dynamic library
+
+Dynamic libraries should have a function named "void ka_extend(Kamby **ctx)"
+that will be called to extend the context with new functions.
 
 Operators
 ---------
