@@ -63,6 +63,7 @@ static inline KaNode *ka_chain(KaNode *args, ...) {
   return args;
 }
 
+
 static inline KaNode *ka_number(long double value) {
   KaNode *node = ka_new(KA_NUMBER);
   node->number = (long double *)calloc(1, sizeof(long double));
@@ -607,6 +608,11 @@ static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_write(KaNode **ctx, KaNode *args) {
+  FILE *file = args ? fopen(args->string, "w") : NULL;
+  if (!file || !args->next) return ka_new(KA_NONE);
+  fputs(args->next->string, file);
+  fclose(file);
+  ka_free(args);
   return ka_new(KA_NONE);
 }
 
