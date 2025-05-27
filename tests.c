@@ -766,8 +766,8 @@ void test_code() {
     print 'Last result: ' sumnum\n\
     result = ''\n\
     { i := 0; while (i += 1) <= 2 { result += i + ' ' }}()\n\
-    final := [1, 2, 3] ... { $0 * 3 }\n\
-    final...{ result += $0 + ' ' }\n\
+    final := [1, 2, 3] $.. { $0 * 3 }\n\
+    final $.. { result += $0 + ' ' }\n\
     print result\n\
     print 'Name: ' + obj.name\n\
   ";
