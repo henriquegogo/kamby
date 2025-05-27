@@ -669,23 +669,23 @@ void test_if() {
 }
 
 void test_while() {
-  KaNode *ctx = ka_new(KA_CTX);
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("set"), ka_func(ka_set), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
+  KaNode *ctx = ka_init();
+  ctx->key = strdup("ctx");
 
-  KaNode *condition = ka_block(
-      ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
+
+  KaNode *cond = ka_expr(
+      ka_symbol("<"), ka_symbol("i"), ka_number(10), NULL);
   
   KaNode *block = ka_block(
-      ka_symbol("set"), ka_symbol("i"),
-      ka_expr(ka_symbol("add"), ka_symbol("i"), ka_number(1), NULL), NULL);
+      ka_symbol("="), ka_symbol("i"),
+      ka_expr(ka_symbol("+"), ka_symbol("i"), ka_number(1), NULL), NULL);
 
-  ka_free(ka_while(&ctx, ka_chain(condition, block, NULL)));
+  ka_free(ka_while(&ctx, ka_chain(cond, block, NULL)));
   KaNode *result = ka_get(&ctx, ka_symbol("i"));
   assert(*result->number == 10); ka_free(result);
 
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
 
@@ -700,6 +700,32 @@ void test_each() {
   assert(*result->children->next->number == 2);
   ka_free(result);
 
+  ka_free(ctx);
+}
+
+void test_for() {
+  KaNode *ctx = ka_init(), *result;
+  ctx->key = strdup("ctx");
+
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("result"), ka_number(0), NULL)));
+
+  KaNode *params = ka_expr(
+      ka_expr(ka_symbol(":="), ka_symbol("i"), ka_number(0), NULL),
+      ka_expr(ka_symbol("<="), ka_symbol("i"), ka_number(10), NULL),
+      ka_expr(ka_symbol("+="), ka_symbol("i"), ka_number(1), NULL), NULL);
+  
+  KaNode *block = ka_block(
+      ka_symbol("="), ka_symbol("result"), ka_symbol("i"), NULL);
+
+  ka_free(ka_for(&ctx, ka_chain(params, block, NULL)));
+
+  result = ka_get(&ctx, ka_symbol("result"));
+  assert(*result->number == 10); ka_free(result);
+
+  result = ka_get(&ctx, ka_symbol("i"));
+  assert(result->type == KA_NONE); ka_free(result);
+
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
 }
 
@@ -765,10 +791,13 @@ void test_code() {
     print sumnum = 1+2+i\n\
     print 'Last result: ' sumnum\n\
     result = ''\n\
-    { i := 0; while (i += 1) <= 2 { result += i + ' ' }}()\n\
+    for (y := 0; y < 10; y += 1) { result += y * 2 + ' ' }\n\
+    print 'y: ' y\n\
+    while ((i -= 1) >= 0) { result += i + ' ' }\n\
     final := [1, 2, 3] $.. { $0 * 3 }\n\
     final $.. { result += $0 + ' ' }\n\
     print result\n\
+    del ()\n\
     print 'Name: ' + obj.name\n\
   ";
 
@@ -809,6 +838,7 @@ int main() {
   test_if();
   test_while();
   test_each();
+  test_for();
   test_read();
   test_init();
   test_code();
