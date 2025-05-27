@@ -453,7 +453,6 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return ka_number(lnum + rnum);
   }
-
   // Merge lists
   else if (ltype == KA_LIST && rtype == KA_LIST) {
     KaNode *result = ka_new(KA_LIST);
@@ -462,7 +461,6 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return result;
   }
-
   // Append to list
   else if (ltype == KA_LIST && rtype != KA_LIST) {
     KaNode *result = ka_new(KA_LIST);
@@ -471,7 +469,6 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return result;
   }
-
   // Concatenate strings and numbers
   char *lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
     (asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
