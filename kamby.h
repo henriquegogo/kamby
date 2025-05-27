@@ -2,6 +2,7 @@
 #define KAMBY_H
 
 #include <ctype.h>
+#include <dlfcn.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -625,9 +626,21 @@ static inline KaNode *ka_write(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
+  if (!args) return ka_new(KA_NONE);
+  // Load dynamic library
+  if (!strcmp(args->string + strlen(args->string) - 3, ".so")) {
+    void *lib = dlopen(args->string, RTLD_NOW);
+    if (!lib) return ka_new(KA_NONE);
+    typedef void (*ka_extend)(KaNode **);
+    ka_extend extend = (ka_extend)dlsym(lib, "ka_extend");
+    if (extend) extend(ctx);
+    dlclose(lib);
+    return ka_new(KA_NONE);
+  }
+  // Load and evaluate script file
   int pos = 0;
   KaNode *source = ka_read(ctx, ka_copy(args));
-  KaNode *expr = ka_parser(source->string, &pos);
+  KaNode *expr = source->string ? ka_parser(source->string, &pos) : NULL;
   KaNode *result = ka_eval(ctx, expr);
   ka_free(expr), ka_free(source), ka_free(args);
   return result;
