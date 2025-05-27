@@ -592,7 +592,7 @@ static inline KaNode *ka_input(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
-  FILE *file = fopen(args->string, "r");
+  FILE *file = args ? fopen(args->string, "r") : NULL;
   ka_free(args);
   if (!file) return ka_new(KA_NONE);
   fseek(file, 0, SEEK_END);
