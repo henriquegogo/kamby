@@ -454,6 +454,24 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     return ka_number(lnum + rnum);
   }
 
+  // Merge lists
+  else if (ltype == KA_LIST && rtype == KA_LIST) {
+    KaNode *result = ka_new(KA_LIST);
+    result->children = ka_chain(left->children, right->children, NULL);
+    left->children = NULL, right->children = NULL;
+    ka_free(args);
+    return result;
+  }
+
+  // Append to list
+  else if (ltype == KA_LIST && rtype != KA_LIST) {
+    KaNode *result = ka_new(KA_LIST);
+    result->children = ka_chain(left->children, ka_copy(right), NULL);
+    left->children = NULL;
+    ka_free(args);
+    return result;
+  }
+
   // Concatenate strings and numbers
   char *lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
     (asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
