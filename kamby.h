@@ -584,17 +584,10 @@ static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
   for (KaNode *arg = args; arg != NULL; arg = arg->next) {
-    switch (arg->type) {
-      case KA_NUMBER:
-        if (*arg->number == (long long)(*arg->number))
-          printf("%lld", (long long)(*arg->number));
-        else printf("%.2Lf", *arg->number);
-        break;
-      case KA_STRING:
-        printf("%s", arg->string);
-        break;
-      default:;
-    }
+    if (arg->type == KA_NUMBER && *arg->number == (long long)(*arg->number))
+      printf("%lld", (long long)(*arg->number));
+    else if (arg->type == KA_NUMBER) printf("%.2Lf", *arg->number);
+    else if (arg->type == KA_STRING) printf("%s", arg->string);
   }
   printf("\n");
   ka_free(args);
