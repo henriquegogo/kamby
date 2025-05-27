@@ -634,7 +634,7 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
     typedef void (*ka_extend)(KaNode **);
     ka_extend extend = (ka_extend)dlsym(lib, "ka_extend");
     if (extend) extend(ctx);
-    dlclose(lib);
+    else dlclose(lib);
     return ka_new(KA_NONE);
   }
   // Load and evaluate script file
