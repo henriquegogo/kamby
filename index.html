@@ -182,18 +182,14 @@ if 1 != 1 { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } { print(&
       <h2 id="loops">Loops</h2>
       <p>While condition block is true, run execution block.</p>
       <pre><code>i := 0
-(i += 1) &lt;= 10 ?.. { print i }     // 1 2 3 4 5 6 7 8 9 10
-/* or */
 while ((i += 1) &lt;= 10) { print i }</code></pre>
       <p>For each item in list, run execution block.</p>
-      <pre><code>list := [1, 2, 3] $.. { $0 * 2 }
-list $.. { print($0) }             // 2 4 6
+      <pre><code>list := [1, 2, 3] ... { $0 * 2 }
+list ... { print($0) }             // 2 4 6
 /* or */
 each list { print($0) }</code></pre>
       <p>For loop is used to iterate a range of numbers or a list.</p>
-      <pre><code>(i := 0; i &lt; 3; i += 1) ... { print(i) }     // 0 1 2
-/* or */
-for (i := 0; i &lt; 3; i += 1) { print(i) }     // 0 1 2</code></pre>
+      <pre><code>for (i := 0; i &lt; 3; i += 1) { print(i) }     // 0 1 2</code></pre>
       <h2 id="io">I/O</h2>
       <p>Input and output are done using print, input, read, write
         functions.</p>
@@ -213,7 +209,7 @@ load &#39;library.so&#39;                  // Load a dynamic library</code></pre
       <pre><code class='language-txt'>get def set $ : := = .
 &amp;&amp; || ! == != &gt; &lt; &gt;= &lt;=
 + - * / % += -= *= /= %=
-if while each for ? ?.. $.. ...
+if each while for ? ...
 print input read write load</code></pre>
       <p>Operator “+” will sum two numbers, or concatenate two strings.</p>
       <pre><code>1 + 2                    // 3
