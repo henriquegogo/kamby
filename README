@@ -165,7 +165,7 @@ Operators
     get def set $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
-    if while each for ? ...
+    if each while for ? ...
     print input read write load
 
 Operator "+" will sum two numbers, or concatenate two strings.
