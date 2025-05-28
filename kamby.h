@@ -569,7 +569,7 @@ static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
   for (KaNode *curr = args->children; curr; curr = curr->next) {
     KaNode *blk_ctx = ka_chain(ka_copy(curr), ka_new(KA_CTX), *ctx, NULL);
     KaNode *blk_ret = ka_eval(&blk_ctx, block);
-    last = last->next = ka_copy(blk_ret);
+    if (blk_ret->type) last = last->next = ka_copy(blk_ret);
     ka_free(blk_ret), ka_free(blk_ctx);
   }
   result->children = children->next;
