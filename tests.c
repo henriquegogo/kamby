@@ -863,8 +863,20 @@ void test_code_variables() {
   assert(!strcmp(result->key, "i") && *result->number == 1);
   ka_free(result), ka_free(expr);
 
-  printf("\n");
-  print_chain(ctx);
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
+void test_code_blocks() {
+  KaNode *ctx = ka_init(), *expr, *result;
+  ctx->key = strdup("ctx");
+  int pos = 0;
+
+  ka_free(ka_eval(&ctx, expr = ka_parser("def test { $1 / first }", (pos = 0, &pos))));
+  ka_free(expr);
+  result = ka_eval(&ctx, expr = ka_parser("test(first: 2, 8)", (pos = 0, &pos)));
+  assert(*result->number == 4);
+  ka_free(result), ka_free(expr);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -902,6 +914,7 @@ int main() {
   test_init();
   test_code();
   test_code_variables();
+  test_code_blocks();
 
   printf("\nAll tests passed!\n\n");
   return 0;
