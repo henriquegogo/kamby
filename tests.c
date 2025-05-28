@@ -794,8 +794,8 @@ void test_code() {
     for (y := 0; y < 10; y += 1) { result += y * 2 + ' ' }\n\
     print 'y: ' y\n\
     while ((i -= 1) >= 0) { result += i + ' ' }\n\
-    final := [1, 2, 3] $.. { $0 * 3 }\n\
-    final $.. { result += $0 + ' ' }\n\
+    final := [1, 2, 3] ... { $0 * 3 }\n\
+    final ... { result += $0 + ' ' }\n\
     print result\n\
     del ()\n\
     print 'Name: ' + obj.name\n\
