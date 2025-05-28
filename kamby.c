@@ -12,12 +12,14 @@ int main(int argc, char *argv[]) {
   // REPL
   else {
     if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> ");
+    fflush(stdout);
     char input[8192];
     while (fgets(input, sizeof(input), stdin)) {
       KaNode *expr = ka_parser(input, (pos = 0, &pos));
       ka_free(ka_eval(&ctx, expr)), ka_free(expr);
       input[0] = '\0';
       if (isatty(fileno(stdin))) printf("> ");
+      fflush(stdout);
     }
   }
 
