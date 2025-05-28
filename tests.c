@@ -250,10 +250,12 @@ void test_bind() {
       ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL)), NULL);
 
   result = ka_get(&ctx, ka_symbol("two"));
-  assert(result->type == KA_NONE); ka_free(result);
+  assert(result->type == KA_NONE);
+  ka_free(result);
 
   result = ka_bind(&ctx, ka_chain(ka_copy(list), ka_symbol("two"), NULL));
-  assert(*result->number == 2); ka_free(result);
+  assert(*result->number == 2);
+  ka_free(result);
 
   ka_free(list);
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
@@ -584,13 +586,10 @@ void test_arithmetic() {
 
   result = ka_add(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
   assert(!strcmp(result->string, "2Message")); ka_free(result);
-
   result = ka_add(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
   assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
-
   result = ka_add(NULL, ka_chain(ka_string("Ten"), ka_number(10), NULL));
   assert(!strcmp(result->string, "Ten10")); ka_free(result);
-
   result = ka_add(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
   assert(!strcmp(result->string, "Float10.12")); ka_free(result);
 
@@ -683,7 +682,8 @@ void test_while() {
 
   ka_free(ka_while(&ctx, ka_chain(cond, block, NULL)));
   KaNode *result = ka_get(&ctx, ka_symbol("i"));
-  assert(*result->number == 10); ka_free(result);
+  assert(*result->number == 10);
+  ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -720,10 +720,12 @@ void test_for() {
   ka_free(ka_for(&ctx, ka_chain(params, block, NULL)));
 
   result = ka_get(&ctx, ka_symbol("result"));
-  assert(*result->number == 10); ka_free(result);
+  assert(*result->number == 10);
+  ka_free(result);
 
   result = ka_get(&ctx, ka_symbol("i"));
-  assert(result->type == KA_NONE); ka_free(result);
+  assert(result->type == KA_NONE);
+  ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -811,6 +813,63 @@ void test_code() {
   ka_free(ctx);
 }
 
+void test_code_variables() {
+  KaNode *ctx = ka_init(), *expr, *result;
+  ctx->key = strdup("ctx");
+  int pos = 0;
+
+  result = ka_eval(&ctx, expr = ka_parser("i: 1", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 1);
+  assert(strcmp(ctx->key, "i") && ctx->type != KA_NUMBER);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("i := 1", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 1);
+  assert(!strcmp(ctx->key, "i") && ctx->type == KA_NUMBER);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("i := 2", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 2);
+  assert(!strcmp(ctx->key, "i") && *ctx->number == 2);
+  assert(!strcmp(ctx->next->key, "i") && *ctx->next->number == 1);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("i = 3", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 3);
+  assert(!strcmp(ctx->key, "i") && *ctx->number == 3);
+  assert(!strcmp(ctx->next->key, "i") && *ctx->next->number == 1);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("$0", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 3);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("$1", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 1);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("i", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 3);
+  ka_free(result), ka_free(expr);
+
+  ka_free(ka_eval(&ctx, expr = ka_parser("del i", (pos = 0, &pos))));
+  ka_free(expr);
+  result = ka_eval(&ctx, expr = ka_parser("i", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 1);
+  assert(!strcmp(ctx->key, "i") && *ctx->number == 1);
+  ka_free(result), ka_free(expr);
+
+  result = ka_eval(&ctx, expr = ka_parser("$0", (pos = 0, &pos)));
+  assert(!strcmp(result->key, "i") && *result->number == 1);
+  ka_free(result), ka_free(expr);
+
+  printf("\n");
+  print_chain(ctx);
+
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
 int main() {
   test_new();
   test_chain();
@@ -842,6 +901,7 @@ int main() {
   test_read();
   test_init();
   test_code();
+  test_code_variables();
 
   printf("\nAll tests passed!\n\n");
   return 0;
