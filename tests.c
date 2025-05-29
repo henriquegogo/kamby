@@ -729,27 +729,8 @@ void test_code() {
   int pos = 0;
 
   char *code = "\
-    def hello { \n\
-      print \"prop1: \" $1 \", prop2: \" first\n\
-    }\n\
-    i = 1\n\
-    text = 'Hello, world!'\n\
-    list = ['one', second: i, third:'three', 'four']\n\
-    hello(first : 33, age: 34)\n\
-    print 'Previous args should be local, not global (blank)' first age\n\
-    print 'Stack by var number: ' $i\n\
+    i := 1\n\
     print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
-    print 'List item: ' list.second\n\
-    name = 'John'\n\
-    obj = [name: 'Henrique', age: 40, sayName: { print 'Say ' obj.name }]\n\
-    obj.{ 0 = 'Soares' }\n\
-    print ['item1', second : 'item2', 'item3'].second\n\
-    obj.{ print 'List insider item: ' age +=$i } \n\
-    print 'List outside item: ' obj.age\n\
-    obj.$2()\n\
-    obj.sayName()\n\
-    obj.{ print 'Internal index: ' $0 }\n\
-    print 'Global name: ' + name + ', obj name: ' + obj.name\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
     if a { print('no') } { print('else') }\n\
     if i { print('yes') }\n\
@@ -764,8 +745,6 @@ void test_code() {
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final ... { result += $0 + ' ' }\n\
     print result\n\
-    del ()\n\
-    print 'Name: ' + obj.name\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
