@@ -5,61 +5,26 @@
 
 #include "kamby.h"
 
-int print_level = 0;
+int print_level = -1;
+void print_chain(KaNode *chain);
 void print_node(KaNode *node) {
   if (!node) return;
-  KaNode *child;
+  const char *types[] = { "none", "ctx", "false", "true", "number", "string",
+    "symbol", "func", "list", "expr", "block" };
   for (int i = 0; i < print_level; i++) printf("  ");
-  switch (node->type) {
-    case KA_NUMBER:
-      printf("number %s: %.2Lf\n", node->key ?: "", *node->number);
-      break;
-    case KA_STRING:
-      printf("string %s: %s\n", node->key ?: "", node->string);
-      break;
-    case KA_SYMBOL:
-      printf("symbol : %s\n", node->symbol);
-      break;
-    case KA_FUNC:
-      printf("func %s: %p\n", node->key, node->func);
-      break;
-    case KA_LIST:
-      printf("list %s:\n", node->key);
-      print_level++;
-      child = node->children;
-      while (child) { print_node(child); child = child->next; }
-      print_level--;
-      break;
-    case KA_EXPR:
-      printf("expr %s:\n", node->key);
-      print_level++;
-      child = node->children;
-      while (child) { print_node(child); child = child->next; }
-      print_level--;
-      break;
-    case KA_BLOCK:
-      printf("block %s:\n", node->key);
-      print_level++;
-      child = node->children;
-      while (child) { print_node(child); child = child->next; }
-      print_level--;
-      break;
-    case KA_CTX:
-      printf("ctx %s\n", node->key);
-      break;
-    case KA_NONE:
-      printf("none %s\n", node->key);
-      break;
-    default:;
-  }
+  printf(node->key ? "(%s) %s " : "(%s) ", types[node->type], node->key);
+  if (node->type == KA_NUMBER) printf("%.2Lf\n", *node->number);
+  else if (node->type == KA_STRING) printf("\"%s\"\n", node->string);
+  else if (node->type == KA_SYMBOL) printf("%s\n", node->symbol);
+  else if (node->type == KA_FUNC) printf("%p\n", node->func);
+  else if (node->type >= KA_LIST) printf("\n"), print_chain(node->children);
+  else printf("\n");
 }
 
 void print_chain(KaNode *chain) {
-  KaNode *current = chain;
-  while (current) {
-    print_node(current);
-    current = current->next;
-  }
+  print_level++;
+  for (KaNode *curr = chain; curr; curr = curr->next) print_node(curr);
+  print_level--;
 }
 
 void test_new() {
