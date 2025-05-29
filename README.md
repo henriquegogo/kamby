@@ -3,6 +3,16 @@ Kamby Language
 A small, embeddable and convenient language for who want to use and understand
 what is happening behind the scenes.
 
+How to build
+------------
+You can build the binary using the Makefile.
+
+    $ make                                  # Build binary
+    $ ./kamby                               # Run REPL
+    $ ./kamby script.ka                     # Run script
+    $ ./kamby --to-c script.ka > script.c   # Transpile to C
+    $ ./kamby --help                        # Show help
+
 Variables stack
 ---------------
 Variables can contain any type of data, including number, strings, lists or even
