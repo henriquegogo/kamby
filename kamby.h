@@ -221,10 +221,10 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
-  KaNode *left = args, *right = args->next, *last;
+  KaNode *left = args, *right = args->next, *last, *last_ret;
 
   KaNode *blk_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
-  KaNode *result = ka_eval(&blk_ctx,
+  KaNode *blk_ret = ka_eval(&blk_ctx,
       right->type == KA_BLOCK ? right->children : right);
 
   // Detach block context
@@ -235,7 +235,10 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
   if (left->key && right->type == KA_BLOCK)
     ka_free(ka_set(ctx, ka_chain(ka_symbol(left->key), ka_copy(left), NULL)));
 
-  ka_free(args);
+  for (last_ret = blk_ret; last_ret->next; last_ret = last_ret->next);
+  KaNode *result = ka_copy(last_ret);
+
+  ka_free(blk_ret), ka_free(args);
   return result;
 }
 
