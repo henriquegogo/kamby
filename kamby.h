@@ -221,14 +221,14 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
-  KaNode *left = args, *right = args->next, *last = left->children;
-  while (last->next) last = last->next;
+  KaNode *left = args, *right = args->next, *last;
 
   KaNode *blk_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
   KaNode *result = ka_eval(&blk_ctx,
       right->type == KA_BLOCK ? right->children : right);
 
   // Detach block context
+  for (last = left->children; last->next->type != KA_CTX; last = last->next);
   ka_free(last->next);
   last->next = NULL;
 
@@ -569,6 +569,8 @@ static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
   for (KaNode *curr = args->children; curr; curr = curr->next) {
     KaNode *blk_ctx = ka_chain(ka_copy(curr), ka_new(KA_CTX), *ctx, NULL);
     KaNode *blk_ret = ka_eval(&blk_ctx, block);
+    free(blk_ret->key);
+    blk_ret->key = curr->key ? strdup(curr->key) : NULL;
     if (blk_ret->type) last = last->next = ka_copy(blk_ret);
     ka_free(blk_ret), ka_free(blk_ctx);
   }
