@@ -699,7 +699,7 @@ void test_for() {
 void test_read() {
   KaNode *ctx = ka_new(KA_CTX);
 
-  KaNode *result = ka_read(&ctx, ka_string("README"));
+  KaNode *result = ka_read(&ctx, ka_string("README.md"));
   assert(!strncmp(result->string, "Kamby Language", 14));
   ka_free(result);
 
