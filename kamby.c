@@ -2,8 +2,8 @@
 #include <unistd.h>
 #include "kamby.h"
 
-int print_level = 0;
-char *compile(KaNode *nodes) {
+int print_level = 1;
+void transpile_tree(KaNode *nodes) {
   print_level++;
   for (KaNode *node = nodes; node; node = node->next) {
     const char *types[] = { "none", "ctx", "false", "true", "number", "string",
@@ -15,14 +15,31 @@ char *compile(KaNode *nodes) {
     else if (node->type == KA_SYMBOL) printf("\"%s\"),\n", node->symbol);
     else if (node->type >= KA_LIST) {
       printf("\n");
-      compile(node->children);
+      transpile_tree(node->children);
       for (int i = 0; i < print_level; i++) printf("  ");
       printf("NULL),\n");
     }
     else printf("\n");
   }
   print_level--;
-  return strdup("");
+}
+
+char *transpile(KaNode **ctx, char *path) {
+  int pos = 0;
+  KaNode *source = ka_read(ctx, ka_string(path));
+  KaNode *nodes = ka_parser(source->string, &pos);
+  printf("#include \"kamby.h\"\n\n");
+  printf("int main() {\n");
+  printf("  KaNode *nodes = ka_expr(\n");
+  transpile_tree(nodes);
+  printf("  NULL);\n\n");
+  printf("  KaNode *ctx = ka_init();\n");
+  printf("  ka_free(ka_eval(&ctx, nodes));\n");
+  printf("  ka_free(ctx);\n");
+  printf("  return 0;\n");
+  printf("}\n");
+  ka_free(nodes), ka_free(source);
+  return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -31,17 +48,9 @@ int main(int argc, char *argv[]) {
   int pos = 0;
 
   // Run script
-  if (argc == 2) ka_load(&ctx, ka_string(argv[1]));
+  if (argc == 2) ka_free(ka_load(&ctx, ka_string(argv[1])));
   // Compile
-  else if (argc == 3) {
-    char *source = ka_read(&ctx, ka_string(argv[1]))->string ?: "";
-    KaNode *nodes = ka_parser(source, &pos);
-    printf("ka_expr(\n");
-    char *result = compile(nodes);
-    printf("NULL);\n");
-    free(result);
-    ka_free(nodes);
-  }
+  else if (argc == 3) transpile(&ctx, argv[1]);
   // REPL
   else {
     if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> ");
