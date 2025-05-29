@@ -859,9 +859,14 @@ void test_code_lists() {
   result = eval_code(&ctx, "items.third");
   assert(*result->number == 33); ka_free(result);
 
-  ka_free(eval_code(&ctx, "items.{ del double }; items = items...{ $0 * 2 }"));
+  ka_free(eval_code(&ctx, "\
+        items.{\
+          del double\n\
+          0 = 11\n\
+        }\n\
+        items = items...{ $0 * 2 }"));
   result = eval_code(&ctx, "items");
-  assert(*result->children->number == 2);
+  assert(*result->children->number == 22);
   assert(*result->children->next->number == 4);
   assert(*result->children->next->next->number == 66);
   assert(!strcmp(result->children->next->next->key, "third"));
