@@ -742,10 +742,10 @@ void test_code() {
     print 'List item: ' list.second\n\
     name = 'John'\n\
     obj = [name: 'Henrique', age: 40, sayName: { print 'Say ' obj.name }]\n\
+    obj.{ 0 = 'Soares' }\n\
     print ['item1', second : 'item2', 'item3'].second\n\
     obj.{ print 'List insider item: ' age +=$i } \n\
     print 'List outside item: ' obj.age\n\
-    obj.{ $0 = 'Soares' }\n\
     obj.$2()\n\
     obj.sayName()\n\
     obj.{ print 'Internal index: ' $0 }\n\
@@ -778,55 +778,96 @@ void test_code() {
   ka_free(ctx);
 }
 
-void test_code_variables() {
-  KaNode *ctx = ka_init(), *expr, *result;
-  ctx->key = strdup("ctx");
+KaNode *eval_code(KaNode **ctx, const char *code) {
   int pos = 0;
+  KaNode *expr = ka_parser((char *)code, &pos);
+  KaNode *result = ka_eval(ctx, expr);
+  ka_free(expr);
+  return result;
+}
 
-  result = ka_eval(&ctx, expr = ka_parser("i: 1", (pos = 0, &pos)));
+void test_code_variables() {
+  KaNode *ctx = ka_init(), *result;
+  ctx->key = strdup("ctx");
+
+  result = eval_code(&ctx, "i: 1");
   assert(!strcmp(result->key, "i") && *result->number == 1);
   assert(strcmp(ctx->key, "i") && ctx->type != KA_NUMBER);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("i := 1", (pos = 0, &pos)));
+  result = eval_code(&ctx, "i := 1");
   assert(!strcmp(result->key, "i") && *result->number == 1);
   assert(!strcmp(ctx->key, "i") && ctx->type == KA_NUMBER);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("i := 2", (pos = 0, &pos)));
+  result = eval_code(&ctx, "i := 2");
   assert(!strcmp(result->key, "i") && *result->number == 2);
   assert(!strcmp(ctx->key, "i") && *ctx->number == 2);
   assert(!strcmp(ctx->next->key, "i") && *ctx->next->number == 1);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("i = 3", (pos = 0, &pos)));
+  result = eval_code(&ctx, "i = 3");
   assert(!strcmp(result->key, "i") && *result->number == 3);
   assert(!strcmp(ctx->key, "i") && *ctx->number == 3);
   assert(!strcmp(ctx->next->key, "i") && *ctx->next->number == 1);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("$0", (pos = 0, &pos)));
+  result = eval_code(&ctx, "$0");
   assert(!strcmp(result->key, "i") && *result->number == 3);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("$1", (pos = 0, &pos)));
+  result = eval_code(&ctx, "$1");
   assert(!strcmp(result->key, "i") && *result->number == 1);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("i", (pos = 0, &pos)));
+  result = eval_code(&ctx, "i");
   assert(!strcmp(result->key, "i") && *result->number == 3);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  ka_free(ka_eval(&ctx, expr = ka_parser("del i", (pos = 0, &pos))));
-  ka_free(expr);
-  result = ka_eval(&ctx, expr = ka_parser("i", (pos = 0, &pos)));
+  ka_free(eval_code(&ctx, "del i"));
+
+  result = eval_code(&ctx, "i");
   assert(!strcmp(result->key, "i") && *result->number == 1);
   assert(!strcmp(ctx->key, "i") && *ctx->number == 1);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
-  result = ka_eval(&ctx, expr = ka_parser("$0", (pos = 0, &pos)));
+  result = eval_code(&ctx, "$0");
   assert(!strcmp(result->key, "i") && *result->number == 1);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
+
+  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ctx);
+}
+
+void test_code_lists() {
+  KaNode *ctx = ka_init(), *expr, *result;
+  ctx->key = strdup("ctx");
+
+  ka_free(eval_code(&ctx,"i := 3;\
+        items := [1, 2, third: 3, 4, double: { $0 * items.$1 }]"));
+
+  result = eval_code(&ctx, "items.$0");
+  assert(*result->number == 1); ka_free(result);
+  result = eval_code(&ctx, "items.$i");
+  assert(*result->number == 4); ka_free(result);
+  result = eval_code(&ctx, "items.third");
+  assert(*result->number == 3); ka_free(result);
+  result = eval_code(&ctx, "items.double(7)");
+  assert(*result->number == 14); ka_free(result);
+
+  ka_free(eval_code(&ctx, "items.{ 2 = 33 }"));
+  result = eval_code(&ctx, "items.third");
+  assert(*result->number == 33); ka_free(result);
+
+  ka_free(eval_code(&ctx, "items.{ del double }; items = items...{ $0 * 2 }"));
+  result = eval_code(&ctx, "items");
+  assert(*result->children->number == 2);
+  assert(*result->children->next->number == 4);
+  assert(*result->children->next->next->number == 66);
+  assert(!strcmp(result->children->next->next->key, "third"));
+  assert(*result->children->next->next->next->number == 8);
+  assert(!result->children->next->next->next->next);
+  ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -835,13 +876,11 @@ void test_code_variables() {
 void test_code_blocks() {
   KaNode *ctx = ka_init(), *expr, *result;
   ctx->key = strdup("ctx");
-  int pos = 0;
 
-  ka_free(ka_eval(&ctx, expr = ka_parser("def test { $1 / first }", (pos = 0, &pos))));
-  ka_free(expr);
-  result = ka_eval(&ctx, expr = ka_parser("test(first: 2, 8)", (pos = 0, &pos)));
+  ka_free(eval_code(&ctx, "def test { $1 / first }"));
+  result = eval_code(&ctx, "test(first: 2, 8)");
   assert(*result->number == 4);
-  ka_free(result), ka_free(expr);
+  ka_free(result);
 
   ka_free(ka_del(&ctx, ka_symbol("ctx")));
   ka_free(ctx);
@@ -879,6 +918,7 @@ int main() {
   test_init();
   test_code();
   test_code_variables();
+  test_code_lists();
   test_code_blocks();
 
   printf("\nAll tests passed!\n\n");

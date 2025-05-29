@@ -39,7 +39,7 @@ This is useful to name a value in a list item.
     list = [fistName: 'John', lastName: 'Doe', age: 25]
     print(list.firstName)       // John
     print(list.age)             // 25
-    print(list.1)               // Doe
+    print(list.$1)              // Doe
 
 Expressions, lists and blocks
 -----------------------------
