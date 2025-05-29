@@ -279,9 +279,9 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
   } else if (head->type == KA_BLOCK && head->next) {
     // Avoid deep recursion. Use loop functions (e.g., while, each) instead.
     KaNode *blk_ctx = ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
-    KaNode *blk_ret, *result = blk_ret = ka_eval(&blk_ctx, head->children);
-    while (result->next) result = result->next;
-    result = ka_copy(result);
+    KaNode *last_ret, *blk_ret = ka_eval(&blk_ctx, head->children);
+    for (last_ret = blk_ret; last_ret->next; last_ret = last_ret->next);
+    KaNode *result = ka_copy(last_ret);
     ka_free(blk_ret), ka_free(blk_ctx), ka_free((head->next = NULL, head));
     return result;
   }
