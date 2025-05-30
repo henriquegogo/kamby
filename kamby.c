@@ -50,12 +50,12 @@ int main(int argc, char *argv[]) {
   if (argc > 1 && !strcmp(argv[1], "--help")) {
     printf("Usage: kamby [options] [file]\n");
     printf("Options:\n");
-    printf("  --help      Display this help message\n");
-    printf("  --version   Display version information\n");
-    printf("  --to-c      Transpile a file to C\n");
+    printf("  --help          Display this help message\n");
+    printf("  --version       Display version information\n");
+    printf("  -c              Transpile a file to C\n");
   }
   else if (argc > 1 && !strcmp(argv[1], "--version")) printf("Kamby 0.2.0\n");
-  else if (argc > 2 && !strcmp(argv[1], "--to-c")) transpile(&ctx, argv[2]);
+  else if (argc > 2 && !strcmp(argv[1], "-c")) transpile(&ctx, argv[2]);
   else if (argc > 1) ka_free(ka_load(&ctx, ka_string(argv[1])));
   // REPL
   else {
