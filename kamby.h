@@ -221,6 +221,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next, *last, *last_ret;
 
   KaNode *blk_ctx = ka_chain(left->children, ka_new(KA_CTX), *ctx, NULL);
@@ -357,7 +358,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       // Reorder and wrap unary operators in expressions
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
-        a->next->children = (b->next = NULL, op);
+        a->next->children = (b && (b->next = NULL), op);
       // Accept punctuation operators at beginning of expressions
       } else if (step == 2 && !prev && ispunctuation) {
         a = (prev = head)->next;
@@ -365,7 +366,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
           (step == 4 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
-        expr->children = (op->next = a, a->next = b, b->next = NULL, op);
+        expr->children =
+          (op && (op->next = a), a && (a->next = b), b && (b->next = NULL), op);
         a = prev ? (prev->next = expr) : (head = expr);
       // Reorder operators ? :
       } else if (step == 4 && isexpr) {
@@ -383,6 +385,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 // Logical operators
 
 static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->value && right->value ? ka_copy(right) : ka_false();
   ka_free(args);
@@ -390,6 +393,7 @@ static inline KaNode *ka_and(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_or(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->value ? ka_copy(left) :
     right->value ? ka_copy(right) : ka_false();
@@ -407,6 +411,7 @@ static inline KaNode *ka_not(KaNode **ctx, KaNode *args) {
 // Comparison operators
 
 static inline KaNode *ka_eq(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type == KA_NUMBER && *left->number == *right->number ||
     left->type == KA_STRING && !strcmp(left->string, right->string) ||
@@ -420,6 +425,7 @@ static inline KaNode *ka_neq(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
     ka_false() : *left->number > *right->number ? ka_true() : ka_false();
@@ -428,6 +434,7 @@ static inline KaNode *ka_gt(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
     ka_false() : *left->number < *right->number ? ka_true() : ka_false();
@@ -436,6 +443,7 @@ static inline KaNode *ka_lt(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
     ka_false() : *left->number >= *right->number ? ka_true() : ka_false();
@@ -444,6 +452,7 @@ static inline KaNode *ka_gte(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ?
     ka_false() : *left->number <= *right->number ? ka_true() : ka_false();
@@ -454,6 +463,7 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
 // Arithmetic operators
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaType ltype = left->type, rtype = right->type;
 
@@ -495,6 +505,7 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
     ka_number(*left->number - *right->number);
@@ -503,6 +514,7 @@ static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
     ka_number(*left->number * *right->number);
@@ -511,6 +523,7 @@ static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
     ka_number(*left->number / *right->number);
@@ -519,6 +532,7 @@ static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
   KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
     ka_number((int)*left->number % (int)*right->number);
@@ -527,26 +541,31 @@ static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_addset(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_add(ctx, args), NULL));
 }
 
 static inline KaNode *ka_subset(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_sub(ctx, args), NULL));
 }
 
 static inline KaNode *ka_mulset(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_mul(ctx, args), NULL));
 }
 
 static inline KaNode *ka_divset(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_div(ctx, args), NULL));
 }
 
 static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
 }
