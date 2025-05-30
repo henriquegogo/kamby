@@ -686,7 +686,7 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_init() {
   KaNode *ctx = ka_new(KA_CTX);
 
-  const KaNode f[] = {
+  const KaNode kv[] = {
     // Variables
     { .key = (char *)"$",   .value = ka_func(ka_get)  },
     { .key = (char *)":",   .value = ka_func(ka_key)  },
@@ -734,8 +734,8 @@ static inline KaNode *ka_init() {
     { .key = (char *)"load",  .value = ka_func(ka_load)  }
   };
 
-  for (int i = 0; i < sizeof(f) / sizeof(KaNode); i++)
-    ka_free(ka_def(&ctx, ka_chain(ka_symbol(f[i].key), f[i].value, NULL)));
+  for (int i = 0; i < sizeof(kv) / sizeof(KaNode); i++)
+    ka_free(ka_def(&ctx, ka_chain(ka_symbol(kv[i].key), kv[i].value, NULL)));
 
   return ka_chain(ka_new(KA_CTX), ctx, NULL);
 }
