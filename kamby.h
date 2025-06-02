@@ -661,16 +661,9 @@ static inline KaNode *ka_read(KaNode **ctx, KaNode *args) {
   ka_free(args);
   if (!file) return ka_new(KA_NONE);
   size_t cap = 1024, len = 0, n;
-  char *buf = (char *)calloc(1, cap), *tmp;
-
-  while ((n = fread(buf + len, 1, cap - len, file)) > 0 && (len += n) == cap) {
-    if (!(tmp = (char *)realloc(buf, (cap *= 2)))) {
-      fclose(file), free(buf);
-      return ka_new(KA_NONE);
-    }
-    buf = tmp;
-  }
-
+  char *buf = (char *)calloc(1, cap);
+  while ((n = fread(buf + len, 1, cap - len, file)) > 0 && (len += n) == cap)
+    buf = (char *)realloc(buf, (cap *= 2));
   buf[len] = '\0';
   KaNode *result = ka_string(buf);
   fclose(file), free(buf);
