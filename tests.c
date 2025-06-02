@@ -572,6 +572,13 @@ void test_arithmetic() {
   assert(*result->children->next->number == 4);
   ka_free(result);
 
+  result = ka_add(NULL, ka_chain(
+        ka_number(4), ka_list(ka_number(3), NULL), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 4);
+  assert(*result->children->next->number == 3);
+  ka_free(result);
+
   result = ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(2), NULL));
   result = ka_addset(&ctx, ka_chain(result, ka_number(3), NULL));
   assert(*result->number == 5);

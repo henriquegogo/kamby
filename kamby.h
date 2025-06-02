@@ -481,11 +481,13 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return result;
   }
-  // Append to list
-  else if (ltype == KA_LIST && rtype != KA_LIST) {
+  // Prepend or append to list
+  else if (ltype == KA_LIST || rtype == KA_LIST) {
     KaNode *result = ka_new(KA_LIST);
-    result->children = ka_chain(left->children, ka_copy(right), NULL);
-    left->children = NULL;
+    result->children = rtype != KA_LIST ?
+      ka_chain(left->children, ka_copy(right), NULL) :
+      ka_chain(ka_copy(left), right->children, NULL);
+    rtype != KA_LIST ? (left->children = NULL) : (right->children = NULL);
     ka_free(args);
     return result;
   }
