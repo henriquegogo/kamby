@@ -34,8 +34,10 @@ char *transpile(KaNode **ctx, char *path) {
   transpile_tree(nodes);
   printf("  NULL);\n\n");
   printf("  KaNode *ctx = ka_init();\n");
+  printf("  ctx->key = strdup(\"ctx\");\n");
   printf("  ka_free(ka_eval(&ctx, nodes));\n");
-  printf("  ka_free(ctx);\n");
+  printf("  ka_free(ka_del(&ctx, ka_symbol(\"ctx\")));\n");
+  printf("  ka_free(nodes), ka_free(ctx);\n");
   printf("  return 0;\n");
   printf("}\n");
   ka_free(nodes), ka_free(source);
