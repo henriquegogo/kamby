@@ -34,9 +34,9 @@ char *transpile(KaNode **ctx, char *path) {
   transpile_tree(nodes);
   printf("  NULL);\n\n");
   printf("  KaNode *ctx = ka_init();\n");
-  printf("  ctx->key = strdup(\"ctx\");\n");
+  printf("  ctx->key = strdup(\"(ctx)\");\n");
   printf("  ka_free(ka_eval(&ctx, nodes));\n");
-  printf("  ka_free(ka_del(&ctx, ka_symbol(\"ctx\")));\n");
+  printf("  ka_free(ka_del(&ctx, ka_symbol(\"(ctx)\")));\n");
   printf("  ka_free(nodes), ka_free(ctx);\n");
   printf("  return 0;\n");
   printf("}\n");
@@ -46,7 +46,7 @@ char *transpile(KaNode **ctx, char *path) {
 
 int main(int argc, char *argv[]) {
   KaNode *ctx = ka_init();
-  ctx->key = strdup("ctx");
+  ctx->key = strdup("(ctx)");
   int pos = 0;
 
   if (argc > 1 && !strcmp(argv[1], "--help")) {
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  ka_free(ka_del(&ctx, ka_symbol("ctx")));
+  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
   return 0;
 }
