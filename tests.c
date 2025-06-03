@@ -323,6 +323,9 @@ void test_del() {
   assert(!strcmp(ctx->key, "age"));
   assert(ctx->next->type == KA_CTX);
 
+  ka_free(ka_del(&ctx, NULL));
+  assert(ctx->next->type == KA_CTX);
+
   ka_free(ctx);
 }
 
@@ -712,6 +715,33 @@ void test_read() {
   ka_free(ctx);
 }
 
+void test_write() {
+  KaNode *ctx = ka_new(KA_CTX);
+
+  ka_free(ka_write(&ctx, ka_chain(
+        ka_string("output.out"), ka_string("content"), NULL)));
+  KaNode *result = ka_read(&ctx, ka_string("output.out"));
+  assert(!strncmp(result->string, "content", 7));
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_load() {
+  KaNode *ctx = ka_init();
+  ctx->key = strdup("(ctx)");
+
+  ka_free(ka_write(&ctx, ka_chain(
+        ka_string("output.out"), ka_string("a = 12"), NULL)));
+  KaNode *result = ka_load(&ctx, ka_string("output.out"));
+  assert(*result->number == 12);
+  assert(*ctx->number == 12);
+  ka_free(result);
+
+  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
+  ka_free(ctx);
+}
+
 void test_init() {
   KaNode *ctx = ka_init(), *last, *prev;
   ctx->key = strdup("(ctx)");
@@ -905,6 +935,8 @@ int main() {
   test_each();
   test_for();
   test_read();
+  test_write();
+  test_load();
   test_init();
   test_code();
   test_code_variables();
