@@ -20,7 +20,11 @@ testmemory:
 coverage:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@./$(TESTNAME)
-	gcov $(TESTNAME).c
+	@{\
+		output=$$(gcov $(TESTNAME).c);\
+		cat kamby.h.gcov | grep -C1 "#####";\
+		echo "\n$$output";\
+	}
 	@$(MAKE) --no-print-directory clean
 
 clean:
