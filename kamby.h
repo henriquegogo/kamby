@@ -705,8 +705,6 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
 // Initialize context with built-in functions
 
 static inline KaNode *ka_init() {
-  KaNode *ctx = ka_new(KA_CTX);
-
   const KaNode kv[] = {
     // Variables
     { .key = (char *)"$",   .value = ka_func(ka_get)  },
@@ -755,12 +753,11 @@ static inline KaNode *ka_init() {
     { .key = (char *)"load",  .value = ka_func(ka_load)  }
   };
 
+  KaNode *init = ka_new(KA_CTX), *ctx = ka_new(KA_CTX);
+  ctx->key = strdup("(ctx)");
   for (int i = 0; i < sizeof(kv) / sizeof(KaNode); i++)
-    ka_free(ka_def(&ctx, ka_chain(ka_symbol(kv[i].key), kv[i].value, NULL)));
-
-  KaNode *sep_ctx = ka_new(KA_CTX);
-  sep_ctx->key = strdup("(ctx)");
-  return ka_chain(sep_ctx, ctx, NULL);
+    ka_free(ka_def(&init, ka_chain(ka_symbol(kv[i].key), kv[i].value, NULL)));
+  return ka_chain(ctx, init, NULL);
 }
 
 #endif
