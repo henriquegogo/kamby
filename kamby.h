@@ -492,14 +492,15 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
     return result;
   }
   // Concatenate strings and numbers
-  char *lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
-    (asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
+  char *str, *lstr, *rstr;
+  int r;
+  lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
+    (r = asprintf(&lstr, "%.*Lf", *left->number == (long long)*left->number ?
               0 : 2, *left->number), lstr) : NULL;
-  char *rstr = rtype == KA_STRING ? strdup(right->string) : rtype == KA_NUMBER ?
-    (asprintf(&rstr, "%.*Lf", *right->number == (long long)*right->number ?
+  rstr = rtype == KA_STRING ? strdup(right->string) : rtype == KA_NUMBER ?
+    (r = asprintf(&rstr, "%.*Lf", *right->number == (long long)*right->number ?
               0 : 2, *right->number), rstr) : NULL;
-  char *str;
-  asprintf(&str, "%s%s", lstr, rstr);
+  r = asprintf(&str, "%s%s", lstr, rstr);
   KaNode *result = ka_string(str);
   free(str), free(rstr), free(lstr);
   ka_free(args);
@@ -650,7 +651,7 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_input(KaNode **ctx, KaNode *args) {
   char input[8192], *end;
-  scanf("%[^\n]", input);
+  int r = scanf("%[^\n]", input);
   getchar();
   long double number = strtold(input, &end);
   return *end == '\0' ? ka_number(number) : ka_string(input);
