@@ -248,7 +248,6 @@ void test_get() {
   assert((result = ka_get(&ctx, ka_symbol("1")))->type == KA_NONE);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
@@ -643,7 +642,6 @@ void test_if() {
 
 void test_while() {
   KaNode *ctx = ka_init();
-  ctx->key = strdup("(ctx)");
 
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
 
@@ -659,7 +657,6 @@ void test_while() {
   assert(*result->number == 10);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
@@ -679,7 +676,6 @@ void test_each() {
 
 void test_for() {
   KaNode *ctx = ka_init(), *result;
-  ctx->key = strdup("(ctx)");
 
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("result"), ka_number(0), NULL)));
 
@@ -701,7 +697,6 @@ void test_for() {
   assert(result->type == KA_NONE);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
@@ -729,7 +724,6 @@ void test_write() {
 
 void test_load() {
   KaNode *ctx = ka_init();
-  ctx->key = strdup("(ctx)");
 
   ka_free(ka_write(&ctx, ka_chain(
         ka_string("output.out"), ka_string("a = 12"), NULL)));
@@ -738,13 +732,11 @@ void test_load() {
   assert(*ctx->number == 12);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
 void test_init() {
   KaNode *ctx = ka_init(), *last, *prev;
-  ctx->key = strdup("(ctx)");
   for (last = ctx; last->next; last = last->next) prev = last;
 
   assert(ctx->type == KA_CTX);
@@ -755,13 +747,11 @@ void test_init() {
   assert(prev->func == ka_get);
   assert(!strcmp(prev->key, "$"));
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
 void test_code() {
   KaNode *ctx = ka_init();
-  ctx->key = strdup("(ctx)");
   int pos = 0;
 
   char *code = "\
@@ -789,7 +779,6 @@ void test_code() {
 //  print_chain(ctx);
   
   ka_free(expr);
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
@@ -803,7 +792,6 @@ KaNode *eval_code(KaNode **ctx, const char *code) {
 
 void test_code_variables() {
   KaNode *ctx = ka_init(), *result;
-  ctx->key = strdup("(ctx)");
 
   result = eval_code(&ctx, "i: 1");
   assert(!strcmp(result->key, "i") && *result->number == 1);
@@ -850,13 +838,11 @@ void test_code_variables() {
   assert(!strcmp(result->key, "i") && *result->number == 1);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
 void test_code_lists() {
   KaNode *ctx = ka_init(), *expr, *result;
-  ctx->key = strdup("(ctx)");
 
   ka_free(eval_code(&ctx,"i := 3;\
         items := [1, 2, third: 3, 4, double: { $0 * items.$1 }]"));
@@ -889,20 +875,17 @@ void test_code_lists() {
   assert(!result->children->next->next->next->next);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 
 void test_code_blocks() {
   KaNode *ctx = ka_init(), *expr, *result;
-  ctx->key = strdup("(ctx)");
 
   ka_free(eval_code(&ctx, "def test { $1 / first }"));
   result = eval_code(&ctx, "test(first: 2, 8)");
   assert(*result->number == 4);
   ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("(ctx)")));
   ka_free(ctx);
 }
 

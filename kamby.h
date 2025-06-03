@@ -48,11 +48,12 @@ static inline KaNode *ka_false() { return ka_new(KA_FALSE); }
 static inline void ka_free(KaNode *node) {
   for (KaNode *curr; node; node = curr) {
     KaType type = node->type;
+    int has_key = node->key ? 1 : 0;
     type >= KA_LIST ? ka_free((KaNode *)node->value) :
     type == KA_FUNC ? (void)0 : free(node->value);
     curr = node->next;
     free(node->key), free(node);
-    if (type == KA_CTX) break;
+    if (type == KA_CTX && !has_key) break;
   }
 }
 
@@ -757,7 +758,9 @@ static inline KaNode *ka_init() {
   for (int i = 0; i < sizeof(kv) / sizeof(KaNode); i++)
     ka_free(ka_def(&ctx, ka_chain(ka_symbol(kv[i].key), kv[i].value, NULL)));
 
-  return ka_chain(ka_new(KA_CTX), ctx, NULL);
+  KaNode *sep_ctx = ka_new(KA_CTX);
+  sep_ctx->key = strdup("(ctx)");
+  return ka_chain(sep_ctx, ctx, NULL);
 }
 
 #endif
