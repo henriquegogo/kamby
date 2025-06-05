@@ -21,7 +21,7 @@ coverage:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@echo "input" | ./$(TESTNAME)
 	@{\
-		output=$$(gcov $(TESTNAME).c | grep -A1 "'kamby.h'");\
+		output=$$(gcov $(TESTNAME).c | grep -A1 "'$(BINNAME).h'");\
 		cat $(BINNAME).h.gcov | grep -C1 "#####";\
 		echo "\n$$output";\
 	}
