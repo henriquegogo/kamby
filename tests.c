@@ -742,7 +742,7 @@ void test_load() {
   assert(*ctx->number == 12);
   ka_free(result);
 
-  result = ka_load(&ctx, ka_string("nolib.so"));
+  result = ka_load(&ctx, ka_string("invalidlib.so"));
   assert(result->type == KA_NONE);
   ka_free(result);
 
@@ -945,6 +945,6 @@ int main() {
   test_code_lists();
   test_code_blocks();
 
-  printf("\nAll tests passed!\n\n");
+  printf("\nAll tests passed!\n");
   return 0;
 }
