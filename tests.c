@@ -733,13 +733,17 @@ void test_write() {
 }
 
 void test_load() {
-  KaNode *ctx = ka_init();
+  KaNode *ctx = ka_init(), *result;
 
   ka_free(ka_write(&ctx, ka_chain(
         ka_string("output.out"), ka_string("a = 12"), NULL)));
-  KaNode *result = ka_load(&ctx, ka_string("output.out"));
+  result = ka_load(&ctx, ka_string("output.out"));
   assert(*result->number == 12);
   assert(*ctx->number == 12);
+  ka_free(result);
+
+  result = ka_load(&ctx, ka_string("nolib.so"));
+  assert(result->type == KA_NONE);
   ka_free(result);
 
   ka_free(ctx);
