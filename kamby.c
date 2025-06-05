@@ -2,26 +2,25 @@
 #include <unistd.h>
 #include "kamby.h"
 
-int print_level = 1;
-void transpile_tree(KaNode *nodes) {
-  print_level++;
+void transpile_tree(KaNode *nodes, int *level) {
+  (*level)++;
   for (KaNode *node = nodes; node; node = node->next) {
     const char *types[] = { "none", "ctx", "false", "true", "number", "string",
       "symbol", "func", "list", "expr", "block" };
-    for (int i = 0; i < print_level; i++) printf("  ");
+    for (int i = 0; i < *level; i++) printf("  ");
     printf("ka_%s(", types[node->type]);
     if (node->type == KA_NUMBER) printf("%.2Lf),\n", *node->number);
     else if (node->type == KA_STRING) printf("\"%s\"),\n", node->string);
     else if (node->type == KA_SYMBOL) printf("\"%s\"),\n", node->symbol);
     else if (node->type >= KA_LIST) {
       printf("\n");
-      transpile_tree(node->children);
-      for (int i = 0; i < print_level; i++) printf("  ");
+      transpile_tree(node->children, level);
+      for (int i = 0; i < *level; i++) printf("  ");
       printf("NULL),\n");
     }
     else printf("\n");
   }
-  print_level--;
+  (*level)--;
 }
 
 void transpile(KaNode **ctx, char *path) {
@@ -31,7 +30,7 @@ void transpile(KaNode **ctx, char *path) {
   printf("#include \"kamby.h\"\n\n");
   printf("int main() {\n");
   printf("  KaNode *nodes = ka_expr(\n");
-  transpile_tree(nodes);
+  transpile_tree(nodes, &level);
   printf("  NULL);\n\n");
   printf("  KaNode *ctx = ka_init();\n");
   printf("  ka_free(ka_eval(&ctx, nodes));\n");
@@ -43,8 +42,8 @@ void transpile(KaNode **ctx, char *path) {
 
 void repl(KaNode **ctx) {
   int pos = 0;
-  if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
   char buf[1<<20]; // 1MB
+  if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
   while (fgets(buf + strlen(buf), sizeof(buf), stdin)) {
     int level = 0;
     for (int i = 0; i < strlen(buf) && buf[i] != '\0'; i++)
