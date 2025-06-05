@@ -683,7 +683,8 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
   // Load dynamic library
   if (!strcmp(args->string + strlen(args->string) - 3, ".so")) {
     void *lib = dlopen(args->string, RTLD_NOW);
-    if (!lib) return ka_free(args), ka_new(KA_NONE);
+    ka_free(args);
+    if (!lib) return ka_new(KA_NONE);
     typedef void (*ka_extend)(KaNode **);
     ka_extend extend = (ka_extend)dlsym(lib, "ka_extend");
     if (extend) extend(ctx);
