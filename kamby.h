@@ -360,9 +360,6 @@ static inline KaNode *ka_parser(char *text, int *pos) {
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
         a->next->children = (b && (b->next = NULL), op);
-      // Accept punctuation operators at beginning of expressions
-      } else if (step == 2 && !prev && ispunctuation) {
-        a = (prev = head)->next;
       // Reorder and wrap binary operators in expressions by precedence
       } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
           (step == 4 && isassign)) {
