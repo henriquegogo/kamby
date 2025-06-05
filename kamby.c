@@ -44,15 +44,15 @@ void transpile(KaNode **ctx, char *path) {
 void repl(KaNode **ctx) {
   int pos = 0;
   if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
-  char input[1<<20]; // 1MB
-  while (fgets(input + strlen(input), sizeof(input), stdin)) {
+  char buf[1<<20]; // 1MB
+  while (fgets(buf + strlen(buf), sizeof(buf), stdin)) {
     int level = 0;
-    for (int i = 0; i < strlen(input) && input[i] != '\0'; i++)
-      level += strchr("([{", input[i]) ? 1 : strchr("}])", input[i]) ? -1 : 0;
+    for (int i = 0; i < strlen(buf) && buf[i] != '\0'; i++)
+      level += strchr("([{", buf[i]) ? 1 : strchr("}])", buf[i]) ? -1 : 0;
     if (level > 0) continue;
-    KaNode *expr = ka_parser(input, (pos = 0, &pos));
+    KaNode *expr = ka_parser(buf, (pos = 0, &pos));
     ka_free(ka_eval(ctx, expr)), ka_free(expr);
-    input[0] = '\0';
+    buf[0] = '\0';
     if (isatty(fileno(stdin))) printf("> "), fflush(stdout);
   }
 }
