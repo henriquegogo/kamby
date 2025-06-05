@@ -24,8 +24,8 @@ void transpile_tree(KaNode *nodes) {
   print_level--;
 }
 
-char *transpile(KaNode **ctx, char *path) {
-  int pos = 0;
+void transpile(KaNode **ctx, char *path) {
+  int pos = 0, level = 1;
   KaNode *source = ka_read(ctx, ka_string(path));
   KaNode *nodes = ka_parser(source->string, &pos);
   printf("#include \"kamby.h\"\n\n");
@@ -39,12 +39,26 @@ char *transpile(KaNode **ctx, char *path) {
   printf("  return 0;\n");
   printf("}\n");
   ka_free(nodes), ka_free(source);
-  return NULL;
+}
+
+void repl(KaNode **ctx) {
+  int pos = 0;
+  if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
+  char input[1<<20]; // 1MB
+  while (fgets(input + strlen(input), sizeof(input), stdin)) {
+    int level = 0;
+    for (int i = 0; i < strlen(input) && input[i] != '\0'; i++)
+      level += strchr("([{", input[i]) ? 1 : strchr("}])", input[i]) ? -1 : 0;
+    if (level > 0) continue;
+    KaNode *expr = ka_parser(input, (pos = 0, &pos));
+    ka_free(ka_eval(ctx, expr)), ka_free(expr);
+    input[0] = '\0';
+    if (isatty(fileno(stdin))) printf("> "), fflush(stdout);
+  }
 }
 
 int main(int argc, char *argv[]) {
   KaNode *ctx = ka_init();
-  int pos = 0;
 
   if (argc > 1 && !strcmp(argv[1], "--help")) {
     printf("Usage: kamby [options] [file]\n");
@@ -56,21 +70,7 @@ int main(int argc, char *argv[]) {
   else if (argc > 1 && !strcmp(argv[1], "--version")) printf("Kamby 0.2.0\n");
   else if (argc > 2 && !strcmp(argv[1], "-c")) transpile(&ctx, argv[2]);
   else if (argc > 1) ka_free(ka_load(&ctx, ka_string(argv[1])));
-  // REPL
-  else {
-    if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
-    char input[1<<20]; // 1MB
-    while (fgets(input + strlen(input), sizeof(input), stdin)) {
-      int level = 0;
-      for (int i = 0; i < strlen(input) && input[i] != '\0'; i++)
-        level += strchr("([{", input[i]) ? 1 : strchr("}])", input[i]) ? -1 : 0;
-      if (level > 0) continue;
-      KaNode *expr = ka_parser(input, (pos = 0, &pos));
-      ka_free(ka_eval(&ctx, expr)), ka_free(expr);
-      input[0] = '\0';
-      if (isatty(fileno(stdin))) printf("> "), fflush(stdout);
-    }
-  }
+  else repl(&ctx);
 
   ka_free(ctx);
   return 0;
