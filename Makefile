@@ -34,5 +34,5 @@ clean:
 	@rm -f $(BINNAME)
 	@rm -f $(TESTNAME)
 	@rm -f *.gc*
-	@rm -f output.out
-	@rm -f testslib.so
+	@rm -f $(TESTNAME).out
+	@rm -f $(TESTNAME)lib.so
