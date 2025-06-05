@@ -746,6 +746,10 @@ void test_load() {
   assert(result->type == KA_NONE);
   ka_free(result);
 
+  result = ka_load(&ctx, ka_string("testslib.so"));
+  assert(result->type == KA_NONE);
+  ka_free(result);
+
   ka_free(ctx);
 }
 

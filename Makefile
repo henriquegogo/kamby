@@ -9,16 +9,19 @@ run: all
 
 test:
 	@$(CC) -o $(TESTNAME) $(TESTNAME).c
+	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
 	@echo "input" | ./$(TESTNAME)
 	@$(MAKE) --no-print-directory clean
 
 testmemory:
 	@$(CC) -o $(TESTNAME) $(TESTNAME).c
+	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
 	@echo "input" | valgrind ./$(TESTNAME)
 	@$(MAKE) --no-print-directory clean
 
 coverage:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
+	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
 	@echo "input" | ./$(TESTNAME)
 	@{\
 		output=$$(gcov $(TESTNAME).c | grep -A1 "'$(BINNAME).h'");\
@@ -32,3 +35,4 @@ clean:
 	@rm -f $(TESTNAME)
 	@rm -f *.gc*
 	@rm -f output.out
+	@rm -f testslib.so
