@@ -9,20 +9,20 @@ run: all
 
 test:
 	@$(CC) -o $(TESTNAME) $(TESTNAME).c
-	@./$(TESTNAME)
+	@echo "input" | ./$(TESTNAME)
 	@$(MAKE) --no-print-directory clean
 
 testmemory:
 	@$(CC) -o $(TESTNAME) $(TESTNAME).c
-	@valgrind ./$(TESTNAME)
+	@echo "input" | valgrind ./$(TESTNAME)
 	@$(MAKE) --no-print-directory clean
 
 coverage:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
-	@./$(TESTNAME)
+	@echo "input" | ./$(TESTNAME)
 	@{\
 		output=$$(gcov $(TESTNAME).c);\
-		cat kamby.h.gcov | grep -C1 "#####";\
+		cat $(BINNAME).h.gcov | grep -C1 "#####";\
 		echo "\n$$output";\
 	}
 	@$(MAKE) --no-print-directory clean

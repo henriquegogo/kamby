@@ -700,6 +700,16 @@ void test_for() {
   ka_free(ctx);
 }
 
+void test_input() {
+  KaNode *ctx = ka_new(KA_CTX);
+
+  KaNode *result = ka_input(&ctx, NULL);
+  assert(!strcmp(result->string, "input"));
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_read() {
   KaNode *ctx = ka_new(KA_CTX);
 
@@ -917,6 +927,7 @@ int main() {
   test_while();
   test_each();
   test_for();
+  test_input();
   test_read();
   test_write();
   test_load();
