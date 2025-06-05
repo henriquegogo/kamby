@@ -58,8 +58,7 @@ int main(int argc, char *argv[]) {
   else if (argc > 1) ka_free(ka_load(&ctx, ka_string(argv[1])));
   // REPL
   else {
-    if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> ");
-    fflush(stdout);
+    if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
     char input[1<<20]; // 1MB
     while (fgets(input + strlen(input), sizeof(input), stdin)) {
       int level = 0;
@@ -69,8 +68,7 @@ int main(int argc, char *argv[]) {
       KaNode *expr = ka_parser(input, (pos = 0, &pos));
       ka_free(ka_eval(&ctx, expr)), ka_free(expr);
       input[0] = '\0';
-      if (isatty(fileno(stdin))) printf("> ");
-      fflush(stdout);
+      if (isatty(fileno(stdin))) printf("> "), fflush(stdout);
     }
   }
 
