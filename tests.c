@@ -724,8 +724,8 @@ void test_write() {
   KaNode *ctx = ka_new(KA_CTX);
 
   ka_free(ka_write(&ctx, ka_chain(
-        ka_string("output.out"), ka_string("content"), NULL)));
-  KaNode *result = ka_read(&ctx, ka_string("output.out"));
+        ka_string("tests.out"), ka_string("content"), NULL)));
+  KaNode *result = ka_read(&ctx, ka_string("tests.out"));
   assert(!strncmp(result->string, "content", 7));
   ka_free(result);
 
@@ -736,8 +736,8 @@ void test_load() {
   KaNode *ctx = ka_init(), *result;
 
   ka_free(ka_write(&ctx, ka_chain(
-        ka_string("output.out"), ka_string("a = 12"), NULL)));
-  result = ka_load(&ctx, ka_string("output.out"));
+        ka_string("tests.out"), ka_string("a = 12"), NULL)));
+  result = ka_load(&ctx, ka_string("tests.out"));
   assert(*result->number == 12);
   assert(*ctx->number == 12);
   ka_free(result);
