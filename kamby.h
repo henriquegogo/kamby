@@ -296,6 +296,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 
 static inline KaNode *ka_parser(char *text, int *pos) {
   KaNode *head = ka_new(KA_NONE), *last = head;
+  if (!text) return head;
   int length = strlen(text);
 
   // If at the initial position, use a negative position as a flag to wrap
@@ -694,7 +695,7 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
   // Load and evaluate script file
   int pos = 0;
   KaNode *source = ka_read(ctx, ka_copy(args));
-  KaNode *expr = source->string ? ka_parser(source->string, &pos) : NULL;
+  KaNode *expr = ka_parser(source->string, &pos);
   KaNode *result = ka_eval(ctx, expr);
   ka_free(expr), ka_free(source), ka_free(args);
   return result;
