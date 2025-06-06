@@ -30,9 +30,13 @@ coverage:
 	}
 	@$(MAKE) --no-print-directory clean
 
+wasm:
+	@emcc -o $(BINNAME).wasm $(BINNAME).c
+
 clean:
 	@rm -f $(BINNAME)
+	@rm -f $(BINNAME).wasm
 	@rm -f $(TESTNAME)
-	@rm -f *.gc*
 	@rm -f $(TESTNAME).out
 	@rm -f $(TESTNAME)lib.so
+	@rm -f *.gc*

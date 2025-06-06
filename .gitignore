@@ -6,5 +6,6 @@
 *.out
 *.so
 *.gc*
+*.wasm
 
 kamby
