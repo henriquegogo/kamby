@@ -10,18 +10,18 @@ run: all
 test:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
-	@echo "input" | $(TESTPREFIX) ./$(TESTNAME) 2>&1 | grep --color=never -E "^(==.*(total heap usage|ERROR SUMMARY)|[^=]|^$$)"
+	@echo "input" | $(TESTPREFIX) ./$(TESTNAME) 2>&1 | \
+		grep --color=never -E "^(==.*(total heap usage|ERROR SUMMARY)|[^=]|^$$)"
 	@$(TESTPOST)
 	@$(MAKE) --no-print-directory clean
 
 testmemory: TESTPREFIX := valgrind
 testmemory: test
 
-coverage: TESTPOST := {\
+coverage: TESTPOST := \
 	output=$$(gcov $(TESTNAME).c | grep -A1 "'$(BINNAME).h'");\
 	cat $(BINNAME).h.gcov | grep -C1 "#####";\
-	echo "\n$$output";\
-}
+	echo "\n$$output";
 coverage: test
 
 coveragememory: TESTPREFIX := valgrind
