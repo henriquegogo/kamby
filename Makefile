@@ -8,27 +8,21 @@ run: all
 	@./$(BINNAME)
 
 test:
-	@$(CC) -o $(TESTNAME) $(TESTNAME).c
-	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
-	@echo "input" | ./$(TESTNAME)
-	@$(MAKE) --no-print-directory clean
-
-testmemory:
-	@$(CC) -o $(TESTNAME) $(TESTNAME).c
-	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
-	@echo "input" | valgrind ./$(TESTNAME)
-	@$(MAKE) --no-print-directory clean
-
-coverage:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
-	@echo "input" | ./$(TESTNAME)
-	@{\
-		output=$$(gcov $(TESTNAME).c | grep -A1 "'$(BINNAME).h'");\
-		cat $(BINNAME).h.gcov | grep -C1 "#####";\
-		echo "\n$$output";\
-	}
+	@echo "input" | $(TESTPREFIX) ./$(TESTNAME)
+	@$(TESTPOST)
 	@$(MAKE) --no-print-directory clean
+
+testmemory: TESTPREFIX := valgrind
+testmemory: test
+
+coverage: TESTPOST := {\
+	output=$$(gcov $(TESTNAME).c | grep -A1 "'$(BINNAME).h'");\
+	cat $(BINNAME).h.gcov | grep -C1 "#####";\
+	echo "\n$$output";\
+}
+coverage: test
 
 wasm:
 	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c
