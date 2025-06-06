@@ -774,11 +774,7 @@ void test_code() {
 
   char *code = "\
     i := 1\n\
-    print('Ternary if: ' (1 != 1 ? 'one' 2 != 2 'two' 'three'))\n\
     [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
-    if a { print('no') } { print('else') }\n\
-    if i { print('yes') }\n\
-    print(!1 ? 'ok' 'nok')\n\
     i += 3\n\
     print sumnum = 1+2+i\n\
     print 'Last result: ' sumnum\n\
@@ -907,6 +903,26 @@ void test_code_blocks() {
   ka_free(ctx);
 }
 
+void test_code_if() {
+  KaNode *ctx = ka_init(), *expr, *result;
+
+  ka_free(eval_code(&ctx, "i := 10"));
+  result = eval_code(&ctx, "(1 == 1) ? 1 ('two' == 'two') { 2 } { 1 + 2 }");
+  assert(*result->number == 1); ka_free(result);
+  result = eval_code(&ctx, "(1 != 1) ? 1 ('two' == 'two') { 2 } { 1 + 2 }");
+  assert(*result->number == 2); ka_free(result);
+  result = eval_code(&ctx, "(1 != 1) ? 1 ('two' != 'two') { 2 } { 1 + 2 }");
+  assert(*result->number == 3); ka_free(result);
+  result = eval_code(&ctx, "if a { 1 } { 0 }");
+  assert(*result->number == 0); ka_free(result);
+  result = eval_code(&ctx, "if !a { 1 } { 0 }");
+  assert(*result->number == 1); ka_free(result);
+  result = eval_code(&ctx, "if i { 1 } { 0 }");
+  assert(*result->number == 1); ka_free(result);
+
+  ka_free(ctx);
+}
+
 int main() {
   test_new();
   test_chain();
@@ -944,6 +960,7 @@ int main() {
   test_code_variables();
   test_code_lists();
   test_code_blocks();
+  test_code_if();
 
   printf("\nAll tests passed!\n");
   return 0;
