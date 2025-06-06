@@ -907,18 +907,18 @@ void test_code_if() {
   KaNode *ctx = ka_init(), *expr, *result;
 
   ka_free(eval_code(&ctx, "i := 10"));
+  result = eval_code(&ctx, "if i { 1 } { 0 }");
+  assert(*result->number == 1); ka_free(result);
+  result = eval_code(&ctx, "if a { 1 } { 0 }");
+  assert(*result->number == 0); ka_free(result);
+  result = eval_code(&ctx, "if !a { 1 } { 0 }");
+  assert(*result->number == 1); ka_free(result);
   result = eval_code(&ctx, "(1 == 1) ? 1 ('two' == 'two') { 2 } { 1 + 2 }");
   assert(*result->number == 1); ka_free(result);
   result = eval_code(&ctx, "(1 != 1) ? 1 ('two' == 'two') { 2 } { 1 + 2 }");
   assert(*result->number == 2); ka_free(result);
   result = eval_code(&ctx, "(1 != 1) ? 1 ('two' != 'two') { 2 } { 1 + 2 }");
   assert(*result->number == 3); ka_free(result);
-  result = eval_code(&ctx, "if a { 1 } { 0 }");
-  assert(*result->number == 0); ka_free(result);
-  result = eval_code(&ctx, "if !a { 1 } { 0 }");
-  assert(*result->number == 1); ka_free(result);
-  result = eval_code(&ctx, "if i { 1 } { 0 }");
-  assert(*result->number == 1); ka_free(result);
 
   ka_free(ctx);
 }
