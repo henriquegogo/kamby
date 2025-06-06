@@ -24,6 +24,9 @@ coverage: TESTPOST := {\
 }
 coverage: test
 
+coveragememory: TESTPREFIX := valgrind
+coveragememory: coverage
+
 wasm:
 	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c
 
