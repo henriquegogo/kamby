@@ -31,7 +31,7 @@ coverage:
 	@$(MAKE) --no-print-directory clean
 
 wasm:
-	@emcc -o $(BINNAME).wasm $(BINNAME).c
+	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c
 
 clean:
 	@rm -f $(BINNAME)
