@@ -212,6 +212,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
   else if (!args->next->type) return ka_del(ctx, args);
 
   KaNode *data = ka_copy(args->next);
+  if (!node->key && args->next->key) node->key = strdup(args->next->key);
   node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
   node->value = data->value;
   KaType type = node->type = data->type;
@@ -368,7 +369,7 @@ static inline KaNode *ka_parser(char *text, int *pos) {
         expr->children =
           (op && (op->next = a), a && (a->next = b), b && (b->next = NULL), op);
         a = prev ? (prev->next = expr) : (head = expr);
-      // Reorder operators ? :
+      // Reorder operators in expressions
       } else if (step == 4 && isexpr) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
