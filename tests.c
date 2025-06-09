@@ -277,7 +277,7 @@ void test_def() {
   assert(*ctx->next->number == 42);
   assert(!strcmp(ctx->next->next->key, "name"));
   assert(!strcmp(ctx->next->next->string, "John"));
-  assert(result->type == KA_NONE && ctx->next->next->next->type == KA_BLOCK);
+  assert(result->type == KA_BLOCK && ctx->next->next->next->type == KA_BLOCK);
 
   ka_free(result);
   ka_free(ctx);
@@ -297,7 +297,7 @@ void test_set() {
   assert(ctx->next->type == KA_STRING);
   assert(!strcmp(ctx->next->key, "name"));
   assert(!strcmp(ctx->next->string, "Foo"));
-  assert(result->type == KA_NONE && ctx->next->next->type == KA_BLOCK);
+  assert(result->type == KA_BLOCK && ctx->next->next->type == KA_BLOCK);
 
   ka_free(result);
   ka_free(ctx);
@@ -924,6 +924,7 @@ void test_code_if() {
 }
 
 int main() {
+  printf("\nRunning tests...\n");
   test_new();
   test_chain();
   test_ctx();
