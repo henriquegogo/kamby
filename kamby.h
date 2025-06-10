@@ -528,10 +528,35 @@ static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
-    ka_number(*left->number / *right->number);
-  ka_free(args);
-  return result;
+  KaType ltype = left->type, rtype = right->type;
+  // Div numbers
+  if (ltype == KA_NUMBER && rtype == KA_NUMBER) {
+    KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
+      ka_number(*left->number / *right->number) : NULL;
+    ka_free(args);
+    return result;
+  }
+  // Split string into list - empty separator
+  else if (ltype == KA_STRING && rtype == KA_STRING && !right->string[0]) {
+    KaNode *result = ka_new(KA_LIST), *last = NULL;
+    for (int i = 0; left->string[i]; i++) {
+      KaNode *str = ka_string((char[]){ left->string[i], '\0' });
+      last = last ? (last->next = str) : (result->children = str);
+    }
+    ka_free(args);
+    return result;
+  }
+  // Split string into list - string separator
+  else if (ltype == KA_STRING && rtype == KA_STRING) {
+    KaNode *result = ka_new(KA_LIST), *last = NULL;
+    char *str = strtok(left->string, right->string);
+    if (str) last = result->children = ka_string(str);
+    while ((str = strtok(NULL, right->string)))
+      last = last->next = ka_string(str);
+    ka_free(args);
+    return result;
+  }
+  return ka_free(args), ka_new(KA_NONE);
 }
 
 static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {

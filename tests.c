@@ -580,6 +580,24 @@ void test_arithmetic() {
   assert(*result->children->next->number == 3);
   ka_free(result);
 
+  result = ka_div(NULL, ka_chain(ka_string("John Doe"), ka_number(2), NULL));
+  assert(result->type == KA_NONE); ka_free(result);
+
+  result = ka_div(NULL, ka_chain(ka_string("John Doe"), ka_string(" "), NULL));
+  assert(result->type == KA_LIST);
+  assert(!strcmp(result->children->string, "John"));
+  assert(!strcmp(result->children->next->string, "Doe"));
+  assert(!result->children->next->next);
+  ka_free(result);
+
+  result = ka_div(NULL, ka_chain(ka_string("Doe"), ka_string(""), NULL));
+  assert(result->type == KA_LIST);
+  assert(!strcmp(result->children->string, "D"));
+  assert(!strcmp(result->children->next->string, "o"));
+  assert(!strcmp(result->children->next->next->string, "e"));
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
   result = ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(2), NULL));
   result = ka_addset(&ctx, ka_chain(result, ka_number(3), NULL));
   assert(*result->number == 5);
