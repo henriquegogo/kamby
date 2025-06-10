@@ -6,6 +6,8 @@
 *.out
 *.so
 *.gc*
-*.wasm
+kamby.wasm
+kamby.html
+kamby.js
 
 kamby
