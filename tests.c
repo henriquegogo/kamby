@@ -536,6 +536,57 @@ void test_comparison() {
   assert(result->type == KA_TRUE); ka_free(result);
 }
 
+void test_general() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_cat(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
+  assert(!strcmp(result->string, "2Message")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
+  assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Ten"), ka_number(10), NULL));
+  assert(!strcmp(result->string, "Ten10")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
+  assert(!strcmp(result->string, "Float10.12")); ka_free(result);
+
+  result = ka_merge(NULL, ka_chain(
+        ka_list(ka_number(1), NULL), ka_list(ka_number(2), NULL), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  ka_free(result);
+
+  result = ka_merge(NULL, ka_chain(
+        ka_list(ka_number(3), NULL), ka_number(4), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 3);
+  assert(*result->children->next->number == 4);
+  ka_free(result);
+
+  result = ka_merge(NULL, ka_chain(
+        ka_number(4), ka_list(ka_number(3), NULL), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 4);
+  assert(*result->children->next->number == 3);
+  ka_free(result);
+
+  result = ka_split(NULL, ka_chain(ka_string("John Doe"), ka_string(" "), NULL));
+  assert(result->type == KA_LIST);
+  assert(!strcmp(result->children->string, "John"));
+  assert(!strcmp(result->children->next->string, "Doe"));
+  assert(!result->children->next->next);
+  ka_free(result);
+
+  result = ka_split(NULL, ka_chain(ka_string("Doe"), ka_string(""), NULL));
+  assert(result->type == KA_LIST);
+  assert(!strcmp(result->children->string, "D"));
+  assert(!strcmp(result->children->next->string, "o"));
+  assert(!strcmp(result->children->next->next->string, "e"));
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_arithmetic() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
@@ -965,6 +1016,7 @@ int main() {
   test_parser();
   test_logical();
   test_comparison();
+  test_general();
   test_arithmetic();
   test_if();
   test_while();

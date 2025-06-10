@@ -460,38 +460,32 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
   return result;
 }
 
-// Arithmetic operators
+// General operators
 
-static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
+static inline KaNode *ka_merge(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
-  KaNode *left = args, *right = args->next;
+  KaNode *left = args, *right = args->next, *result = ka_new(KA_LIST);
   KaType ltype = left->type, rtype = right->type;
-
-  // Add numbers
-  if (ltype == KA_NUMBER && rtype == KA_NUMBER) {
-    long double lnum = *left->number, rnum = *right->number;
-    ka_free(args);
-    return ka_number(lnum + rnum);
-  }
   // Merge lists
-  else if (ltype == KA_LIST && rtype == KA_LIST) {
-    KaNode *result = ka_new(KA_LIST);
+  if (ltype == KA_LIST && rtype == KA_LIST) {
     result->children = ka_chain(left->children, right->children, NULL);
     left->children = NULL, right->children = NULL;
-    ka_free(args);
-    return result;
   }
   // Prepend or append to list
   else if (ltype == KA_LIST || rtype == KA_LIST) {
-    KaNode *result = ka_new(KA_LIST);
     result->children = rtype != KA_LIST ?
       ka_chain(left->children, ka_copy(right), NULL) :
       ka_chain(ka_copy(left), right->children, NULL);
     rtype != KA_LIST ? (left->children = NULL) : (right->children = NULL);
-    ka_free(args);
-    return result;
   }
-  // Concatenate strings and numbers
+  ka_free(args);
+  return result;
+}
+
+static inline KaNode *ka_cat(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *left = args, *right = args->next;
+  KaType ltype = left->type, rtype = right->type;
   char *str, *lstr, *rstr;
   int r;
   lstr = ltype == KA_STRING ? strdup(left->string) : ltype == KA_NUMBER ?
@@ -505,6 +499,45 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
   free(str), free(rstr), free(lstr);
   ka_free(args);
   return result;
+}
+
+static inline KaNode *ka_split(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *left = args, *right = args->next,
+         *result = ka_new(KA_LIST), *last = NULL;
+  KaType ltype = left->type, rtype = right->type;
+  // Split string into list - empty separator
+  if (ltype == KA_STRING && rtype == KA_STRING && !right->string[0]) {
+    for (int i = 0; left->string[i]; i++) {
+      KaNode *str = ka_string((char[]){ left->string[i], '\0' });
+      last = last ? (last->next = str) : (result->children = str);
+    }
+  }
+  // Split string into list - string separator
+  else if (ltype == KA_STRING && rtype == KA_STRING) {
+    char *str = strtok(left->string, right->string);
+    if (str) last = result->children = ka_string(str);
+    while ((str = strtok(NULL, right->string)))
+      last = last->next = ka_string(str);
+  }
+  ka_free(args);
+  return result;
+}
+
+// Arithmetic operators
+
+static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *left = args, *right = args->next;
+  KaType ltype = left->type, rtype = right->type;
+  // Add numbers
+  if (ltype == KA_NUMBER && rtype == KA_NUMBER) {
+    long double lnum = *left->number, rnum = *right->number;
+    ka_free(args);
+    return ka_number(lnum + rnum);
+  }
+  else if (ltype == KA_LIST || rtype == KA_LIST) return ka_merge(ctx, args);
+  return ka_cat(ctx, args);
 }
 
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
@@ -536,26 +569,7 @@ static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return result;
   }
-  // Split string into list - empty separator
-  else if (ltype == KA_STRING && rtype == KA_STRING && !right->string[0]) {
-    KaNode *result = ka_new(KA_LIST), *last = NULL;
-    for (int i = 0; left->string[i]; i++) {
-      KaNode *str = ka_string((char[]){ left->string[i], '\0' });
-      last = last ? (last->next = str) : (result->children = str);
-    }
-    ka_free(args);
-    return result;
-  }
-  // Split string into list - string separator
-  else if (ltype == KA_STRING && rtype == KA_STRING) {
-    KaNode *result = ka_new(KA_LIST), *last = NULL;
-    char *str = strtok(left->string, right->string);
-    if (str) last = result->children = ka_string(str);
-    while ((str = strtok(NULL, right->string)))
-      last = last->next = ka_string(str);
-    ka_free(args);
-    return result;
-  }
+  else if (ltype == KA_STRING && rtype == KA_STRING) return ka_split(ctx, args);
   return ka_free(args), ka_new(KA_NONE);
 }
 
