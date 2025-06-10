@@ -170,10 +170,24 @@ You can load other scripts or dynamic libraries using the "load" function.
 Dynamic libraries should have a function named "void ka_extend(Kamby \**ctx)"
 that will be called to extend the context with new functions.
 
-Operators
----------
+Overloading
+-----------
+Some operators are overloaded to perform different actions based on argument types.
 
-    get def set $ : := = .
+    1 + 2             // 3
+    "John " + "Doe"   // "John Doe"
+    [1, 2] + [3, 4]   // [1 2 3 4]
+    [1, 2] + 3        // [1 2 3]
+    1 + [2, 3]        // [1 2 3]
+
+    4 / 2             // 2
+    "John Doe" / " "  // ["John" "Doe"]
+    "Doe" / ""        // ["D" "o" "e"]
+
+Operators and keywords
+----------------------
+
+    get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
     if each while for ? ...
