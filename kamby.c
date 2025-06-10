@@ -42,7 +42,7 @@ void transpile(KaNode **ctx, char *path) {
 
 void repl(KaNode **ctx) {
   int pos = 0;
-  char buf[1<<20]; // 1MB
+  char buf[1<<20] = ""; // 1MB
   if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
   while (fgets(buf + strlen(buf), sizeof(buf), stdin)) {
     int level = 0;
