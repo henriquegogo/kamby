@@ -48,7 +48,10 @@ void repl(KaNode **ctx) {
     int level = 0;
     for (int i = 0; i < strlen(buf) && buf[i] != '\0'; i++)
       level += strchr("([{", buf[i]) ? 1 : strchr("}])", buf[i]) ? -1 : 0;
-    if (level > 0) continue;
+    if (level > 0) {
+      if (isatty(fileno(stdin))) printf("... %*s", level * 2 - 2, "");
+      continue;
+    }
     KaNode *expr = ka_parser(buf, (pos = 0, &pos));
     ka_free(ka_eval(ctx, expr)), ka_free(expr);
     buf[0] = '\0';
