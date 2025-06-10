@@ -62,7 +62,7 @@ button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background
         <textarea id="input" name="code"></textarea>
         <button type="submit">Run</button>
       </form>
-      <pre id="output" class="highlight"><code></code></pre>
+      <pre id="output" class="highlight"><code>--- </code></pre>
       <style>
       #input-form, #output {
         display: inline-block; vertical-align: top;
@@ -80,7 +80,9 @@ button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background
       <script async type="text/javascript" src="kamby.js"></script>
       <script type='text/javascript'>
         input.value = unescape((new URLSearchParams(location.search)).get("code") || "print('Hello, World!')");
-        var Module = { print(...args) { output.innerHTML += args.join(' ') + "\n" } };
+        var Module = { print(...args) {
+          output.innerHTML += args.join(' ').replace(/^(> |... )*/g, '') + "\n"
+        }};
         window.prompt = function() {
           window.prompt = null;
           return (new URLSearchParams(location.search)).get("code");
