@@ -28,7 +28,7 @@ coveragememory: TESTPREFIX := valgrind
 coveragememory: coverage
 
 wasm:
-	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c
+	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c -sSTACK_SIZE=2mb
 
 clean:
 	@rm -f $(BINNAME)
