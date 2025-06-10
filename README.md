@@ -5,13 +5,13 @@ what is happening behind the scenes.
 
 How to build
 ------------
-You can build the binary using the Makefile.
+You can build the binary using Makefile.
 
-    $ make                                  # Build binary
-    $ ./kamby                               # Run REPL
-    $ ./kamby script.ka                     # Run script
-    $ ./kamby --to-c script.ka > script.c   # Transpile to C
-    $ ./kamby --help                        # Show help
+    $ make                                 # Build binary
+    $ ./kamby                              # Run REPL
+    $ ./kamby script.ka                    # Run script
+    $ ./kamby --to-c script.ka > script.c  # Transpile to C
+    $ ./kamby --help                       # Show help
 
 Variables stack
 ---------------
@@ -22,7 +22,7 @@ blocks of code.
     message = 'Bye, bye'        # Edit variable value
     message := 'Hello again! '  # Append new 'message' in stack
     message = ()                # Remove last 'message' in stack
-    message                     # Message has old value 'Bye, bye'
+    print(message)              # Message has old value 'Bye, bye'
     
     /* or */
     
@@ -32,21 +32,21 @@ blocks of code.
     del message
 
 Variables are not unique. You can declare multiple values for the same variable
-name using ":=" and append in the stack. If you want to edit the last
-declaration, just user simple "=" operator. To remove the last variable with
-specific name in stack, use "del varname"
+name using ":=" and append into the stack. If you want to edit the last
+declaration, just use a simple "=" operator. To remove the last variable with
+specific name in stack, use "del varname" or set it to "()".
 
 You can return the value of some stack item using index instead of var name
 
-    num1 = 12                   // Change num1 value or define if inexistent
+    num1 = 12  // Change num1 value or define if inexistent
     num2 = 23
-    $0                          // Return last item value from stack. 23
-    $1                          // Return the second item from stack. 12
+    print $0   // Return last item value from stack. 23
+    print $1   // Return the second item from stack. 12
 
 Atoms like numbers and strings can be named and not saved in the stack.
 This is useful to name a value in a list item.
 
-    list = [fistName: 'John', lastName: 'Doe', age: 25]
+    list = [firstName: 'John', lastName: 'Doe', age: 25]
     print(list.firstName)       // John
     print(list.age)             // 25
     print(list.$1)              // Doe
@@ -59,14 +59,14 @@ when executed.
     // Expressions will be evaluated an return the value
     expression = (1 + 2)
     
-    // Binary operators wraps itself in a expression
-    expression = 1 + 2
+    // Binary operators wraps itself in an expression
+    expression = 1 + 2  # Same as (1 + 2)
     
     /*
     List items are separated by spaces, comma or semicolon.
     Expressions return will be attribuited to item
     */
-    list = ['first item' (1 + 2)]
+    list = ['first item' (1 + 2)]  # Same as ['first item', 5]
     
     // Blocks are lists of expressions that can be called after declaration
     def block {
@@ -74,42 +74,43 @@ when executed.
     }
 
 For source code or blocks, each line is considered an expression. To execute a
-block, just call it as first item of an expression. The arguments are be
-appended to the internal block variables stack.
+block, just call it as first item of an expression with any arguments.
+The arguments are be appended to the internal block variables stack.
+If there's no argument, use an empty expression "()" as argument.
 
     def sum { $0 + $1 }
-    sum 2 3
+    print(sum 2 3)
     
     /* or */
     
     sum := { first + second }
-    sum(first: 2, second: 3)
+    print(sum(first: 2, second: 3))
 
 Context
 -------
-Lists can be sent as a context appended to global variables context.
+Lists can be send as a context appended to global variables context.
 
-    name := 'Global name'       // Declare a new variable in current stack
+    name := 'Global name'  // Declare a new variable in current stack
     
     person = [
       name: 'Local name'
       age: 20
     ]
     
-    name                        // Return 'Global name'
+    print(name)            // Return 'Global name'
     
-    person.name                 // "person" is set as context
-                                // "name" returns list's "name" item
+    print(person.name)     // "person" is set as context
+                           // "name" returns list's "name" item
     
-    person.{                    // Context blocks uses list as context
-      name = 'New name'         // Block of code that change "person" values
+    person.{               // Context blocks uses list as context
+      name = 'New name'    // Block of code that change "person" values
       age = 30
     }
-    person.name                 // Return 'New name'
+    print(person.name)     // Return 'New name'
 
 Conditions
 ----------
-Statements are represented by pairs of condition block and execution block.
+Statements are represented by pairs of condition and execution blocks.
 The last block is the else block.
 
     // Simple condition. Block executed
@@ -142,29 +143,29 @@ While condition block is true, run execution block.
 For each item in list, run execution block.
 
     list := [1, 2, 3] ... { $0 * 2 }
-    list ... { print($0) }             // 2 4 6
+    list ... { print($0) }            // 2 4 6
     /* or */
     each list { print($0) }
 
 For loop is used to iterate a range of numbers or a list.
 
-    for (i := 0; i < 3; i += 1) { print(i) }     // 0 1 2
+    for (i := 0; i < 3; i += 1) { print(i) }  // 0 1 2
 
 I/O
 ---
-Input and output are done using print, input, read, write functions.
+Input and output functions.
 
-    print('Enter your name:')          // Print to console
-    name = (input)                     // Read user input
-    write 'file.txt' name              // Write name to file
-    content = (read 'file.txt')        // Read file content
+    print('Enter your name:')    // Print to console
+    name = (input)               // Read user input
+    write 'file.txt' name        // Write name to file
+    content = (read 'file.txt')  // Read file content
 
 Load scripts and libraries
 --------------------------
 You can load other scripts or dynamic libraries using the "load" function.
 
-    load 'script.ka'                   // Read and evaluate scripts
-    load 'library.so'                  // Load a dynamic library
+    load 'script.ka'   // Read and evaluate scripts
+    load 'library.so'  // Load a dynamic library
 
 Dynamic libraries should have a function named "void ka_extend(Kamby \**ctx)"
 that will be called to extend the context with new functions.
@@ -177,11 +178,6 @@ Operators
     + - * / % += -= *= /= %=
     if each while for ? ...
     print input read write load
-
-Operator "+" will sum two numbers, or concatenate two strings.
-
-    1 + 2                    // 3
-    "Kamby" + "Lang"         // KambyLang
 
 License
 -------
