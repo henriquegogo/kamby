@@ -28,12 +28,9 @@ coveragememory: TESTPREFIX := valgrind
 coveragememory: coverage
 
 wasm:
-	@emcc -O3 -o $(BINNAME).wasm $(BINNAME).c -sSTACK_SIZE=2mb
+	@emcc -O3 -o $(BINNAME).html $(BINNAME).c -sSTACK_SIZE=2mb
 
 clean:
-	@rm -f $(BINNAME)
-	@rm -f $(BINNAME).wasm
-	@rm -f $(TESTNAME)
-	@rm -f $(TESTNAME).out
-	@rm -f $(TESTNAME)lib.so
+	@rm -f $(BINNAME) $(BINNAME).wasm $(BINNAME).html $(BINNAME).js
+	@rm -f $(TESTNAME) $(TESTNAME).out $(TESTNAME)lib.so
 	@rm -f *.gc*
