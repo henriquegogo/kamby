@@ -21,19 +21,19 @@ button, input[type=submit] {
   padding: 10px 20px; font-family: inherit; font-size: 1.0rem; color: #CCC;
   cursor: pointer; background: #444; border: none; box-shadow: 4px 4px 0 #666;
 }
-      button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background: #444; box-shadow: none; }
-      code { padding: 1px 4px; font-size: 0.9rem; font-weight: bold; border: 1px solid #DDD; }
-      .blue { color: #66D !important; }
-      .gray { color: #555; }
-      .inline-block { display: inline-block; }
-      .example { margin: 10px 0; padding: 25px; color: #FFF; background: #333 }
+button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background: #444; box-shadow: none; }
+code { padding: 1px 4px; font-size: 0.9rem; font-weight: bold; border: 1px solid #DDD; }
+.blue { color: #66D !important; }
+.gray { color: #555; }
+.inline-block { display: inline-block; }
+.example { margin: 10px 0; padding: 25px; color: #FFF; background: #333 }
     </style>
-    <script>
+    <script type='text/javascript'>
       function highlight(selector) {
         document.head.insertAdjacentHTML('beforeend', `<style>${selector} span * { color: inherit !important }</style>`);
         document.querySelectorAll(selector).forEach((element) => {
         Object.assign(element.style, {
-          backgroundColor: "#111", color: "#bbb", fontFamily: "monospace", padding: "25px", whiteSpace: "pre-wrap"
+          boxSizing: "border-box", backgroundColor: "#111", color: "#bbb", fontFamily: "monospace", padding: "25px", whiteSpace: "pre-wrap"
         });
         element.innerHTML = element.innerHTML
           .replace(/(get|def|set|del|if|each|while|for|print|input|read|write|load)/g, "<span style =color:#6bf>$1</span>")
@@ -59,7 +59,34 @@ button, input[type=submit] {
       <h1><span class="blue">Kamby Language</span></h1>
       <h3>A small, embeddable and convenient language for who want<br>to use and understand what is happening behind the scenes.</h3>
     </header>
+    
     <main>
+      <!-- REPL -->
+      <form id="input-form" class="inline-block">
+        <textarea id="input" name="code"></textarea>
+        <button type="submit">Run</button>
+      </form>
+      <pre id="output" class="highlight inline-block"></pre>
+      <style>
+      #input-form, #output { vertical-align: top; width: 49%; height: 300px; margin: 0 0 50px; }
+      #input-form textarea {
+        box-sizing: border-box;
+        width: 100%; height: 300px; padding: 20px;
+        font-family: monospace; font-size: 0.8em;
+        background: #333; border: none; color: #FFF;
+      }
+      </style>
+      <script async type="text/javascript" src="kamby.js"></script>
+      <script type='text/javascript'>
+        input.value = unescape((new URLSearchParams(location.search)).get("code") || "print('Hello, World!')");
+        var Module = { print(...args) { output.innerHTML += args.join(' ') + "\n" } };
+        window.prompt = function() {
+          window.prompt = null;
+          return (new URLSearchParams(location.search)).get("code");
+        };
+      </script>
+      <!-- /REPL -->
+
       <h2>How to build</h2>
       <p>You can build the binary using the Makefile.</p>
 
