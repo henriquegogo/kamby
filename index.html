@@ -22,11 +22,7 @@ button, input[type=submit] {
   cursor: pointer; background: #444; border: none; box-shadow: 4px 4px 0 #666;
 }
 button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background: #444; box-shadow: none; }
-code { padding: 1px 4px; font-size: 0.9rem; font-weight: bold; border: 1px solid #DDD; }
-.blue { color: #66D !important; }
-.gray { color: #555; }
-.inline-block { display: inline-block; }
-.example { margin: 10px 0; padding: 25px; color: #FFF; background: #333 }
+.title { color: #6DD !important; }
     </style>
     <script type='text/javascript'>
       function highlight(selector) {
@@ -54,26 +50,31 @@ code { padding: 1px 4px; font-size: 0.9rem; font-weight: bold; border: 1px solid
 
     gtag('config', 'G-151RBSJ3K5');
   </script>
-  <body onload="highlight('.highlight')">
+  <body onload="highlight('pre:has(code)')">
     <header>
-      <h1><span class="blue">Kamby Language</span></h1>
-      <h3>A small, embeddable and convenient language for who want<br>to use and understand what is happening behind the scenes.</h3>
+      <h1><span class="title">Kamby Language</span></h1>
+      <main><h3>A small, embeddable and convenient language for who want to use and understand what is happening behind the scenes.</h3></main>
     </header>
     
     <main>
       <!-- REPL -->
-      <form id="input-form" class="inline-block">
+      <form id="input-form">
         <textarea id="input" name="code"></textarea>
         <button type="submit">Run</button>
       </form>
-      <pre id="output" class="highlight inline-block"></pre>
+      <pre id="output" class="highlight"><code></code></pre>
       <style>
-      #input-form, #output { vertical-align: top; width: 49%; height: 300px; margin: 0 0 50px; }
+      #input-form, #output {
+        display: inline-block; vertical-align: top;
+        width: 49%; height: 300px; margin: 0 0 60px;
+      }
       #input-form textarea {
-        box-sizing: border-box;
         width: 100%; height: 300px; padding: 20px;
-        font-family: monospace; font-size: 0.8em;
-        background: #333; border: none; color: #FFF;
+        font-family: monospace; font-size: 0.8em; color: #FFF;
+        box-sizing: border-box; border: none; background: #333;
+      }
+      @media (max-width: 800px) {
+        #input-form, #output { display: block; width: 100%; }
       }
       </style>
       <script async type="text/javascript" src="kamby.js"></script>
@@ -87,195 +88,149 @@ code { padding: 1px 4px; font-size: 0.9rem; font-weight: bold; border: 1px solid
       </script>
       <!-- /REPL -->
 
-      <h2>How to build</h2>
-      <p>You can build the binary using the Makefile.</p>
-
-<pre class="highlight">
-$ make                                  # Build binary
-$ ./kamby                               # Run REPL
-$ ./kamby script.ka                     # Run script
-$ ./kamby --to-c script.ka              # Transpile to C
-$ ./kamby --help                        # Show help
-</pre>
-
-      <h2>Variables stack</h2>
-      <p>Variables can contain any type of data, including number, strings, lists or even blocks of code.</p>
-
-<pre class="highlight">
-message := 'Hello, World!'  # Define a new variable
-message = 'Bye, bye'        # Edit variable value
-message := 'Hello again! '  # Append new 'message' in stack
-message = ()                # Remove last 'message' in stack
-message                     # Message has old value 'Bye, bye'
+<h2 id="how-to-build">How to build</h2>
+<p>You can build the binary using Makefile.</p>
+<pre><code>$ make                                 # Build binary
+$ ./kamby                              # Run REPL
+$ ./kamby script.ka                    # Run script
+$ ./kamby --to-c script.ka &gt; script.c  # Transpile to C
+$ ./kamby --help                       # Show help</code></pre>
+<h2 id="variables-stack">Variables stack</h2>
+<p>Variables can contain any type of data, including number, strings,
+lists or even blocks of code.</p>
+<pre><code>message := &#39;Hello, World!&#39;  # Define a new variable
+message = &#39;Bye, bye&#39;        # Edit variable value
+message := &#39;Hello again! &#39;  # Append new &#39;message&#39; in stack
+message = ()                # Remove last &#39;message&#39; in stack
+print(message)              # Message has old value &#39;Bye, bye&#39;
 
 /* or */
 
-def message 'Hello, World!'
-set message 'Bye, bye'
-def message 'Hello again! '
-del message
-</pre>
-
-      <p>Variables are not unique. You can declare multiple values for the same variable name using ":=" and append in the stack. If you want to edit the last declaration, just user simple "=" operator. To remove the last variable with specific name in stack, use "del varname"</p>
-      <p>You can return the value of some stack item using index instead of var name</p>
-
-<pre class="highlight">
-num1 = 12           // Change num1 value or define if inexistent
+def message &#39;Hello, World!&#39;
+set message &#39;Bye, bye&#39;
+def message &#39;Hello again! &#39;
+del message</code></pre>
+<p>Variables are not unique. You can declare multiple values for the
+same variable name using “:=” and append into the stack. If you want to
+edit the last declaration, just use a simple “=” operator. To remove the
+last variable with specific name in stack, use “del varname” or set it
+to “()”.</p>
+<p>You can return the value of some stack item using index instead of
+var name</p>
+<pre><code>num1 = 12  // Change num1 value or define if inexistent
 num2 = 23
-$0                  // Return last item value from stack. 23
-$1                  // Return the second item from stack. 12
-</pre>
-
-      <p>Atoms like numbers and strings can be named and not saved in the stack. This is useful to name a value in a list item.</p>
-
-<pre class="highlight">
-list = [fistName: 'John', lastName: 'Doe', age: 25]
+print $0   // Return last item value from stack. 23
+print $1   // Return the second item from stack. 12</code></pre>
+<p>Atoms like numbers and strings can be named and not saved in the
+stack. This is useful to name a value in a list item.</p>
+<pre><code>list = [firstName: &#39;John&#39;, lastName: &#39;Doe&#39;, age: 25]
 print(list.firstName)       // John
 print(list.age)             // 25
-print(list.$1)              // Doe
-</pre>
-
-      <h2>Expressions, lists and blocks</h2>
-
-      <p>Basically those three types of lists has the same structure but act different when executed.</p>
-
-
-<pre class="highlight">
-// Expressions will be evaluated an return the value
+print(list.$1)              // Doe</code></pre>
+<h2 id="expressions-lists-and-blocks">Expressions, lists and blocks</h2>
+<p>Basically those three types of lists has the same structure but act
+different when executed.</p>
+<pre><code>// Expressions will be evaluated an return the value
 expression = (1 + 2)
 
-// Binary operators wraps itself in a expression
-expression = 1 + 2
+// Binary operators wraps itself in an expression
+expression = 1 + 2  # Same as (1 + 2)
 
 /*
-// List items are separated by spaces, comma or semicolon.
-// Expressions return will be attribuited to item
+List items are separated by spaces, comma or semicolon.
+Expressions return will be attribuited to item
 */
-list = ['first item' (1 + 2)]
+list = [&#39;first item&#39; (1 + 2)]  # Same as [&#39;first item&#39;, 5]
 
 // Blocks are lists of expressions that can be called after declaration
 def block {
   print(message)
-}
-</pre>
-
-      <p>For source code or blocks, each line is considered an expression. To execute a block, just call it as first item of an expression. The arguments are be appended to the internal block variables stack.</p>
-
-<pre class="highlight">
-def sum { $0 + $1 }
-sum 2 3
+}</code></pre>
+<p>For source code or blocks, each line is considered an expression. To
+execute a block, just call it as first item of an expression with any
+arguments. The arguments are be appended to the internal block variables
+stack. If there’s no argument, use an empty expression “()” as
+argument.</p>
+<pre><code>def sum { $0 + $1 }
+print(sum 2 3)
 
 /* or */
 
 sum := { first + second }
-sum(first: 2, second: 3)
-</pre>
-
-      <h2>Context</h2>
-
-      <p>Lists can be sent as a context appended to global variables context.</p>
-
-<pre class="highlight">
-name := 'Global name' // Declare a new variable in current stack
+print(sum(first: 2, second: 3))</code></pre>
+<h2 id="context">Context</h2>
+<p>Lists can be send as a context appended to global variables
+context.</p>
+<pre><code>name := &#39;Global name&#39;  // Declare a new variable in current stack
 
 person = [
-  name: 'Local name'
+  name: &#39;Local name&#39;
   age: 20
 ]
 
-name                  // Return 'Global name'
+print(name)            // Return &#39;Global name&#39;
 
-person.name           // "person" is set as context
-                      // "name" returns list's "name" item
+print(person.name)     // &quot;person&quot; is set as context
+                       // &quot;name&quot; returns list&#39;s &quot;name&quot; item
 
-person.{              // Context blocks uses list as context
-  name = 'New name'   // Block of code that change values
+person.{               // Context blocks uses list as context
+  name = &#39;New name&#39;    // Block of code that change &quot;person&quot; values
   age = 30
 }
-person.name           // Return 'New name'
-</pre>
-
-      <h2>Conditions</h2>
-
-      <p>Statements are represented by pairs of condition block and execution block. The last block is the else block.</p>
-
-<pre class="highlight">
-// Simple condition. Block executed
-1 == 1 ? { print('TRUE') }
+print(person.name)     // Return &#39;New name&#39;</code></pre>
+<h2 id="conditions">Conditions</h2>
+<p>Statements are represented by pairs of condition and execution
+blocks. The last block is the else block.</p>
+<pre><code>// Simple condition. Block executed
+1 == 1 ? { print(&#39;TRUE&#39;) }
 /* or */
-if 1 == 1 { print('TRUE') }
+if 1 == 1 { print(&#39;TRUE&#39;) }
 
 // False condition. Else block is executed
-1 != 1 ? { print('FALSE') } { print('ELSE') }
+1 != 1 ? { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
 /* or */
-if 1 != 1 { print('FALSE') } { print('ELSE') }
+if 1 != 1 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
 
 // First is false. Second condition is true. Second block is executed
-1 != 1 ? { print('FALSE') } 2 == 2 { print('TRUE') }
+1 != 1 ? { print(&#39;FALSE&#39;) } 2 == 2 { print(&#39;TRUE&#39;) }
 /* or */
-if 1 != 1 { print('FALSE') } 2 == 2 { print('TRUE') }
+if 1 != 1 { print(&#39;FALSE&#39;) } 2 == 2 { print(&#39;TRUE&#39;) }
 
 // Two false conditions. Else block is executed
-1 != 1 ? { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
+1 != 1 ? { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
 /* or */
-if 1 != 1 { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
-</pre>
-
-      <h2>Loops</h2>
-
-      <p>While condition block is true, run execution block.</p>
-
-<pre class="highlight">
-i := 0
-while ((i += 1) <= 10) { print i }
-</pre>
-
-      <p>For each item in list, run execution block.</p>
-
-<pre class="highlight">
-list := [1, 2, 3] ... { $0 * 2 }
-list ... { print($0) }             // 2 4 6
+if 1 != 1 { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }</code></pre>
+<h2 id="loops">Loops</h2>
+<p>While condition block is true, run execution block.</p>
+<pre><code>i := 0
+while ((i += 1) &lt;= 10) { print i }</code></pre>
+<p>For each item in list, run execution block.</p>
+<pre><code>list := [1, 2, 3] ... { $0 * 2 }
+list ... { print($0) }            // 2 4 6
 /* or */
-each list { print($0) }
-</pre>
-
-      <p>For loop is used to iterate a range of numbers or a list.</p>
-
-<pre class="highlight">
-for (i := 0; i < 3; i += 1) { print(i) }     // 0 1 2
-</pre>
-
-      <h2>I/O</h2>
-
-      <p>Input and output are done using print, input, read, write functions.</p>
-
-<pre class="highlight">
-print('Enter your name:')          // Print to console
-name = (input)                     // Read user input
-write 'file.txt' name              // Write name to file
-content = (read 'file.txt')        // Read file content
-</pre>
-
-      <h2>Load scripts and libraries</h2>
-
-      <p>You can load other scripts or dynamic libraries using the "load" function.</p>
-
-<pre class="highlight">
-load 'script.ka'                   // Read and evaluate scripts
-load 'library.so'                  // Load a dynamic library
-</pre>
-
-<p>Dynamic libraries should have a function named "void ka_extend(Kamby **ctx)" that will be called to extend the context with new functions.</p>
-
-<h2>Operators</h2>
-
-<pre class="highlight">
-get def set $ : := = .
-&& || ! == != > < >= <=
+each list { print($0) }</code></pre>
+<p>For loop is used to iterate a range of numbers or a list.</p>
+<pre><code>for (i := 0; i &lt; 3; i += 1) { print(i) }  // 0 1 2</code></pre>
+<h2 id="io">I/O</h2>
+<p>Input and output functions.</p>
+<pre><code>print(&#39;Enter your name:&#39;)    // Print to console
+name = (input)               // Read user input
+write &#39;file.txt&#39; name        // Write name to file
+content = (read &#39;file.txt&#39;)  // Read file content</code></pre>
+<h2 id="load-scripts-and-libraries">Load scripts and libraries</h2>
+<p>You can load other scripts or dynamic libraries using the “load”
+function.</p>
+<pre><code>load &#39;script.ka&#39;   // Read and evaluate scripts
+load &#39;library.so&#39;  // Load a dynamic library</code></pre>
+<p>Dynamic libraries should have a function named “void ka_extend(Kamby
+**ctx)” that will be called to extend the context with new
+functions.</p>
+<h2 id="operators">Operators</h2>
+<pre><code>get def set $ : := = .
+&amp;&amp; || ! == != &gt; &lt; &gt;= &lt;=
 + - * / % += -= *= /= %=
 if each while for ? ...
-print input read write load
-</pre>
+print input read write load</code></pre>
 
       <h2>Download</h2>
       <a href="https://github.com/henriquegogo/kamby">GitHub Repository</a>
