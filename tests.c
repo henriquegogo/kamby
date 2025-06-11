@@ -536,7 +536,107 @@ void test_comparison() {
   assert(result->type == KA_TRUE); ka_free(result);
 }
 
-void test_general() {
+void test_if() {
+  KaNode *ctx = ka_new(KA_CTX);
+  KaNode *block = ka_block(ka_number(42), NULL);
+  KaNode *elseif_block = ka_block(ka_number(71), NULL);
+  KaNode *else_block = ka_block(ka_number(27), NULL);
+  KaNode *result;
+
+  result = ka_if(&ctx, ka_chain(
+        ka_lt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block), ka_copy(else_block), NULL));
+  assert(*result->number == 42);
+  ka_free(result);
+
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block), ka_copy(else_block), NULL));
+  assert(*result->number == 27);
+  ka_free(result);
+
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block), NULL));
+  assert(result->type == KA_NONE);
+  ka_free(result);
+
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block),
+        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(1), NULL)),
+        ka_copy(elseif_block), ka_copy(else_block), NULL));
+  assert(*result->number == 71);
+  ka_free(result);
+
+  result = ka_if(&ctx, ka_chain(
+        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
+        ka_copy(block),
+        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(3), NULL)),
+        ka_copy(elseif_block), ka_copy(else_block), NULL));
+  assert(*result->number == 27);
+  ka_free(result);
+
+  ka_free(elseif_block), ka_free(else_block), ka_free(block), ka_free(ctx);
+}
+
+void test_while() {
+  KaNode *ctx = ka_init();
+
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
+
+  KaNode *cond = ka_expr(
+      ka_symbol("<"), ka_symbol("i"), ka_number(10), NULL);
+  
+  KaNode *block = ka_block(
+      ka_symbol("="), ka_symbol("i"),
+      ka_expr(ka_symbol("+"), ka_symbol("i"), ka_number(1), NULL), NULL);
+
+  ka_free(ka_while(&ctx, ka_chain(cond, block, NULL)));
+  KaNode *result = ka_get(&ctx, ka_symbol("i"));
+  assert(*result->number == 10);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_for() {
+  KaNode *ctx = ka_new(KA_CTX);
+
+  KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
+  KaNode *block = ka_block(ka_symbol("0"), NULL);
+
+  KaNode *result = ka_for(&ctx, ka_chain(list, block, NULL));
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_range() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_range(NULL, ka_chain(ka_number(1), ka_number(3), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  assert(*result->children->next->next->number == 3);
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
+  result = ka_range(NULL, ka_chain(ka_number(2), ka_number(0), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 2);
+  assert(*result->children->next->number == 1);
+  assert(*result->children->next->next->number == 0);
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_cat() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_cat(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
@@ -547,6 +647,12 @@ void test_general() {
   assert(!strcmp(result->string, "Ten10")); ka_free(result);
   result = ka_cat(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
   assert(!strcmp(result->string, "Float10.12")); ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_merge() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_merge(NULL, ka_chain(
         ka_list(ka_number(1), NULL), ka_list(ka_number(2), NULL), NULL));
@@ -568,6 +674,12 @@ void test_general() {
   assert(*result->children->number == 4);
   assert(*result->children->next->number == 3);
   ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_split() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_split(NULL, ka_chain(ka_string("John Doe"), ka_string(" "), NULL));
   assert(result->type == KA_LIST);
@@ -631,6 +743,16 @@ void test_arithmetic() {
   assert(*result->children->next->number == 3);
   ka_free(result);
 
+  result = ka_mul(NULL, ka_chain(ka_string("John"), ka_number(2), NULL));
+  assert(result->type == KA_NONE); ka_free(result);
+
+  KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
+  KaNode *block = ka_block(ka_symbol("0"), NULL);
+  result = ka_mul(&ctx, ka_chain(list, block, NULL));
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  ka_free(result);
+
   result = ka_div(NULL, ka_chain(ka_string("John Doe"), ka_number(2), NULL));
   assert(result->type == KA_NONE); ka_free(result);
 
@@ -660,106 +782,6 @@ void test_arithmetic() {
   assert(*result->number == 4);
   result = ka_modset(&ctx, ka_chain(result, ka_number(3), NULL));
   assert(*result->number == 1);
-  ka_free(result);
-
-  ka_free(ctx);
-}
-
-void test_if() {
-  KaNode *ctx = ka_new(KA_CTX);
-  KaNode *block = ka_block(ka_number(42), NULL);
-  KaNode *elseif_block = ka_block(ka_number(71), NULL);
-  KaNode *else_block = ka_block(ka_number(27), NULL);
-  KaNode *result;
-
-  result = ka_if(&ctx, ka_chain(
-        ka_lt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
-        ka_copy(block), ka_copy(else_block), NULL));
-  assert(*result->number == 42);
-  ka_free(result);
-
-  result = ka_if(&ctx, ka_chain(
-        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
-        ka_copy(block), ka_copy(else_block), NULL));
-  assert(*result->number == 27);
-  ka_free(result);
-
-  result = ka_if(&ctx, ka_chain(
-        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
-        ka_copy(block), NULL));
-  assert(result->type == KA_NONE);
-  ka_free(result);
-
-  result = ka_if(&ctx, ka_chain(
-        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
-        ka_copy(block),
-        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(1), NULL)),
-        ka_copy(elseif_block), ka_copy(else_block), NULL));
-  assert(*result->number == 71);
-  ka_free(result);
-
-  result = ka_if(&ctx, ka_chain(
-        ka_gt(&ctx, ka_chain(ka_number(1), ka_number(2), NULL)),
-        ka_copy(block),
-        ka_gt(&ctx, ka_chain(ka_number(2), ka_number(3), NULL)),
-        ka_copy(elseif_block), ka_copy(else_block), NULL));
-  assert(*result->number == 27);
-  ka_free(result);
-
-  ka_free(elseif_block), ka_free(else_block), ka_free(block), ka_free(ctx);
-}
-
-void test_range() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
-
-  result = ka_range(NULL, ka_chain(ka_number(1), ka_number(3), NULL));
-  assert(result->type == KA_LIST);
-  assert(*result->children->number == 1);
-  assert(*result->children->next->number == 2);
-  assert(*result->children->next->next->number == 3);
-  assert(!result->children->next->next->next);
-  ka_free(result);
-
-  result = ka_range(NULL, ka_chain(ka_number(2), ka_number(0), NULL));
-  assert(result->type == KA_LIST);
-  assert(*result->children->number == 2);
-  assert(*result->children->next->number == 1);
-  assert(*result->children->next->next->number == 0);
-  assert(!result->children->next->next->next);
-  ka_free(result);
-
-  ka_free(ctx);
-}
-
-void test_while() {
-  KaNode *ctx = ka_init();
-
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(0), NULL)));
-
-  KaNode *cond = ka_expr(
-      ka_symbol("<"), ka_symbol("i"), ka_number(10), NULL);
-  
-  KaNode *block = ka_block(
-      ka_symbol("="), ka_symbol("i"),
-      ka_expr(ka_symbol("+"), ka_symbol("i"), ka_number(1), NULL), NULL);
-
-  ka_free(ka_while(&ctx, ka_chain(cond, block, NULL)));
-  KaNode *result = ka_get(&ctx, ka_symbol("i"));
-  assert(*result->number == 10);
-  ka_free(result);
-
-  ka_free(ctx);
-}
-
-void test_for() {
-  KaNode *ctx = ka_new(KA_CTX);
-
-  KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
-  KaNode *block = ka_block(ka_symbol("0"), NULL);
-
-  KaNode *result = ka_for(&ctx, ka_chain(list, block, NULL));
-  assert(*result->children->number == 1);
-  assert(*result->children->next->number == 2);
   ka_free(result);
 
   ka_free(ctx);
@@ -847,8 +869,8 @@ void test_code() {
     for (0..10) { result += $0 * 2 + ' ' }\n\
     print 'y: ' y\n\
     while ((i -= 1) >= 0) { result += i + ' ' }\n\
-    final := [1, 2, 3] ... { $0 * 3 }\n\
-    final ... { result += $0 + ' ' }\n\
+    final := [1, 2, 3] * { $0 * 3 }\n\
+    final * { result += $0 + ' ' }\n\
     print result\n\
     print 2..6\n\
     print 8..3\n\
@@ -946,7 +968,7 @@ void test_code_lists() {
           del double\n\
           0 = 11\n\
         }\n\
-        items = items...{ $0 * 2 }"));
+        items = items * { $0 * 2 }"));
   result = eval_code(&ctx, "items");
   assert(*result->children->number == 22);
   assert(*result->children->next->number == 4);
@@ -1016,12 +1038,14 @@ int main() {
   test_parser();
   test_logical();
   test_comparison();
-  test_general();
-  test_arithmetic();
   test_if();
-  test_range();
   test_while();
   test_for();
+  test_range();
+  test_cat();
+  test_merge();
+  test_split();
+  test_arithmetic();
   test_input();
   test_read();
   test_write();

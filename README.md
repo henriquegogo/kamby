@@ -145,8 +145,8 @@ While condition block is true, run execution block.
 
 For each item in list, run execution block.
 
-    list := [1, 2, 3] ... { $0 * 2 }
-    list ... { print($0) }            // 2 4 6
+    list := [1, 2, 3] * { $0 * 2 }
+    list * { print($0) }            // 2 4 6
     /* or */
     for list { print($0) }
 
@@ -177,15 +177,18 @@ Overloading
 -----------
 Some operators are overloaded to perform different actions based on argument types.
 
-    1 + 2             // 3
-    "John " + "Doe"   // "John Doe"
-    [1, 2] + [3, 4]   // [1 2 3 4]
-    [1, 2] + 3        // [1 2 3]
-    1 + [2, 3]        // [1 2 3]
+    1 + 2               // 3
+    "John " + "Doe"     // "John Doe"
+    [1, 2] + [3, 4]     // [1 2 3 4]
+    [1, 2] + 3          // [1 2 3]
+    1 + [2, 3]          // [1 2 3]
 
-    4 / 2             // 2
-    "John Doe" / " "  // ["John" "Doe"]
-    "Doe" / ""        // ["D" "o" "e"]
+    4 / 2               // 2
+    "John Doe" / " "    // ["John" "Doe"]
+    "Doe" / ""          // ["D" "o" "e"]
+
+    3 * 2               // 6
+    [1 2] * { $0 * 2 }  // [2 4]
 
 Operators and keywords
 ----------------------
@@ -193,7 +196,7 @@ Operators and keywords
     get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
-    if else while for ? .. ...
+    if else while for ? ..
     print input read write load
     true false
 
