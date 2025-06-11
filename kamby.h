@@ -213,7 +213,8 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 
   KaNode *data = ka_copy(args->next);
   if (!node->key && args->next->key) node->key = strdup(args->next->key);
-  node->type >= KA_LIST ? ka_free((KaNode *)node->value) : free(node->value);
+  if (node->type >= KA_LIST) ka_free((KaNode *)node->value);
+  else if (node->type != KA_FUNC) free(node->value);
   node->value = data->value;
   KaType type = node->type = data->type;
 
