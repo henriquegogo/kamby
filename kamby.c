@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include "kamby.h"
 
+#define VER "0.2.0"
+
 void transpile_tree(KaNode *nodes, int *level) {
   (*level)++;
   for (KaNode *node = nodes; node; node = node->next) {
@@ -43,7 +45,7 @@ void transpile(KaNode **ctx, char *path) {
 void repl(KaNode **ctx) {
   int pos = 0;
   char buf[1<<20] = ""; // 1MB
-  if (isatty(fileno(stdin))) printf("Kamby 0.2.0\n> "), fflush(stdout);
+  if (isatty(fileno(stdin))) printf("Kamby %s\n> ", VER), fflush(stdout);
   while (fgets(buf + strlen(buf), sizeof(buf), stdin)) {
     int level = 0;
     for (int i = 0; i < strlen(buf) && buf[i] != '\0'; i++)
@@ -69,7 +71,7 @@ int main(int argc, char *argv[]) {
     printf("  --version       Display version information\n");
     printf("  -c              Transpile a file to C\n");
   }
-  else if (argc > 1 && !strcmp(argv[1], "--version")) printf("Kamby 0.2.0\n");
+  else if (argc > 1 && !strcmp(argv[1], "--version")) printf("Kamby %s\n", VER);
   else if (argc > 2 && !strcmp(argv[1], "-c")) transpile(&ctx, argv[2]);
   else if (argc > 1) ka_free(ka_load(&ctx, ka_string(argv[1])));
   else repl(&ctx);
