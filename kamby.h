@@ -689,6 +689,7 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_input(KaNode **ctx, KaNode *args) {
+  ka_free(args);
   char input[8192], *end;
   int r = scanf("%[^\n]", input);
   getchar();

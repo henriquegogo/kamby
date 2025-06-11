@@ -772,7 +772,7 @@ void test_for() {
 void test_input() {
   KaNode *ctx = ka_new(KA_CTX);
 
-  KaNode *result = ka_input(&ctx, NULL);
+  KaNode *result = ka_input(&ctx, ka_number(8));
   assert(!strcmp(result->string, "input"));
   ka_free(result);
 
