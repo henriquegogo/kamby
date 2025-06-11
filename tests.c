@@ -854,6 +854,7 @@ void test_code() {
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final ... { result += $0 + ' ' }\n\
     print result\n\
+    print final\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
