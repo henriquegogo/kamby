@@ -685,7 +685,7 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
     else if (arg->type == KA_STRING) printf("%s", arg->string);
     else if (arg->type == KA_LIST) {
       KaNode *copy = ka_copy(arg);
-      ka_print(ctx, copy->children);
+      ka_free(ka_print(ctx, copy->children));
       ka_free((copy->children = NULL, copy));
     }
   }
