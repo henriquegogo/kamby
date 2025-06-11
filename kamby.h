@@ -544,8 +544,8 @@ static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
-    ka_number(*left->number - *right->number);
+  KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
+    ka_number(*left->number - *right->number) : ka_new(KA_NONE);
   ka_free(args);
   return result;
 }
@@ -553,8 +553,8 @@ static inline KaNode *ka_sub(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
-    ka_number(*left->number * *right->number);
+  KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
+    ka_number(*left->number * *right->number) : ka_new(KA_NONE);
   ka_free(args);
   return result;
 }
@@ -577,8 +577,8 @@ static inline KaNode *ka_div(KaNode **ctx, KaNode *args) {
 static inline KaNode *ka_mod(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *left = args, *right = args->next;
-  KaNode *result = left->type != KA_NUMBER || right->type != KA_NUMBER ? NULL :
-    ka_number((int)*left->number % (int)*right->number);
+  KaNode *result = left->type == KA_NUMBER && right->type == KA_NUMBER ?
+    ka_number((int)*left->number % (int)*right->number) : ka_new(KA_NONE);
   ka_free(args);
   return result;
 }
@@ -683,6 +683,11 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
       printf("%lld", (long long)(*arg->number));
     else if (arg->type == KA_NUMBER) printf("%.2Lf", *arg->number);
     else if (arg->type == KA_STRING) printf("%s", arg->string);
+    else if (arg->type == KA_LIST) {
+      KaNode *copy = ka_copy(arg);
+      ka_print(ctx, copy->children);
+      ka_free((copy->children = NULL, copy));
+    }
   }
   printf("\n");
   ka_free(args);
