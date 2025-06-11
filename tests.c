@@ -665,6 +665,28 @@ void test_arithmetic() {
   ka_free(ctx);
 }
 
+void test_range() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_range(NULL, ka_chain(ka_number(1), ka_number(3), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 1);
+  assert(*result->children->next->number == 2);
+  assert(*result->children->next->next->number == 3);
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
+  result = ka_range(NULL, ka_chain(ka_number(2), ka_number(0), NULL));
+  assert(result->type == KA_LIST);
+  assert(*result->children->number == 2);
+  assert(*result->children->next->number == 1);
+  assert(*result->children->next->next->number == 0);
+  assert(!result->children->next->next->next);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_if() {
   KaNode *ctx = ka_new(KA_CTX);
   KaNode *block = ka_block(ka_number(42), NULL);
@@ -854,7 +876,8 @@ void test_code() {
     final := [1, 2, 3] ... { $0 * 3 }\n\
     final ... { result += $0 + ' ' }\n\
     print result\n\
-    print final\n\
+    print 2..6\n\
+    print 8..3\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
@@ -1021,6 +1044,7 @@ int main() {
   test_comparison();
   test_general();
   test_arithmetic();
+  test_range();
   test_if();
   test_while();
   test_each();

@@ -193,7 +193,7 @@ Operators and keywords
     get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
-    if else each while for ? ...
+    if else while for ? .. ...
     print input read write load
     true false
 
