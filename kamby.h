@@ -202,7 +202,7 @@ static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
   data->next = *ctx;
   ka_free(args);
   KaType type = (*ctx = data)->type;
-  return type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(data);
+  return type == KA_FUNC || type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(data);
 }
 
 static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
@@ -220,7 +220,7 @@ static inline KaNode *ka_set(KaNode **ctx, KaNode *args) {
 
   free(data->key), free(data);
   ka_free(args);
-  return type == KA_FUNC ? ka_new(KA_NONE) : ka_copy(node);
+  return type == KA_FUNC || type == KA_BLOCK ? ka_new(KA_NONE) : ka_copy(node);
 }
 
 static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
