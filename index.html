@@ -191,7 +191,7 @@ if 1 == 1 { print(&#39;TRUE&#39;) }
 // False condition. Else block is executed
 1 != 1 ? { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
 /* or */
-if 1 != 1 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
+if 1 != 1 { print(&#39;FALSE&#39;) } else { print(&#39;ELSE&#39;) }
 
 // First is false. Second condition is true. Second block is executed
 1 != 1 ? { print(&#39;FALSE&#39;) } 2 == 2 { print(&#39;TRUE&#39;) }
@@ -199,20 +199,22 @@ if 1 != 1 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
 if 1 != 1 { print(&#39;FALSE&#39;) } 2 == 2 { print(&#39;TRUE&#39;) }
 
 // Two false conditions. Else block is executed
-1 != 1 ? { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }
+1 != 1 ? { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } else { print(&#39;ELSE&#39;) }
 /* or */
 if 1 != 1 { print(&#39;FALSE&#39;) } 2 != 2 { print(&#39;FALSE&#39;) } { print(&#39;ELSE&#39;) }</code></pre>
+<p>The “else” keyword means “true” and it can be omitted. Different from
+other languages, the “:” symbol can’t be used as “else”.</p>
 <h2 id="loops">Loops</h2>
 <p>While condition block is true, run execution block.</p>
 <pre><code>i := 0
 while ((i += 1) &lt;= 10) { print i }</code></pre>
 <p>For each item in list, run execution block.</p>
-<pre><code>list := [1, 2, 3] ... { $0 * 2 }
-list ... { print($0) }            // 2 4 6
+<pre><code>list := [1, 2, 3] * { $0 * 2 }
+list * { print($0) }            // 2 4 6
 /* or */
-each list { print($0) }</code></pre>
-<p>For loop is used to iterate a range of numbers or a list.</p>
-<pre><code>for (i := 0; i &lt; 3; i += 1) { print(i) }  // 0 1 2</code></pre>
+for list { print($0) }</code></pre>
+<p>For with range is used to iterate a range of numbers or a list.</p>
+<pre><code>for 0..2 { print(i) }  // 0 1 2</code></pre>
 <h2 id="io">I/O</h2>
 <p>Input and output functions.</p>
 <pre><code>print(&#39;Enter your name:&#39;)    // Print to console
@@ -230,21 +232,25 @@ functions.</p>
 <h2 id="overloading">Overloading</h2>
 <p>Some operators are overloaded to perform different actions based on
 argument types.</p>
-<pre><code>1 + 2             // 3
-&quot;John &quot; + &quot;Doe&quot;   // &quot;John Doe&quot;
-[1, 2] + [3, 4]   // [1 2 3 4]
-[1, 2] + 3        // [1 2 3]
-1 + [2, 3]        // [1 2 3]
+<pre><code>1 + 2               // 3
+&quot;John &quot; + &quot;Doe&quot;     // &quot;John Doe&quot;
+[1, 2] + [3, 4]     // [1 2 3 4]
+[1, 2] + 3          // [1 2 3]
+1 + [2, 3]          // [1 2 3]
 
-4 / 2             // 2
-&quot;John Doe&quot; / &quot; &quot;  // [&quot;John&quot; &quot;Doe&quot;]
-&quot;Doe&quot; / &quot;&quot;        // [&quot;D&quot; &quot;o&quot; &quot;e&quot;]</code></pre>
+4 / 2               // 2
+&quot;John Doe&quot; / &quot; &quot;    // [&quot;John&quot; &quot;Doe&quot;]
+&quot;Doe&quot; / &quot;&quot;          // [&quot;D&quot; &quot;o&quot; &quot;e&quot;]
+
+3 * 2               // 6
+[1 2] * { $0 * 2 }  // [2 4]</code></pre>
 <h2 id="operators-and-keywords">Operators and keywords</h2>
 <pre><code>get def set del $ : := = .
 &amp;&amp; || ! == != &gt; &lt; &gt;= &lt;=
 + - * / % += -= *= /= %=
-if each while for ? ...
-print input read write load</code></pre>
+if else while for ? ..
+print input read write load
+true false</code></pre>
 
       <h2>Download</h2>
       <a href="https://github.com/henriquegogo/kamby">GitHub Repository</a>
