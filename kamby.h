@@ -31,7 +31,6 @@ typedef struct KaNode {
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
 static inline KaNode *ka_while(KaNode **ctx, KaNode *nodes);
-static inline KaNode *ka_for(KaNode **ctx, KaNode *nodes);
 
 // Constructors
 
@@ -270,7 +269,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
     if (curr->next && curr->next->type == KA_SYMBOL &&
         (last->func == ka_key || last->func == ka_def ||
         last->func == ka_set || last->func == ka_del)) skip = curr->next; 
-    else if (last->func == ka_while || last->func == ka_for) skip = curr->next;
+    else if (last->func == ka_while) skip = curr->next;
     else if (curr->next && last->func == ka_bind) skip = curr->next->next;
   }
 
@@ -614,19 +613,7 @@ static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
 }
 
-// Lists operators
-
-static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
-  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
-  KaNode *result = ka_new(KA_LIST), *last = NULL;
-  int start = *args->number, j = *args->next->number;
-  for (int i = start; (start <= j ? i <= j : i >= j); (start <= j ? i++ : i--))
-    last = last ? last->next = ka_number(i) : (result->children = ka_number(i));
-  ka_free(args);
-  return result;
-}
-
-// Conditional and loops
+// Conditional, lists and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
@@ -639,7 +626,18 @@ static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   return result;
 }
 
-static inline KaNode *ka_each(KaNode **ctx, KaNode *args) {
+static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *result = ka_new(KA_LIST), *last = NULL;
+  int start = *args->number, j = *args->next->number;
+  for (int i = start; (start <= j ? i <= j : i >= j); (start <= j ? i++ : i--))
+    last = last ? last->next = ka_number(i) : (result->children = ka_number(i));
+  ka_free(args);
+  return result;
+}
+
+
+static inline KaNode *ka_for(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *result = ka_new(KA_LIST);
   KaNode *last = result->children = ka_new(KA_NONE), *children = last;
@@ -664,27 +662,6 @@ static inline KaNode *ka_while(KaNode **ctx, KaNode *args) {
   while ((cond_ret = ka_eval(ctx, cond->children))->type >= KA_TRUE)
     ka_free(cond_ret), ka_free(ka_eval(ctx, block));
   ka_free(cond_ret), ka_free(cond), ka_free(args);
-  return ka_new(KA_NONE);
-}
-
-static inline KaNode *ka_for(KaNode **ctx, KaNode *args) {
-  if (!args || !args->next || !args->children || !args->children->next ||
-      !args->children->next->next) return ka_free(args), ka_new(KA_NONE);
-  KaNode *init = ka_copy(args->children), *cond = ka_copy(args->children->next),
-         *step = ka_copy(args->children->next->next), *cond_ret,
-         *block = args->next->type == KA_BLOCK ? args->next->children : NULL;
-
-  KaNode *blk_ctx = ka_chain(ka_new(KA_CTX), *ctx, NULL);
-  ka_free(ka_eval(&blk_ctx, init));
-
-  while ((cond_ret = ka_eval(&blk_ctx, cond))->type >= KA_TRUE) {
-    ka_free(ka_eval(&blk_ctx, block)), 
-    ka_free(ka_eval(&blk_ctx, step));
-    ka_free(cond_ret);
-  }
-
-  ka_free(init), ka_free(cond), ka_free(step), ka_free(cond_ret);
-  ka_free(blk_ctx), ka_free(args);
   return ka_new(KA_NONE);
 }
 
@@ -801,11 +778,10 @@ static inline KaNode *ka_init() {
     { .key = (char *)"..", .value = ka_func(ka_range) },
     // Conditional and loops
     { .key = (char *)"?",     .value = ka_func(ka_if)    },
-    { .key = (char *)"...",   .value = ka_func(ka_each)  },
+    { .key = (char *)"...",   .value = ka_func(ka_for)   },
     { .key = (char *)"if",    .value = ka_func(ka_if)    },
-    { .key = (char *)"each",  .value = ka_func(ka_each)  },
-    { .key = (char *)"while", .value = ka_func(ka_while) },
     { .key = (char *)"for",   .value = ka_func(ka_for)   },
+    { .key = (char *)"while", .value = ka_func(ka_while) },
     // Default values
     { .key = (char *)"true",  .value = ka_true()  },
     { .key = (char *)"false", .value = ka_false() },

@@ -148,11 +148,11 @@ For each item in list, run execution block.
     list := [1, 2, 3] ... { $0 * 2 }
     list ... { print($0) }            // 2 4 6
     /* or */
-    each list { print($0) }
+    for list { print($0) }
 
-For loop is used to iterate a range of numbers or a list.
+For with range is used to iterate a range of numbers or a list.
 
-    for (i := 0; i < 3; i += 1) { print(i) }  // 0 1 2
+    for 0..2 { print(i) }  // 0 1 2
 
 I/O
 ---
