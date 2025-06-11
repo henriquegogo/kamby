@@ -679,6 +679,7 @@ static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
     else if (arg->type == KA_LIST) {
       KaNode *copy = ka_copy(arg);
       ka_free(ka_print(ctx, copy->children));
+      printf("\x1B[A");
       ka_free((copy->children = NULL, copy));
     }
   }
