@@ -32,7 +32,7 @@ button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background
           boxSizing: "border-box", backgroundColor: "#111", color: "#bbb", fontFamily: "monospace", padding: "25px", whiteSpace: "pre-wrap"
         });
         element.innerHTML = element.innerHTML
-          .replace(/(get|def|set|del|if|each|while|for|print|input|read|write|load)/g, "<span style =color:#6bf>$1</span>")
+          .replace(/(get|def|set|del|if|else|while|for|print|input|read|write|load)/g, "<span style =color:#6bf>$1</span>")
           .replace(/(\/\*.+\*\/|\/\/ .+|# .+)/g, "<span style =color:#666>$1</span>")      // Comments
           .replace(/(".*?"|'.*?')/g, "<span style =color:#bd0>$1</span>")                  // Strings
           .replace(/([\s\(\[\$])(\d+)/g, "$1<span style =color:#d86>$2</span>")            // Numbers
