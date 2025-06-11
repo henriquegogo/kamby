@@ -336,7 +336,8 @@ static inline KaNode *ka_parser(char *text, int *pos) {
           *value++ = *str;
       *value = '\0';
     } else if (isdigit(c)) {
-      while (isdigit(text[*pos + 1]) || text[*pos + 1] == '.') (*pos)++;
+      while (isdigit(text[*pos + 1]) ||
+          (text[*pos + 1] == '.' && isdigit(text[*pos + 2]))) (*pos)++;
       last = last->next = ka_number(strtold(text + start, NULL));
     } else if (isgraph(c)) {
       while (ispunct(c) && !strchr("_", c) ?
@@ -613,6 +614,18 @@ static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
 }
 
+// Lists operators
+
+static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *result = ka_new(KA_LIST), *last = NULL;
+  int start = *args->number, j = *args->next->number;
+  for (int i = start; (start <= j ? i <= j : i >= j); (start <= j ? i++ : i--))
+    last = last ? last->next = ka_number(i) : (result->children = ka_number(i));
+  ka_free(args);
+  return result;
+}
+
 // Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
@@ -784,6 +797,8 @@ static inline KaNode *ka_init() {
     { .key = (char *)"*=", .value = ka_func(ka_mulset) },
     { .key = (char *)"/=", .value = ka_func(ka_divset) },
     { .key = (char *)"%=", .value = ka_func(ka_modset) },
+    // Lists operators
+    { .key = (char *)"..", .value = ka_func(ka_range) },
     // Conditional and loops
     { .key = (char *)"?",     .value = ka_func(ka_if)    },
     { .key = (char *)"...",   .value = ka_func(ka_each)  },
