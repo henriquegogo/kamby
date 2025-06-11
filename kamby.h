@@ -791,12 +791,16 @@ static inline KaNode *ka_init() {
     { .key = (char *)"each",  .value = ka_func(ka_each)  },
     { .key = (char *)"while", .value = ka_func(ka_while) },
     { .key = (char *)"for",   .value = ka_func(ka_for)   },
+    // Default values
+    { .key = (char *)"true",  .value = ka_true()  },
+    { .key = (char *)"false", .value = ka_false() },
+    { .key = (char *)"else",  .value = ka_true()  },
     // I/O
     { .key = (char *)"print", .value = ka_func(ka_print) },
     { .key = (char *)"input", .value = ka_func(ka_input) },
     { .key = (char *)"read",  .value = ka_func(ka_read)  },
     { .key = (char *)"write", .value = ka_func(ka_write) },
-    { .key = (char *)"load",  .value = ka_func(ka_load)  }
+    { .key = (char *)"load",  .value = ka_func(ka_load)  },
   };
 
   KaNode *init = ka_new(KA_CTX), *ctx = ka_new(KA_CTX);

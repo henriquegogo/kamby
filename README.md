@@ -121,7 +121,7 @@ The last block is the else block.
     // False condition. Else block is executed
     1 != 1 ? { print('FALSE') } { print('ELSE') }
     /* or */
-    if 1 != 1 { print('FALSE') } { print('ELSE') }
+    if 1 != 1 { print('FALSE') } else { print('ELSE') }
     
     // First is false. Second condition is true. Second block is executed
     1 != 1 ? { print('FALSE') } 2 == 2 { print('TRUE') }
@@ -129,9 +129,12 @@ The last block is the else block.
     if 1 != 1 { print('FALSE') } 2 == 2 { print('TRUE') }
     
     // Two false conditions. Else block is executed
-    1 != 1 ? { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
+    1 != 1 ? { print('FALSE') } 2 != 2 { print('FALSE') } else { print('ELSE') }
     /* or */
     if 1 != 1 { print('FALSE') } 2 != 2 { print('FALSE') } { print('ELSE') }
+
+The "else" keyword means "true" and it can be omitted.
+Different from other languages, the ":" symbol can't be used as "else".
 
 Loops
 -----
@@ -190,8 +193,9 @@ Operators and keywords
     get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
-    if each while for ? ...
+    if else each while for ? ...
     print input read write load
+    true false
 
 License
 -------
