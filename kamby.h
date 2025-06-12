@@ -65,7 +65,6 @@ static inline KaNode *ka_chain(KaNode *args, ...) {
   return args;
 }
 
-
 static inline KaNode *ka_number(long double value) {
   KaNode *node = ka_new(KA_NUMBER);
   node->number = (long double *)calloc(1, sizeof(long double));
@@ -187,6 +186,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *data = ka_copy(args->next);
   free(data->key);
   data->key = strdup(args->symbol);
@@ -302,12 +302,10 @@ static inline KaNode *ka_parser(char *text, int *pos) {
 
   // If at the initial position, use a negative position as a flag to wrap
   // sentences, parsing each one as a separate expression node.
-  if (*pos == 0 && --(*pos)) {
-    while (*pos < length) {
-      KaNode *children = ka_parser(text, pos);
-      if (children) (last = last->next = ka_new(KA_EXPR))->children = children;
-      if (strchr(")]}", text[*pos - 1])) length = 0;
-    }
+  if (*pos == 0 && --(*pos)) while (*pos < length) {
+    KaNode *children = ka_parser(text, pos);
+    if (children) (last = last->next = ka_new(KA_EXPR))->children = children;
+    if (strchr(")]}", text[*pos - 1])) length = 0;
   }
 
   // Parse each character, recognize types and create nodes.
