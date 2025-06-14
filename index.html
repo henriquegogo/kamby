@@ -232,18 +232,19 @@ functions.</p>
 <h2 id="overloading">Overloading</h2>
 <p>Some operators are overloaded to perform different actions based on
 argument types.</p>
-<pre><code>1 + 2               // 3
-&quot;John &quot; + &quot;Doe&quot;     // &quot;John Doe&quot;
-[1, 2] + [3, 4]     // [1 2 3 4]
-[1, 2] + 3          // [1 2 3]
-1 + [2, 3]          // [1 2 3]
+<pre><code>1 + 2                // 3
+&quot;John &quot; + &quot;Doe&quot;      // &quot;John Doe&quot;
+[1, 2] + [3, 4]      // [1 2 3 4]
+[1, 2] + 3           // [1 2 3]
+1 + [2, 3]           // [1 2 3]
 
-4 / 2               // 2
-&quot;John Doe&quot; / &quot; &quot;    // [&quot;John&quot; &quot;Doe&quot;]
-&quot;Doe&quot; / &quot;&quot;          // [&quot;D&quot; &quot;o&quot; &quot;e&quot;]
+4 / 2                // 2
+&quot;John Doe&quot; / &quot; &quot;     // [&quot;John&quot; &quot;Doe&quot;]
+&quot;Doe&quot; / &quot;&quot;           // [&quot;D&quot; &quot;o&quot; &quot;e&quot;]
 
-3 * 2               // 6
-[1 2] * { $0 * 2 }  // [2 4]</code></pre>
+3 * 2                // 6
+[1 2] * { $0 * 2 }   // [2 4]
+[&quot;a&quot; &quot;b&quot; &quot;c&quot;] * &quot;-&quot;  // &quot;a-b-c&quot;</code></pre>
 <h2 id="operators-and-keywords">Operators and keywords</h2>
 <pre><code>get def set del $ : := = .
 &amp;&amp; || ! == != &gt; &lt; &gt;= &lt;=
