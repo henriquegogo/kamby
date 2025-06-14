@@ -572,6 +572,27 @@ static inline KaNode *ka_split(KaNode **ctx, KaNode *args) {
   return result;
 }
 
+static inline KaNode *ka_join(KaNode **ctx, KaNode *args) {
+  if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
+  KaNode *left = args, *right = args->next, *result;
+  KaType ltype = left->type, rtype = right->type;
+  if (ltype == KA_LIST && rtype == KA_STRING && left->children) {
+    size_t size = sizeof(char);
+    char *str = (char *)calloc(1, size);
+    for (KaNode *node = left->children; node; node = node->next) {
+      if (node->type != KA_STRING) continue;
+      size += strlen(node->string) + strlen(right->string);
+      str = (char *)realloc(str, size);
+      strcat(str, node->string);
+      if (node->next) strcat(str, right->string);
+    }
+    result = ka_string(str); // Implement the list to string join
+    free(str);
+  } else result = ka_new(KA_NONE);
+  ka_free(args);
+  return result;
+}
+
 // Arithmetic operators
 
 static inline KaNode *ka_add(KaNode **ctx, KaNode *args) {
@@ -608,7 +629,8 @@ static inline KaNode *ka_mul(KaNode **ctx, KaNode *args) {
     ka_free(args);
     return result;
   }
-  else if (ltype == KA_LIST || rtype == KA_BLOCK) return ka_for(ctx, args);
+  else if (ltype == KA_LIST && rtype == KA_BLOCK) return ka_for(ctx, args);
+  else if (ltype == KA_LIST && rtype == KA_STRING) return ka_join(ctx, args);
   return ka_free(args), ka_new(KA_NONE);
 }
 

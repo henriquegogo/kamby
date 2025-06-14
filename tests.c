@@ -699,6 +699,28 @@ void test_split() {
   ka_free(ctx);
 }
 
+void test_join() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_join(NULL, ka_chain(
+        ka_list(ka_string("John"), ka_string("Doe"), NULL),
+        ka_string("-"), NULL));
+  assert(!strcmp(result->string, "John-Doe"));
+  ka_free(result);
+
+  result = ka_join(NULL, ka_chain(
+        ka_list(ka_string("John"), ka_number(12), ka_string("Doe"), NULL),
+        ka_string("-"), NULL));
+  assert(!strcmp(result->string, "John-Doe"));
+  ka_free(result);
+
+  result = ka_join(NULL, ka_chain(ka_string("John"), ka_string("Doe"), NULL));
+  assert(result->type == KA_NONE);
+  ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_arithmetic() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
@@ -751,6 +773,13 @@ void test_arithmetic() {
   result = ka_mul(&ctx, ka_chain(list, block, NULL));
   assert(*result->children->number == 1);
   assert(*result->children->next->number == 2);
+  ka_free(result);
+
+  result = ka_mul(NULL, ka_chain(
+        ka_list(ka_string("John"), ka_string("Doe"), NULL),
+        ka_string("-"), NULL));
+  assert(result->type == KA_STRING);
+  assert(!strcmp(result->string, "John-Doe"));
   ka_free(result);
 
   result = ka_div(NULL, ka_chain(ka_string("John Doe"), ka_number(2), NULL));
@@ -874,6 +903,8 @@ void test_code() {
     print result\n\
     print 2..6\n\
     print 8..3\n\
+    nameslist = 'John Doe' / ' '\n\
+    print(nameslist * '-')\n\
   ";
 
   KaNode *expr = ka_parser(code, &pos);
@@ -1045,6 +1076,7 @@ int main() {
   test_cat();
   test_merge();
   test_split();
+  test_join();
   test_arithmetic();
   test_input();
   test_read();
