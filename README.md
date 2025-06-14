@@ -177,18 +177,19 @@ Overloading
 -----------
 Some operators are overloaded to perform different actions based on argument types.
 
-    1 + 2               // 3
-    "John " + "Doe"     // "John Doe"
-    [1, 2] + [3, 4]     // [1 2 3 4]
-    [1, 2] + 3          // [1 2 3]
-    1 + [2, 3]          // [1 2 3]
+    1 + 2                // 3
+    "John " + "Doe"      // "John Doe"
+    [1, 2] + [3, 4]      // [1 2 3 4]
+    [1, 2] + 3           // [1 2 3]
+    1 + [2, 3]           // [1 2 3]
 
-    4 / 2               // 2
-    "John Doe" / " "    // ["John" "Doe"]
-    "Doe" / ""          // ["D" "o" "e"]
+    4 / 2                // 2
+    "John Doe" / " "     // ["John" "Doe"]
+    "Doe" / ""           // ["D" "o" "e"]
 
-    3 * 2               // 6
-    [1 2] * { $0 * 2 }  // [2 4]
+    3 * 2                // 6
+    [1 2] * { $0 * 2 }   // [2 4]
+    ["a" "b" "c"] * "-"  // "a-b-c"
 
 Operators and keywords
 ----------------------
