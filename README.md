@@ -194,12 +194,13 @@ Some operators are overloaded to perform different actions based on argument typ
 Operators and keywords
 ----------------------
 
+    true false
     get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
     if else while for ? ..
     print input read write load
-    true false
+    len
 
 License
 -------

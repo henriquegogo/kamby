@@ -678,6 +678,18 @@ static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
 }
 
+// String and list functions
+
+static inline KaNode *ka_len(KaNode **ctx, KaNode *args) {
+  if (!args) return ka_new(KA_NONE);
+  int length = 0;
+  if (args->type == KA_STRING) length = strlen(args->string);
+  else if (args->type == KA_LIST)
+    for (KaNode *curr = args->children; curr; curr = curr->next) length++;
+  ka_free(args);
+  return ka_number(length);
+}
+
 // I/O functions
 
 static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
@@ -766,6 +778,10 @@ static inline KaNode *ka_init() {
     { .key = (char *)"def", .value = ka_func(ka_def)  },
     { .key = (char *)"set", .value = ka_func(ka_set)  },
     { .key = (char *)"del", .value = ka_func(ka_del)  },
+    // Default values
+    { .key = (char *)"true",  .value = ka_true()  },
+    { .key = (char *)"false", .value = ka_false() },
+    { .key = (char *)"else",  .value = ka_true()  },
     // Logical operators
     { .key = (char *)"&&", .value = ka_func(ka_and) },
     { .key = (char *)"||", .value = ka_func(ka_or)  },
@@ -794,10 +810,8 @@ static inline KaNode *ka_init() {
     { .key = (char *)"*=", .value = ka_func(ka_mulset) },
     { .key = (char *)"/=", .value = ka_func(ka_divset) },
     { .key = (char *)"%=", .value = ka_func(ka_modset) },
-    // Default values
-    { .key = (char *)"true",  .value = ka_true()  },
-    { .key = (char *)"false", .value = ka_false() },
-    { .key = (char *)"else",  .value = ka_true()  },
+    // String and list functions
+    { .key = (char *)"len", .value = ka_func(ka_len) },
     // I/O
     { .key = (char *)"print", .value = ka_func(ka_print) },
     { .key = (char *)"input", .value = ka_func(ka_input) },
