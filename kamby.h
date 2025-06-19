@@ -109,46 +109,36 @@ static inline KaNode *ka_copy(KaNode *node) {
   return copy;
 }
 
+static inline KaNode *ka_children(KaNode *node, va_list vargs, KaNode *args) {
+  for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
+  for (KaNode *curr = args, **child = &node->children; curr; curr = curr->next)
+    child = &(*child = ka_copy(curr))->next;
+  ka_free(args);
+  return node;
+}
+
 static inline KaNode *ka_list(KaNode *args, ...) {
   va_list vargs;
   va_start(vargs, args);
-  for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
+  KaNode *result = ka_children(ka_new(KA_LIST), vargs, args);
   va_end(vargs);
-
-  KaNode *node = ka_new(KA_LIST), **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next) 
-    child = &(*child = ka_copy(curr))->next;
-
-  ka_free(args);
-  return node;
+  return result;
 }
 
 static inline KaNode *ka_expr(KaNode *args, ...) {
   va_list vargs;
   va_start(vargs, args);
-  for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
+  KaNode *result = ka_children(ka_new(KA_EXPR), vargs, args);
   va_end(vargs);
-
-  KaNode *node = ka_new(KA_EXPR), **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next)
-    child = &(*child = ka_copy(curr))->next;
-
-  ka_free(args);
-  return node;
+  return result;
 }
 
 static inline KaNode *ka_block(KaNode *args, ...) {
   va_list vargs;
   va_start(vargs, args);
-  for (KaNode *curr = args; curr; curr = curr->next = va_arg(vargs, KaNode *));
+  KaNode *result = ka_children(ka_new(KA_BLOCK), vargs, args);
   va_end(vargs);
-
-  KaNode *node = ka_new(KA_BLOCK), **child = &node->children;
-  for (KaNode *curr = args; curr; curr = curr->next)
-    child = &(*child = ka_copy(curr))->next;
-
-  ka_free(args);
-  return node;
+  return result;
 }
 
 // Variables

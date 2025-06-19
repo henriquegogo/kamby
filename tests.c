@@ -144,6 +144,24 @@ void test_copy() {
   ka_free(list);
 }
 
+void test_children() {
+  KaNode *list = ka_list(ka_number(1), ka_number(2), NULL);
+  KaNode *expr = ka_expr(ka_number(1), ka_number(2), NULL);
+  KaNode *block = ka_block(ka_number(1), ka_number(2), NULL);
+
+  assert(list->type == KA_LIST);
+  assert(*list->children->number == 1);
+  assert(*list->children->next->number == 2);
+  assert(expr->type == KA_EXPR);
+  assert(*expr->children->number == 1);
+  assert(*expr->children->next->number == 2);
+  assert(block->type == KA_BLOCK);
+  assert(*block->children->number == 1);
+  assert(*block->children->next->number == 2);
+
+  ka_free(block), ka_free(expr), ka_free(list);
+}
+
 void test_list() {
   KaNode *node = ka_list(ka_number(42), ka_string("Hello"), NULL);
 
@@ -417,7 +435,7 @@ void test_parser() {
   assert(!strcmp(result->next->next->children->symbol, "name"));
   ka_free(result);
 
-  result = ka_parser("42 'John Doe'; name (22) [1 2] {71; 72}", (pos = 0, &pos));
+  result = ka_parser("42 'John Doe';name (22) [1 2] {71; 72}", (pos = 0, &pos));
   KaNode *number = result->children,
          *string = result->children->next,
          *symbol = result->next->children,
@@ -432,7 +450,7 @@ void test_parser() {
   assert(*list->children->children->number == 1);
   assert(*list->children->children->next->number == 2);
   assert(block->type == KA_BLOCK && *block->children->children->number == 71);
-  assert(block->type == KA_BLOCK && *block->children->next->children->number == 72);
+  assert(*block->children->next->children->number == 72);
   ka_free(result);
 
   result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
@@ -681,9 +699,9 @@ void test_merge() {
 void test_split() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
-  result = ka_split(NULL, ka_chain(ka_string("John Doe"), ka_string(" "), NULL));
+  result = ka_split(NULL, ka_chain(ka_string("J. Doe"), ka_string(" "), NULL));
   assert(result->type == KA_LIST);
-  assert(!strcmp(result->children->string, "John"));
+  assert(!strcmp(result->children->string, "J."));
   assert(!strcmp(result->children->next->string, "Doe"));
   assert(!result->children->next->next);
   ka_free(result);
@@ -1055,6 +1073,7 @@ int main() {
   test_symbol();
   test_func();
   test_copy();
+  test_children();
   test_list();
   test_expr();
   test_block();
