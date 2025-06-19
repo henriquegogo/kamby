@@ -834,6 +834,25 @@ void test_arithmetic() {
   ka_free(ctx);
 }
 
+void test_len() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_len(&ctx, ka_string(""));
+  assert(*result->number == 0), ka_free(result);
+  result = ka_len(&ctx, ka_string("John Doe"));
+  assert(*result->number == 8), ka_free(result);
+  result = ka_len(&ctx, ka_list(NULL));
+  assert(*result->number == 0), ka_free(result);
+  result = ka_len(&ctx, ka_list(ka_number(1), ka_string("John"), NULL));
+  assert(*result->number == 2), ka_free(result);
+  result = ka_len(&ctx, ka_block(ka_number(1), ka_string("John"), NULL));
+  assert(*result->number == 0), ka_free(result);
+  result = ka_len(&ctx, ka_number(1));
+  assert(*result->number == 0), ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_input() {
   KaNode *ctx = ka_new(KA_CTX);
 
@@ -1097,6 +1116,7 @@ int main() {
   test_split();
   test_join();
   test_arithmetic();
+  test_len();
   test_input();
   test_read();
   test_write();
