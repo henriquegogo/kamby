@@ -240,8 +240,7 @@ void test_bind() {
   assert(*result->number == 2);
   ka_free(result);
 
-  ka_free(list);
-  ka_free(ctx);
+  ka_free(list), ka_free(ctx);
 }
 
 void test_get() {
@@ -278,8 +277,7 @@ void test_key() {
   assert(*result->number == 2);
   assert(!strcmp(result->key, "two"));
 
-  ka_free(result);
-  ka_free(ctx);
+  ka_free(result), ka_free(ctx);
 }
 
 void test_def() {
@@ -297,8 +295,7 @@ void test_def() {
   assert(!strcmp(ctx->next->next->string, "John"));
   assert(result->type == KA_NONE && ctx->next->next->next->type == KA_BLOCK);
 
-  ka_free(result);
-  ka_free(ctx);
+  ka_free(result), ka_free(ctx);
 }
 
 void test_set() {
@@ -317,8 +314,7 @@ void test_set() {
   assert(!strcmp(ctx->next->string, "Foo"));
   assert(result->type == KA_NONE && ctx->next->next->type == KA_BLOCK);
 
-  ka_free(result);
-  ka_free(ctx);
+  ka_free(result), ka_free(ctx);
 }
 
 void test_del() {
@@ -838,17 +834,17 @@ void test_length() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_length(&ctx, ka_string(""));
-  assert(*result->number == 0), ka_free(result);
+  assert(*result->number == 0); ka_free(result);
   result = ka_length(&ctx, ka_string("John Doe"));
-  assert(*result->number == 8), ka_free(result);
+  assert(*result->number == 8); ka_free(result);
   result = ka_length(&ctx, ka_list(NULL));
-  assert(*result->number == 0), ka_free(result);
+  assert(*result->number == 0); ka_free(result);
   result = ka_length(&ctx, ka_list(ka_number(1), ka_string("John"), NULL));
-  assert(*result->number == 2), ka_free(result);
+  assert(*result->number == 2); ka_free(result);
   result = ka_length(&ctx, ka_block(ka_number(1), ka_string("John"), NULL));
-  assert(*result->number == 0), ka_free(result);
+  assert(*result->number == 0); ka_free(result);
   result = ka_length(&ctx, ka_number(1));
-  assert(*result->number == 0), ka_free(result);
+  assert(*result->number == 0); ka_free(result);
 
   ka_free(ctx);
 }
@@ -960,8 +956,7 @@ void test_code() {
   ka_free(ka_eval(&ctx, expr));
 //  print_chain(ctx);
   
-  ka_free(expr);
-  ka_free(ctx);
+  ka_free(expr), ka_free(ctx);
 }
 
 KaNode *eval_code(KaNode **ctx, const char *code) {
