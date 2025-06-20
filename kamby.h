@@ -596,11 +596,19 @@ static inline KaNode *ka_length(KaNode **ctx, KaNode *args) {
 }
 
 static inline KaNode *ka_upper(KaNode **ctx, KaNode *args) {
-  return ka_free(args), ka_new(KA_NONE);
+  if (!args || args->type != KA_STRING) return ka_free(args), ka_new(KA_NONE);
+  KaNode *result = ka_copy(args);
+  for (char *c = result->string; *c; c++) *c = toupper(*c);
+  ka_free(args);
+  return result;
 }
 
 static inline KaNode *ka_lower(KaNode **ctx, KaNode *args) {
-  return ka_free(args), ka_new(KA_NONE);
+  if (!args || args->type != KA_STRING) return ka_free(args), ka_new(KA_NONE);
+  KaNode *result = ka_copy(args);
+  for (char *c = result->string; *c; c++) *c = tolower(*c);
+  ka_free(args);
+  return result;
 }
 
 // Arithmetic operators
