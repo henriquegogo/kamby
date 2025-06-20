@@ -928,43 +928,20 @@ void test_init() {
   ka_free(ctx);
 }
 
-void test_code() {
-  KaNode *ctx = ka_init();
-  int pos = 0;
-
-  char *code = "\
-    i := 1\n\
-    [1, 2, 3, 4].{ print 'Unamed list item: '$1 }\n\
-    i += 3\n\
-    print sumnum = 1+2+i\n\
-    print 'Last result: ' sumnum\n\
-    result = ''\n\
-    for (0..10) { result += $0 * 2 + ' ' }\n\
-    print 'y: ' y\n\
-    while ((i -= 1) >= 0) { result += i + ' ' }\n\
-    final := [1, 2, 3] * { $0 * 3 }\n\
-    final * { result += $0 + ' ' }\n\
-    print result\n\
-    print 2..6\n\
-    print 8..3\n\
-    nameslist = 'John Doe' / ' '\n\
-    print(nameslist * '-')\n\
-  ";
-
-  KaNode *expr = ka_parser(code, &pos);
-//  print_chain(expr);
-  ka_free(ka_eval(&ctx, expr));
-//  print_chain(ctx);
-  
-  ka_free(expr), ka_free(ctx);
-}
-
 KaNode *eval_code(KaNode **ctx, const char *code) {
   int pos = 0;
   KaNode *expr = ka_parser((char *)code, &pos);
   KaNode *result = ka_eval(ctx, expr);
   ka_free(expr);
   return result;
+}
+
+void test_code_print() {
+  KaNode *ctx = ka_init(), *expr, *result;
+
+  ka_free(eval_code(&ctx, "print [123, '... testing']"));
+
+  ka_free(ctx);
 }
 
 void test_code_variables() {
@@ -1129,12 +1106,12 @@ int main() {
   test_write();
   test_load();
   test_init();
-  test_code();
+  test_code_print();
   test_code_variables();
   test_code_lists();
   test_code_blocks();
   test_code_if();
 
-  printf("\nAll tests passed!\n");
+  printf("All tests passed!\n");
   return 0;
 }
