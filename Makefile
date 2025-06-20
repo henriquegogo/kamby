@@ -11,7 +11,8 @@ test:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
 	@echo "input" | $(TESTPREFIX) ./$(TESTNAME) 2>&1 | \
-		grep --color=never -E "^(==.*(total heap usage|ERROR SUMMARY)|[^=]|^$$)"
+		grep --color=never -E "^(==.*(total heap usage|ERROR SUMMARY)|[^=]|^$$)" |\
+		sed 's/==[^=]*==[^:]*: //'
 	@$(TESTPOST)
 	@$(MAKE) --no-print-directory clean
 
