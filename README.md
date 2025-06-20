@@ -154,6 +154,15 @@ For with range is used to iterate a range of numbers or a list.
 
     for 0..2 { print(i) }  // 0 1 2
 
+String and list functions
+-------------------------
+
+    split "Hello World!" " "      // ["Hello", "World!"]
+    join ['Hello', 'World!'] ' '  // "Hello World!"
+    length "John Doe"             // 8
+    upper "John Doe"              // "JOHN DOE"
+    lower "John Doe"              // "john doe"
+
 I/O
 ---
 Input and output functions.
@@ -199,8 +208,8 @@ Operators and keywords
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=
     if else while for ? ..
+    split join length upper lower
     print input read write load
-    len
 
 License
 -------

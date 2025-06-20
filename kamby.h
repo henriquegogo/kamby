@@ -449,7 +449,7 @@ static inline KaNode *ka_lte(KaNode **ctx, KaNode *args) {
   return result;
 }
 
-// Conditional, lists and loops
+// Conditional and loops
 
 static inline KaNode *ka_if(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
@@ -489,6 +489,8 @@ static inline KaNode *ka_for(KaNode **ctx, KaNode *args) {
   ka_free((children->next = NULL, children)), ka_free(args);
   return result;
 }
+
+// String and list functions
 
 static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
@@ -581,6 +583,24 @@ static inline KaNode *ka_join(KaNode **ctx, KaNode *args) {
   } else result = ka_new(KA_NONE);
   ka_free(args);
   return result;
+}
+
+static inline KaNode *ka_length(KaNode **ctx, KaNode *args) {
+  if (!args) return ka_new(KA_NONE);
+  int length = 0;
+  if (args->type == KA_STRING) length = strlen(args->string);
+  else if (args->type == KA_LIST)
+    for (KaNode *curr = args->children; curr; curr = curr->next) length++;
+  ka_free(args);
+  return ka_number(length);
+}
+
+static inline KaNode *ka_upper(KaNode **ctx, KaNode *args) {
+  return ka_free(args), ka_new(KA_NONE);
+}
+
+static inline KaNode *ka_lower(KaNode **ctx, KaNode *args) {
+  return ka_free(args), ka_new(KA_NONE);
 }
 
 // Arithmetic operators
@@ -676,18 +696,6 @@ static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
   KaNode *symbol = ka_symbol(args->key);
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
-}
-
-// String and list functions
-
-static inline KaNode *ka_len(KaNode **ctx, KaNode *args) {
-  if (!args) return ka_new(KA_NONE);
-  int length = 0;
-  if (args->type == KA_STRING) length = strlen(args->string);
-  else if (args->type == KA_LIST)
-    for (KaNode *curr = args->children; curr; curr = curr->next) length++;
-  ka_free(args);
-  return ka_number(length);
 }
 
 // I/O functions
@@ -799,6 +807,12 @@ static inline KaNode *ka_init() {
     { .key = (char *)"if",    .value = ka_func(ka_if)    },
     { .key = (char *)"while", .value = ka_func(ka_while) },
     { .key = (char *)"for",   .value = ka_func(ka_for)   },
+    // String and list functions
+    { .key = (char *)"split",  .value = ka_func(ka_split)  },
+    { .key = (char *)"join",   .value = ka_func(ka_join)   },
+    { .key = (char *)"length", .value = ka_func(ka_length) },
+    { .key = (char *)"upper",  .value = ka_func(ka_upper) },
+    { .key = (char *)"lower",  .value = ka_func(ka_lower) },
     // Arithmetic operators
     { .key = (char *)"+",  .value = ka_func(ka_add)    },
     { .key = (char *)"-",  .value = ka_func(ka_sub)    },
@@ -810,8 +824,6 @@ static inline KaNode *ka_init() {
     { .key = (char *)"*=", .value = ka_func(ka_mulset) },
     { .key = (char *)"/=", .value = ka_func(ka_divset) },
     { .key = (char *)"%=", .value = ka_func(ka_modset) },
-    // String and list functions
-    { .key = (char *)"len", .value = ka_func(ka_len) },
     // I/O
     { .key = (char *)"print", .value = ka_func(ka_print) },
     { .key = (char *)"input", .value = ka_func(ka_input) },
