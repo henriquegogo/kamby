@@ -819,8 +819,8 @@ static inline KaNode *ka_init() {
     { .key = (char *)"split",  .value = ka_func(ka_split)  },
     { .key = (char *)"join",   .value = ka_func(ka_join)   },
     { .key = (char *)"length", .value = ka_func(ka_length) },
-    { .key = (char *)"upper",  .value = ka_func(ka_upper) },
-    { .key = (char *)"lower",  .value = ka_func(ka_lower) },
+    { .key = (char *)"upper",  .value = ka_func(ka_upper)  },
+    { .key = (char *)"lower",  .value = ka_func(ka_lower)  },
     // Arithmetic operators
     { .key = (char *)"+",  .value = ka_func(ka_add)    },
     { .key = (char *)"-",  .value = ka_func(ka_sub)    },
