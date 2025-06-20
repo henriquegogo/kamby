@@ -857,11 +857,9 @@ void test_upperlower() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
   result = ka_upper(&ctx, ka_string("John Doe"));
-  //assert(!strcmp(result->string, "JOHN DOE"));
-  ka_free(result);
+  assert(!strcmp(result->string, "JOHN DOE")); ka_free(result);
   result = ka_lower(&ctx, ka_string("John Doe"));
-  //assert(!strcmp(result->string, "john doe"));
-  ka_free(result);
+  assert(!strcmp(result->string, "john doe")); ka_free(result);
 
   ka_free(ctx);
 }
