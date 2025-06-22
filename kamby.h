@@ -339,26 +339,24 @@ static inline KaNode *ka_parser(char *text, int *pos) {
   for (int step = 1; step <= 5; step++) {
     for (KaNode *prev = NULL, *a = head; a && a->next;) {
       KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
-      char *sym = op->type == KA_SYMBOL ? op->symbol : NULL;
-      int isunary = sym && strchr("$!", sym[0]) && !sym[1];
-      int isassign = sym && ((strchr(":=", sym[0]) && !sym[1]) ||
-          (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' ')));
-      int isbind = sym && strchr(".", sym[0]) && !sym[1];
-      int isexpr = sym && strchr("?", sym[0]) && !sym[1];
-      int ispunctuation = sym && ispunct(sym[0]) && !isunary &&
-        !isassign && !isbind && !isexpr;
-      // Reorder and wrap unary operators in expressions
+      char *sym = op->type == KA_SYMBOL ? op->symbol : (char *)"";
+      int isunary = strchr("$!", sym[0]) && !sym[1];
+      int isassign = !strcmp("=", sym) ||
+        (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' '));
+      int iskey = !strcmp(":", sym);
+      int isbind = !strcmp(".", sym);
+      int isexpr = !strcmp("?", sym);
+      int ispunctuation = !isunary && !iskey && !isassign && !isbind &&
+        !isexpr && ispunct(sym[0]);
       if (step == 1 && isunary) {
         (a->next = ka_new(KA_EXPR))->next = next;
         a->next->children = (b && (b->next = NULL), op);
-      // Reorder and wrap binary operators in expressions by precedence
       } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
-          (step == 4 && isassign)) {
+          (step == 4 && iskey) || (step == 5 && isassign)) {
         (expr = ka_new(KA_EXPR))->next = next;
         expr->children =
           (op && (op->next = a), a && (a->next = b), b && (b->next = NULL), op);
         a = prev ? (prev->next = expr) : (head = expr);
-      // Reorder operators in expressions
       } else if (step == 4 && isexpr) {
         (op->next = a, a->next = b);
         a = prev ? (prev->next = op) : (head = op);
