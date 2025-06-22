@@ -992,6 +992,11 @@ void test_code_variables() {
   assert(!strcmp(result->key, "i") && *result->number == 1);
   ka_free(result);
 
+  ka_free(eval_code(&ctx, "def test { 0=arg:$0; arg }"));
+  result = eval_code(&ctx, "test 99");
+  assert(!strcmp(result->key, "arg") && *result->number == 99);
+  ka_free(result);
+
   ka_free(ctx);
 }
 
