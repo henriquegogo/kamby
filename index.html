@@ -94,10 +94,11 @@ button:active, input[type=submit]:active { margin: 4px -4px -4px 4px; background
 <h2 id="how-to-build">How to build</h2>
 <p>You can build the binary using Makefile.</p>
 <pre><code>$ make                                 # Build binary
-$ ./kamby                              # Run REPL
+$ ./kamby --help                       # Display help message
+$ ./kamby --version                    # Display version information
+$ ./kamby -c script.ka &gt; script.c      # Transpile to C
 $ ./kamby script.ka                    # Run script
-$ ./kamby --to-c script.ka &gt; script.c  # Transpile to C
-$ ./kamby --help                       # Show help</code></pre>
+$ ./kamby                              # Run REPL</code></pre>
 <h2 id="variables-stack">Variables stack</h2>
 <p>Variables can contain any type of data, including number, strings,
 lists or even blocks of code.</p>
