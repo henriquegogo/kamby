@@ -8,10 +8,11 @@ How to build
 You can build the binary using Makefile.
 
     $ make                                 # Build binary
-    $ ./kamby                              # Run REPL
+    $ ./kamby --help                       # Display help message
+    $ ./kamby --version                    # Display version information
+    $ ./kamby -c script.ka > script.c      # Transpile to C
     $ ./kamby script.ka                    # Run script
-    $ ./kamby --to-c script.ka > script.c  # Transpile to C
-    $ ./kamby --help                       # Show help
+    $ ./kamby                              # Run REPL
 
 Variables stack
 ---------------
