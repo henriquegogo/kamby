@@ -268,6 +268,15 @@ static inline KaNode *ka_bind(KaNode **ctx, KaNode *args) {
   return ka_free(blk_ret), ka_free(args), result;
 }
 
+static inline KaNode *ka_return(KaNode **ctx, KaNode *args) {
+  KaNode *result = ka_copy(args);
+  free(result->key);
+  result->key = strdup("return");
+  ka_free(args);
+
+  return result;
+}
+
 // Parser and Interpreter
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
@@ -288,6 +297,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
       last->children = ka_eval(ctx, curr->children);
     } else if (curr->type == KA_EXPR) {
       last = last->next = ka_eval(ctx, curr->children);
+      if (!strcmp("return", last->key ?: "")) break;
     } else last = last->next = ka_copy(curr);
     // Flag next node for special treatment
     if (curr->next && curr->next->type == KA_SYMBOL &&
@@ -308,7 +318,7 @@ static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
 
     return result;
   } else if (head->type == KA_BLOCK && head->next) {
-    // Avoid deep recursion. Use loop functions (e.g., while, each) instead.
+    // Avoid deep recursion. Use loop functions (e.g., while, for) instead.
     KaNode *blk_ctx = ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
     KaNode *last_ret, *blk_ret = ka_eval(&blk_ctx, head->children);
 
@@ -912,9 +922,10 @@ static inline KaNode *ka_init() {
     { .key = (char *)"set", .value = ka_func(ka_set)  },
     { .key = (char *)"del", .value = ka_func(ka_del)  },
     // Default values
-    { .key = (char *)"true",  .value = ka_true()  },
-    { .key = (char *)"false", .value = ka_false() },
-    { .key = (char *)"else",  .value = ka_true()  },
+    { .key = (char *)"return", .value = ka_func(ka_return)  },
+    { .key = (char *)"true",   .value = ka_true()  },
+    { .key = (char *)"false",  .value = ka_false() },
+    { .key = (char *)"else",   .value = ka_true()  },
     // Logical operators
     { .key = (char *)"&&", .value = ka_func(ka_and) },
     { .key = (char *)"||", .value = ka_func(ka_or)  },
