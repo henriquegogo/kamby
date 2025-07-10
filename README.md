@@ -204,7 +204,7 @@ Some operators are overloaded to perform different actions based on argument typ
 Operators and keywords
 ----------------------
 
-    true false
+    return true false
     get def set del $ : := = .
     && || ! == != > < >= <=
     + - * / % += -= *= /= %=

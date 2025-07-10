@@ -342,6 +342,26 @@ void test_del() {
   ka_free(ctx);
 }
 
+void test_return() {
+  KaNode *ctx = ka_init(), *block, *result;
+
+  block = ka_block(
+      ka_expr(ka_number(1), NULL),
+      ka_expr(ka_number(7), NULL), NULL);
+  result = ka_eval(&ctx, ka_chain(block, ka_new(KA_NONE), NULL));
+  assert(*result->number == 7);
+  ka_free(block), ka_free(result);
+
+  block = ka_block(
+      ka_expr(ka_symbol("return"), ka_number(1), NULL),
+      ka_expr(ka_number(7), NULL), NULL);
+  result = ka_eval(&ctx, ka_chain(block, ka_new(KA_NONE), NULL));
+  assert(*result->number == 1);
+  ka_free(block), ka_free(result);
+
+  ka_free(ctx);
+}
+
 void test_eval() {
   KaNode *ctx = ka_new(KA_CTX), *expr, *result;
   ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
@@ -1049,9 +1069,10 @@ void test_code_blocks() {
 }
 
 void test_code_if() {
-  KaNode *ctx = ka_init(), *expr, *result;
+  KaNode *ctx = ka_init(), *result;
 
   ka_free(eval_code(&ctx, "i := 10"));
+
   result = eval_code(&ctx, "if i { 1 } { 0 }");
   assert(*result->number == 1); ka_free(result);
   result = eval_code(&ctx, "if a { 1 } { 0 }");
@@ -1066,6 +1087,23 @@ void test_code_if() {
   assert(*result->number == 3); ka_free(result);
   result = eval_code(&ctx, "if false 1 false { 2 } else { 2 + 2 }");
   assert(*result->number == 4); ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_code_return() {
+  KaNode *ctx = ka_init(), *result;
+
+  ka_free(eval_code(&ctx, "i := 0"));
+  ka_free(eval_code(&ctx, "def test { 99; i += 1 }"));
+  ka_free(eval_code(&ctx, "def test_return { return 99; i += 1 }"));
+
+  result = eval_code(&ctx, "test()");
+  assert(*result->number == 1); ka_free(result);
+  result = eval_code(&ctx, "test_return()");
+  assert(*result->number == 99); ka_free(result);
+  result = eval_code(&ctx, "i");
+  assert(*result->number == 1); ka_free(result);
 
   ka_free(ctx);
 }
@@ -1087,10 +1125,11 @@ int main() {
   test_ref();
   test_bind();
   test_get();
-  test_del();
   test_key();
   test_def();
   test_set();
+  test_del();
+  test_return();
   test_eval();
   test_parser();
   test_logical();
@@ -1116,6 +1155,7 @@ int main() {
   test_code_lists();
   test_code_blocks();
   test_code_if();
+  test_code_return();
 
   printf("All tests passed!\n");
   return 0;
