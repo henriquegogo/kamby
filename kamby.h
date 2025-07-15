@@ -31,8 +31,6 @@ typedef struct KaNode {
 
 static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes);
 
-static inline KaNode *ka_while(KaNode **ctx, KaNode *nodes);
-
 // Constructors
 
 static inline KaNode *ka_new(KaType type) {
@@ -178,12 +176,6 @@ static inline KaNode *ka_ref(KaNode **ctx, KaNode *args) {
   return ka_free(args), node;
 }
 
-static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
-  if (!args) return ka_new(KA_NONE);
-
-  return ka_copy(ka_ref(ctx, args));
-}
-
 static inline KaNode *ka_del(KaNode **ctx, KaNode *args) {
   if (!args || (!args->key && !args->symbol))
     return ka_free(args), ka_new(KA_NONE);
@@ -208,6 +200,12 @@ static inline KaNode *ka_key(KaNode **ctx, KaNode *args) {
   data->key = strdup(args->symbol);
 
   return ka_free(args), data;
+}
+
+static inline KaNode *ka_get(KaNode **ctx, KaNode *args) {
+  if (!args) return ka_new(KA_NONE);
+
+  return ka_copy(ka_ref(ctx, args));
 }
 
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args) {
@@ -273,153 +271,6 @@ static inline KaNode *ka_return(KaNode **ctx, KaNode *args) {
   free(result->key);
   result->key = strdup("return");
   ka_free(args);
-
-  return result;
-}
-
-// Parser and Interpreter
-
-static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
-  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
-
-  if (!nodes) return head;
-
-  // Evaluate expressions and resolve variables
-  for (KaNode *curr = nodes, *skip = NULL; curr; curr = curr->next) {
-    // Flagged node skip processing
-    if (curr == skip && (last = last->next = ka_copy(curr))) continue;
-    // Process node based on its type
-    if (curr->type == KA_SYMBOL) {
-      last = last->next = ka_get(ctx, ka_symbol(curr->symbol));
-    } else if (curr->type == KA_LIST) {
-      last = last->next = ka_new(curr->type);
-      last->key = curr->key ? strdup(curr->key) : NULL;
-      last->children = ka_eval(ctx, curr->children);
-    } else if (curr->type == KA_EXPR) {
-      last = last->next = ka_eval(ctx, curr->children);
-      if (!strcmp("return", last->key ?: "")) break;
-    } else last = last->next = ka_copy(curr);
-    // Flag next node for special treatment
-    if (curr->next && curr->next->type == KA_SYMBOL &&
-        (last->func == ka_key || last->func == ka_def ||
-        last->func == ka_set || last->func == ka_del)) skip = curr->next; 
-    else if (last->func == ka_while) skip = curr->next;
-    else if (curr->next && last->func == ka_bind) skip = curr->next->next;
-  }
-
-  // Discard first head node
-  head = head->next;
-  ka_free((first->next = NULL, first));
-
-  // Take actions based on node type
-  if (head->type == KA_FUNC) {
-    KaNode *result = head->func(ctx, head->next);
-    ka_free((head->next = NULL, head));
-
-    return result;
-  } else if (head->type == KA_BLOCK && head->next) {
-    // Avoid deep recursion. Use loop functions (e.g., while, for) instead.
-    KaNode *blk_ctx = ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
-    KaNode *last_ret, *blk_ret = ka_eval(&blk_ctx, head->children);
-
-    for (last_ret = blk_ret; last_ret->next; last_ret = last_ret->next);
-
-    KaNode *result = ka_copy(last_ret);
-    ka_free(blk_ret), ka_free(blk_ctx), ka_free((head->next = NULL, head));
-
-    return result;
-  }
-
-  return head;
-}
-
-static inline KaNode *ka_parser(char *text, int *pos) {
-  KaNode *head = ka_new(KA_NONE), *last = head;
-  int length = strlen(text);
-
-  // If at the initial position, use a negative position as a flag to wrap
-  // sentences, parsing each one as a separate expression node.
-  if (*pos == 0 && --(*pos)) while (*pos < length) {
-    KaNode *children = ka_parser(text, pos);
-
-    if (children) (last = last->next = ka_new(KA_EXPR))->children = children;
-    if (strchr(")]}", text[*pos - 1])) length = 0;
-  }
-
-  // Parse each character, recognize types and create nodes.
-  // If position is negative, start at the beginning.
-  for (*pos = *pos < 0 ? 0 : *pos; *pos < length; (*pos)++) {
-    int start = *pos, childpos = 0;
-    char c = text[*pos];
-
-    if (c == '#' || (c == '/' && text[*pos + 1] == '/'))
-      while (text[++(*pos)] != '\n');
-    else if (c == '/' && text[*pos + 1] == '*')
-      while (!(text[++(*pos)] == '*' && text[++(*pos)] == '/'));
-    else if (strchr(";,)]}\n", c)) length = 0;
-    else if (strchr("([{", c)) {
-      last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
-      (last = last->next)->children = ka_parser(text + *pos + 1, &childpos);
-      *pos += childpos;
-    } else if (strchr("'\"", c)) {
-      while (text[++(*pos)] != text[start] ||
-          (text[*pos - 1] == '\\' && text[*pos - 2] != '\\'));
-
-      last = last->next = ka_new(KA_STRING);
-      char *value = last->string = strndup(text + start + 1, *pos - start - 1);
-
-      for (char *str = value; *str; str++)
-        if (*str != '\\' || (str[1] != text[start] && str[1] != '\\'))
-          *value++ = *str;
-
-      *value = '\0';
-    } else if (isdigit(c)) {
-      while (isdigit(text[*pos + 1]) ||
-          (text[*pos + 1] == '.' && isdigit(text[*pos + 2]))) (*pos)++;
-
-      last = last->next = ka_number(strtold(text + start, NULL));
-    } else if (isgraph(c)) {
-      while (ispunct(c) && !strchr("_", c) ?
-          ispunct(text[*pos + 1]) && !strchr("$;,()[]{}'\"\n", text[*pos + 1]) :
-          (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
-
-      last = last->next = ka_new(KA_SYMBOL);
-      last->symbol = strndup(text + start, *pos - start + 1);
-    }
-  }
-
-  // Reorder operators by precedence
-  for (int step = 1; step <= 5; step++) {
-    for (KaNode *prev = NULL, *a = head; a && a->next;) {
-      KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
-      char *sym = op->type == KA_SYMBOL ? op->symbol : (char *)"";
-      int isunary = strchr("$!", sym[0]) && !sym[1];
-      int isassign = !strcmp("=", sym) ||
-        (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' '));
-      int iskey = !strcmp(":", sym);
-      int isbind = !strcmp(".", sym);
-      int isexpr = !strcmp("?", sym);
-      int ispunctuation = !isunary && !iskey && !isassign && !isbind &&
-        !isexpr && ispunct(sym[0]);
-
-      if (step == 1 && isunary) {
-        (a->next = ka_new(KA_EXPR))->next = next;
-        a->next->children = (b && (b->next = NULL), op);
-      } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
-          (step == 4 && iskey) || (step == 5 && isassign)) {
-        (expr = ka_new(KA_EXPR))->next = next;
-        expr->children =
-          (op && (op->next = a), a && (a->next = b), b && (b->next = NULL), op);
-        a = prev ? (prev->next = expr) : (head = expr);
-      } else if (step == 4 && isexpr) {
-        (op->next = a, a->next = b);
-        a = prev ? (prev->next = op) : (head = op);
-      } else a = (prev = a)->next;
-    }
-  }
-
-  KaNode *result = head->next;
-  ka_free((head->next = NULL, head));
 
   return result;
 }
@@ -561,8 +412,6 @@ static inline KaNode *ka_for(KaNode **ctx, KaNode *args) {
   return result;
 }
 
-// String and list functions
-
 static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
 
@@ -574,6 +423,8 @@ static inline KaNode *ka_range(KaNode **ctx, KaNode *args) {
 
   return ka_free(args), result;
 }
+
+// String and list functions
 
 static inline KaNode *ka_merge(KaNode **ctx, KaNode *args) {
   if (!args || !args->next) return ka_free(args), ka_new(KA_NONE);
@@ -818,6 +669,153 @@ static inline KaNode *ka_modset(KaNode **ctx, KaNode *args) {
   return ka_set(ctx, ka_chain(symbol, ka_mod(ctx, args), NULL));
 }
 
+// Parser and Interpreter
+
+static inline KaNode *ka_eval(KaNode **ctx, KaNode *nodes) {
+  KaNode *head = ka_new(KA_NONE), *first = head, *last = head;
+
+  if (!nodes) return head;
+
+  // Evaluate expressions and resolve variables
+  for (KaNode *curr = nodes, *skip = NULL; curr; curr = curr->next) {
+    // Flagged node skip processing
+    if (curr == skip && (last = last->next = ka_copy(curr))) continue;
+    // Process node based on its type
+    if (curr->type == KA_SYMBOL) {
+      last = last->next = ka_get(ctx, ka_symbol(curr->symbol));
+    } else if (curr->type == KA_LIST) {
+      last = last->next = ka_new(curr->type);
+      last->key = curr->key ? strdup(curr->key) : NULL;
+      last->children = ka_eval(ctx, curr->children);
+    } else if (curr->type == KA_EXPR) {
+      last = last->next = ka_eval(ctx, curr->children);
+      if (!strcmp("return", last->key ?: "")) break;
+    } else last = last->next = ka_copy(curr);
+    // Flag next node for special treatment
+    if (curr->next && curr->next->type == KA_SYMBOL &&
+        (last->func == ka_key || last->func == ka_def ||
+        last->func == ka_set || last->func == ka_del)) skip = curr->next; 
+    else if (last->func == ka_while) skip = curr->next;
+    else if (curr->next && last->func == ka_bind) skip = curr->next->next;
+  }
+
+  // Discard first head node
+  head = head->next;
+  ka_free((first->next = NULL, first));
+
+  // Take actions based on node type
+  if (head->type == KA_FUNC) {
+    KaNode *result = head->func(ctx, head->next);
+    ka_free((head->next = NULL, head));
+
+    return result;
+  } else if (head->type == KA_BLOCK && head->next) {
+    // Avoid deep recursion. Use loop functions (e.g., while, for) instead.
+    KaNode *blk_ctx = ka_chain(head->next, ka_new(KA_CTX), *ctx, NULL);
+    KaNode *last_ret, *blk_ret = ka_eval(&blk_ctx, head->children);
+
+    for (last_ret = blk_ret; last_ret->next; last_ret = last_ret->next);
+
+    KaNode *result = ka_copy(last_ret);
+    ka_free(blk_ret), ka_free(blk_ctx), ka_free((head->next = NULL, head));
+
+    return result;
+  }
+
+  return head;
+}
+
+static inline KaNode *ka_parser(char *text, int *pos) {
+  KaNode *head = ka_new(KA_NONE), *last = head;
+  int length = strlen(text);
+
+  // If at the initial position, use a negative position as a flag to wrap
+  // sentences, parsing each one as a separate expression node.
+  if (*pos == 0 && --(*pos)) while (*pos < length) {
+    KaNode *children = ka_parser(text, pos);
+
+    if (children) (last = last->next = ka_new(KA_EXPR))->children = children;
+    if (strchr(")]}", text[*pos - 1])) length = 0;
+  }
+
+  // Parse each character, recognize types and create nodes.
+  // If position is negative, start at the beginning.
+  for (*pos = *pos < 0 ? 0 : *pos; *pos < length; (*pos)++) {
+    int start = *pos, childpos = 0;
+    char c = text[*pos];
+
+    if (c == '#' || (c == '/' && text[*pos + 1] == '/'))
+      while (text[++(*pos)] != '\n');
+    else if (c == '/' && text[*pos + 1] == '*')
+      while (!(text[++(*pos)] == '*' && text[++(*pos)] == '/'));
+    else if (strchr(";,)]}\n", c)) length = 0;
+    else if (strchr("([{", c)) {
+      last->next = ka_new(c == '(' ? KA_EXPR : c == '[' ? KA_LIST : KA_BLOCK);
+      (last = last->next)->children = ka_parser(text + *pos + 1, &childpos);
+      *pos += childpos;
+    } else if (strchr("'\"", c)) {
+      while (text[++(*pos)] != text[start] ||
+          (text[*pos - 1] == '\\' && text[*pos - 2] != '\\'));
+
+      last = last->next = ka_new(KA_STRING);
+      char *value = last->string = strndup(text + start + 1, *pos - start - 1);
+
+      for (char *str = value; *str; str++)
+        if (*str != '\\' || (str[1] != text[start] && str[1] != '\\'))
+          *value++ = *str;
+
+      *value = '\0';
+    } else if (isdigit(c)) {
+      while (isdigit(text[*pos + 1]) ||
+          (text[*pos + 1] == '.' && isdigit(text[*pos + 2]))) (*pos)++;
+
+      last = last->next = ka_number(strtold(text + start, NULL));
+    } else if (isgraph(c)) {
+      while (ispunct(c) && !strchr("_", c) ?
+          ispunct(text[*pos + 1]) && !strchr("$;,()[]{}'\"\n", text[*pos + 1]) :
+          (isalnum(text[*pos + 1]) || strchr("_", text[*pos + 1]))) (*pos)++;
+
+      last = last->next = ka_new(KA_SYMBOL);
+      last->symbol = strndup(text + start, *pos - start + 1);
+    }
+  }
+
+  // Reorder operators by precedence
+  for (int step = 1; step <= 5; step++) {
+    for (KaNode *prev = NULL, *a = head; a && a->next;) {
+      KaNode *op = a->next, *b = op->next, *next = b ? b->next : NULL, *expr;
+      char *sym = op->type == KA_SYMBOL ? op->symbol : (char *)"";
+      int isunary = strchr("$!", sym[0]) && !sym[1];
+      int isassign = !strcmp("=", sym) ||
+        (strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ?: ' '));
+      int iskey = !strcmp(":", sym);
+      int isbind = !strcmp(".", sym);
+      int isexpr = !strcmp("?", sym);
+      int ispunctuation = !isunary && !iskey && !isassign && !isbind &&
+        !isexpr && ispunct(sym[0]);
+
+      if (step == 1 && isunary) {
+        (a->next = ka_new(KA_EXPR))->next = next;
+        a->next->children = (b && (b->next = NULL), op);
+      } else if ((step == 2 && isbind) || (step == 3 && ispunctuation) ||
+          (step == 4 && iskey) || (step == 5 && isassign)) {
+        (expr = ka_new(KA_EXPR))->next = next;
+        expr->children =
+          (op && (op->next = a), a && (a->next = b), b && (b->next = NULL), op);
+        a = prev ? (prev->next = expr) : (head = expr);
+      } else if (step == 4 && isexpr) {
+        (op->next = a, a->next = b);
+        a = prev ? (prev->next = op) : (head = op);
+      } else a = (prev = a)->next;
+    }
+  }
+
+  KaNode *result = head->next;
+  ka_free((head->next = NULL, head));
+
+  return result;
+}
+
 // I/O functions
 
 static inline KaNode *ka_print(KaNode **ctx, KaNode *args) {
@@ -911,21 +909,21 @@ static inline KaNode *ka_load(KaNode **ctx, KaNode *args) {
 
 static inline KaNode *ka_init() {
   const KaNode kv[] = {
-    // Variables
-    { .key = (char *)"$",   .value = ka_func(ka_get)  },
-    { .key = (char *)":",   .value = ka_func(ka_key)  },
-    { .key = (char *)":=",  .value = ka_func(ka_def)  },
-    { .key = (char *)"=",   .value = ka_func(ka_set)  },
-    { .key = (char *)".",   .value = ka_func(ka_bind) },
-    { .key = (char *)"get", .value = ka_func(ka_get)  },
-    { .key = (char *)"def", .value = ka_func(ka_def)  },
-    { .key = (char *)"set", .value = ka_func(ka_set)  },
-    { .key = (char *)"del", .value = ka_func(ka_del)  },
     // Default values
-    { .key = (char *)"return", .value = ka_func(ka_return)  },
-    { .key = (char *)"true",   .value = ka_true()  },
-    { .key = (char *)"false",  .value = ka_false() },
-    { .key = (char *)"else",   .value = ka_true()  },
+    { .key = (char *)"true",  .value = ka_true()  },
+    { .key = (char *)"false", .value = ka_false() },
+    { .key = (char *)"else",  .value = ka_true()  },
+    // Variables
+    { .key = (char *)":",      .value = ka_func(ka_key)    },
+    { .key = (char *)"$",      .value = ka_func(ka_get)    },
+    { .key = (char *)":=",     .value = ka_func(ka_def)    },
+    { .key = (char *)"=",      .value = ka_func(ka_set)    },
+    { .key = (char *)".",      .value = ka_func(ka_bind)   },
+    { .key = (char *)"del",    .value = ka_func(ka_del)    },
+    { .key = (char *)"get",    .value = ka_func(ka_get)    },
+    { .key = (char *)"def",    .value = ka_func(ka_def)    },
+    { .key = (char *)"set",    .value = ka_func(ka_set)    },
+    { .key = (char *)"return", .value = ka_func(ka_return) },
     // Logical operators
     { .key = (char *)"&&", .value = ka_func(ka_and) },
     { .key = (char *)"||", .value = ka_func(ka_or)  },
@@ -943,12 +941,6 @@ static inline KaNode *ka_init() {
     { .key = (char *)"if",    .value = ka_func(ka_if)    },
     { .key = (char *)"while", .value = ka_func(ka_while) },
     { .key = (char *)"for",   .value = ka_func(ka_for)   },
-    // String and list functions
-    { .key = (char *)"split",  .value = ka_func(ka_split)  },
-    { .key = (char *)"join",   .value = ka_func(ka_join)   },
-    { .key = (char *)"length", .value = ka_func(ka_length) },
-    { .key = (char *)"upper",  .value = ka_func(ka_upper)  },
-    { .key = (char *)"lower",  .value = ka_func(ka_lower)  },
     // Arithmetic operators
     { .key = (char *)"+",  .value = ka_func(ka_add)    },
     { .key = (char *)"-",  .value = ka_func(ka_sub)    },
@@ -960,6 +952,12 @@ static inline KaNode *ka_init() {
     { .key = (char *)"*=", .value = ka_func(ka_mulset) },
     { .key = (char *)"/=", .value = ka_func(ka_divset) },
     { .key = (char *)"%=", .value = ka_func(ka_modset) },
+    // String and list functions
+    { .key = (char *)"split",  .value = ka_func(ka_split)  },
+    { .key = (char *)"join",   .value = ka_func(ka_join)   },
+    { .key = (char *)"length", .value = ka_func(ka_length) },
+    { .key = (char *)"upper",  .value = ka_func(ka_upper)  },
+    { .key = (char *)"lower",  .value = ka_func(ka_lower)  },
     // I/O
     { .key = (char *)"print", .value = ka_func(ka_print) },
     { .key = (char *)"input", .value = ka_func(ka_input) },
