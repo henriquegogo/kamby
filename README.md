@@ -204,11 +204,11 @@ Some operators are overloaded to perform different actions based on argument typ
 Operators and keywords
 ----------------------
 
-    return true false
-    get def set del $ : := = .
-    && || ! == != > < >= <=
-    + - * / % += -= *= /= %=
-    if else while for ? ..
+    true false
+    get def set del return
+    $ : := = . && || ! == != > < >= <=
+    ? .. + - * / % += -= *= /= %=
+    if else while for
     split join length upper lower
     print input read write load
 
