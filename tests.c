@@ -225,22 +225,41 @@ void test_ref() {
   ka_free(ctx);
 }
 
-void test_bind() {
+void test_del() {
+  KaNode *ctx = ka_new(KA_CTX);
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL)));
+
+  ka_free(ka_del(&ctx, ka_symbol("unknown")));
+  assert(!strcmp(ctx->key, "message"));
+  assert(!strcmp(ctx->next->key, "age"));
+  assert(!strcmp(ctx->next->next->key, "name"));
+
+  ka_free(ka_del(&ctx, ka_symbol("message")));
+  assert(!strcmp(ctx->key, "age"));
+  assert(!strcmp(ctx->next->key, "name"));
+
+  ka_free(ka_del(&ctx, ka_symbol("name")));
+  assert(!strcmp(ctx->key, "age"));
+  assert(ctx->next->type == KA_CTX);
+
+  ka_free(ka_del(&ctx, NULL));
+  assert(ctx->next->type == KA_CTX);
+
+  ka_free(ctx);
+}
+
+void test_key() {
   KaNode *ctx = ka_new(KA_CTX), *result;
+  result = ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL));
 
-  KaNode *list = ka_list(
-      ka_key(&ctx, ka_chain(ka_symbol("one"), ka_number(1), NULL)),
-      ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL)), NULL);
-
-  result = ka_get(&ctx, ka_symbol("two"));
-  assert(result->type == KA_NONE);
-  ka_free(result);
-
-  result = ka_bind(&ctx, ka_chain(ka_copy(list), ka_symbol("two"), NULL));
+  assert(ctx->type == KA_CTX);
+  assert(result->type == KA_NUMBER);
   assert(*result->number == 2);
-  ka_free(result);
+  assert(!strcmp(result->key, "two"));
 
-  ka_free(list), ka_free(ctx);
+  ka_free(result), ka_free(ctx);
 }
 
 void test_get() {
@@ -266,18 +285,6 @@ void test_get() {
   ka_free(result);
 
   ka_free(ctx);
-}
-
-void test_key() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
-  result = ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL));
-
-  assert(ctx->type == KA_CTX);
-  assert(result->type == KA_NUMBER);
-  assert(*result->number == 2);
-  assert(!strcmp(result->key, "two"));
-
-  ka_free(result), ka_free(ctx);
 }
 
 void test_def() {
@@ -317,29 +324,22 @@ void test_set() {
   ka_free(result), ka_free(ctx);
 }
 
-void test_del() {
-  KaNode *ctx = ka_new(KA_CTX);
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("name"), ka_string("John"), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("age"), ka_number(42), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("message"), ka_string("Foo"), NULL)));
+void test_bind() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
 
-  ka_free(ka_del(&ctx, ka_symbol("unknown")));
-  assert(!strcmp(ctx->key, "message"));
-  assert(!strcmp(ctx->next->key, "age"));
-  assert(!strcmp(ctx->next->next->key, "name"));
+  KaNode *list = ka_list(
+      ka_key(&ctx, ka_chain(ka_symbol("one"), ka_number(1), NULL)),
+      ka_key(&ctx, ka_chain(ka_symbol("two"), ka_number(2), NULL)), NULL);
 
-  ka_free(ka_del(&ctx, ka_symbol("message")));
-  assert(!strcmp(ctx->key, "age"));
-  assert(!strcmp(ctx->next->key, "name"));
+  result = ka_get(&ctx, ka_symbol("two"));
+  assert(result->type == KA_NONE);
+  ka_free(result);
 
-  ka_free(ka_del(&ctx, ka_symbol("name")));
-  assert(!strcmp(ctx->key, "age"));
-  assert(ctx->next->type == KA_CTX);
+  result = ka_bind(&ctx, ka_chain(ka_copy(list), ka_symbol("two"), NULL));
+  assert(*result->number == 2);
+  ka_free(result);
 
-  ka_free(ka_del(&ctx, NULL));
-  assert(ctx->next->type == KA_CTX);
-
-  ka_free(ctx);
+  ka_free(list), ka_free(ctx);
 }
 
 void test_return() {
@@ -360,139 +360,6 @@ void test_return() {
   ka_free(block), ka_free(result);
 
   ka_free(ctx);
-}
-
-void test_eval() {
-  KaNode *ctx = ka_new(KA_CTX), *expr, *result;
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
-  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(5), NULL)));
-
-  // Define a variable into the context
-  expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
-  result = ka_eval(&ctx, expr);
-  KaNode *var = ka_get(&ctx, ka_symbol("name"));
-  assert(!strcmp(var->string, result->string));
-  assert(!strcmp(result->string, "John"));
-  ka_free(var), ka_free(result), ka_free(expr);
-
-  // Define and recover a variable inside a block context
-  expr = ka_expr(ka_block(
-        ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
-        ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
-        ka_expr(ka_symbol("name"), NULL), NULL), ka_new(KA_NONE), NULL);
-  result = ka_eval(&ctx, expr);
-  assert(!strcmp(result->string, "Doe"));
-  ka_free(result), ka_free(expr);
-
-  // Recover a global variable using a new block
-  expr = ka_expr(ka_symbol("name"), NULL);
-  result = ka_eval(&ctx, expr);
-  assert(!strcmp(result->string, "John"));
-  ka_free(result), ka_free(expr);
-
-  // Use other kind of functions
-  expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
-  result = ka_eval(&ctx, expr);
-  assert(result->type == KA_TRUE);
-  ka_free(result), ka_free(expr);
-
-  expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
-  result = ka_eval(&ctx, expr);
-  assert(result->type == KA_TRUE);
-  ka_free(result), ka_free(expr);
-
-  expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
-  result = ka_eval(&ctx, expr);
-  assert(*result->number == 15);
-  ka_free(result), ka_free(expr);
-
-  ka_free(ctx);
-}
-
-void test_parser() {
-  KaNode *result;
-  int pos;
-
-  result = ka_parser("# This is a comment", (pos = 0, &pos));
-  assert(!result);
-
-  result = ka_parser("42.21 # This is a comment", (pos = 0, &pos));
-  assert(fabsl(*result->children->number - 42.21) < 1e-10);
-  assert(!result->children->next);
-  ka_free(result);
-
-  result = ka_parser("42.21 age // This is a comment", (pos = 0, &pos));
-  assert(fabsl(*result->children->number - 42.21) < 1e-10);
-  assert(!strcmp(result->children->next->symbol, "age"));
-  assert(!result->children->next->next);
-  ka_free(result);
-
-  result = ka_parser("age\n// This is a comment\n42", (pos = 0, &pos));
-  assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->next->children->number == 42);
-  ka_free(result);
-
-  result = ka_parser("age\n/* Multiline\ncomment */\n42", (pos = 0, &pos));
-  assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->next->children->number == 42);
-  ka_free(result);
-
-  result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
-  assert(!strcmp(result->children->string, "It\'s John Doe. Backslash: \\ OK"));
-  ka_free(result);
-
-  result = ka_parser("age; 42 'John Doe' 21;name", (pos = 0, &pos));
-  assert(!strcmp(result->children->symbol, "age"));
-  assert(*result->next->children->number == 42);
-  assert(!strcmp(result->next->children->next->string, "John Doe"));
-  assert(*result->next->children->next->next->number == 21);
-  assert(!strcmp(result->next->next->children->symbol, "name"));
-  ka_free(result);
-
-  result = ka_parser("42 'John Doe';name (22) [1 2] {71; 72}", (pos = 0, &pos));
-  KaNode *number = result->children,
-         *string = result->children->next,
-         *symbol = result->next->children,
-         *expr = result->next->children->next->children,
-         *list = result->next->children->next->next,
-         *block = result->next->children->next->next->next;
-  assert(number->type == KA_NUMBER && *number->number == 42);
-  assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
-  assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
-  assert(expr->type == KA_EXPR && *expr->children->number == 22);
-  assert(list->type == KA_LIST);
-  assert(*list->children->children->number == 1);
-  assert(*list->children->children->next->number == 2);
-  assert(block->type == KA_BLOCK && *block->children->children->number == 71);
-  assert(*block->children->next->children->number == 72);
-  ka_free(result);
-
-  result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
-
-  KaNode *expr_set = result->children->children,
-         *expr_mul = result->children->children->next->next->children,
-         *expr_sub = result->next->children->children,
-         *expr_sum = result->next->children->children->next->children;
-  assert(expr_set->type == KA_SYMBOL && !strcmp(expr_set->symbol, "="));
-  assert(!strcmp(expr_set->next->symbol, "i"));
-  assert(expr_mul->type == KA_SYMBOL && !strcmp(expr_mul->symbol, "*"));
-  assert(*expr_mul->next->number == 1 && *expr_mul->next->next->number == 2);
-  assert(expr_sub->type == KA_SYMBOL && !strcmp(expr_sub->symbol, "-"));
-  assert(*expr_sub->next->next->number == 7);
-  assert(expr_sum->type == KA_SYMBOL && !strcmp(expr_sum->symbol, "+"));
-  assert(*expr_sum->next->number == 5 && *expr_sum->next->next->number == 6);
-  ka_free(result);
-
-  result = ka_parser("!1 && 2", (pos = 0, &pos));
-  KaNode *expr_and = result->children->children,
-         *expr_not = result->children->children->next->children;
-  assert(expr_and->type == KA_SYMBOL && !strcmp(expr_and->symbol, "&&"));
-  assert(expr_not->type == KA_SYMBOL && !strcmp(expr_not->symbol, "!"));
-  assert(*expr_not->next->number == 1);
-  assert(*expr_and->next->next->number == 2);
-  ka_free(result);
 }
 
 void test_logical() {
@@ -670,21 +537,6 @@ void test_range() {
   ka_free(ctx);
 }
 
-void test_cat() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
-
-  result = ka_cat(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
-  assert(!strcmp(result->string, "2Message")); ka_free(result);
-  result = ka_cat(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
-  assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
-  result = ka_cat(NULL, ka_chain(ka_string("Ten"), ka_number(10), NULL));
-  assert(!strcmp(result->string, "Ten10")); ka_free(result);
-  result = ka_cat(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
-  assert(!strcmp(result->string, "Float10.12")); ka_free(result);
-
-  ka_free(ctx);
-}
-
 void test_merge() {
   KaNode *ctx = ka_new(KA_CTX), *result;
 
@@ -708,6 +560,21 @@ void test_merge() {
   assert(*result->children->number == 4);
   assert(*result->children->next->number == 3);
   ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_cat() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_cat(NULL, ka_chain(ka_number(2), ka_string("Message"), NULL));
+  assert(!strcmp(result->string, "2Message")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Hello"), ka_string("World"), NULL));
+  assert(!strcmp(result->string, "HelloWorld")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Ten"), ka_number(10), NULL));
+  assert(!strcmp(result->string, "Ten10")); ka_free(result);
+  result = ka_cat(NULL, ka_chain(ka_string("Float"), ka_number(10.123), NULL));
+  assert(!strcmp(result->string, "Float10.12")); ka_free(result);
 
   ka_free(ctx);
 }
@@ -751,6 +618,36 @@ void test_join() {
   result = ka_join(NULL, ka_chain(ka_string("John"), ka_string("Doe"), NULL));
   assert(result->type == KA_NONE);
   ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_length() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_length(&ctx, ka_string(""));
+  assert(*result->number == 0); ka_free(result);
+  result = ka_length(&ctx, ka_string("John Doe"));
+  assert(*result->number == 8); ka_free(result);
+  result = ka_length(&ctx, ka_list(NULL));
+  assert(*result->number == 0); ka_free(result);
+  result = ka_length(&ctx, ka_list(ka_number(1), ka_string("John"), NULL));
+  assert(*result->number == 2); ka_free(result);
+  result = ka_length(&ctx, ka_block(ka_number(1), ka_string("John"), NULL));
+  assert(*result->number == 0); ka_free(result);
+  result = ka_length(&ctx, ka_number(1));
+  assert(*result->number == 0); ka_free(result);
+
+  ka_free(ctx);
+}
+
+void test_upperlower() {
+  KaNode *ctx = ka_new(KA_CTX), *result;
+
+  result = ka_upper(&ctx, ka_string("John Doe"));
+  assert(!strcmp(result->string, "JOHN DOE")); ka_free(result);
+  result = ka_lower(&ctx, ka_string("John Doe"));
+  assert(!strcmp(result->string, "john doe")); ka_free(result);
 
   ka_free(ctx);
 }
@@ -850,34 +747,137 @@ void test_arithmetic() {
   ka_free(ctx);
 }
 
-void test_length() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
+void test_eval() {
+  KaNode *ctx = ka_new(KA_CTX), *expr, *result;
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("def"), ka_func(ka_def), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("add"), ka_func(ka_add), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("lt"), ka_func(ka_lt), NULL)));
+  ka_free(ka_def(&ctx, ka_chain(ka_symbol("i"), ka_number(5), NULL)));
 
-  result = ka_length(&ctx, ka_string(""));
-  assert(*result->number == 0); ka_free(result);
-  result = ka_length(&ctx, ka_string("John Doe"));
-  assert(*result->number == 8); ka_free(result);
-  result = ka_length(&ctx, ka_list(NULL));
-  assert(*result->number == 0); ka_free(result);
-  result = ka_length(&ctx, ka_list(ka_number(1), ka_string("John"), NULL));
-  assert(*result->number == 2); ka_free(result);
-  result = ka_length(&ctx, ka_block(ka_number(1), ka_string("John"), NULL));
-  assert(*result->number == 0); ka_free(result);
-  result = ka_length(&ctx, ka_number(1));
-  assert(*result->number == 0); ka_free(result);
+  // Define a variable into the context
+  expr = ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("John"), NULL);
+  result = ka_eval(&ctx, expr);
+  KaNode *var = ka_get(&ctx, ka_symbol("name"));
+  assert(!strcmp(var->string, result->string));
+  assert(!strcmp(result->string, "John"));
+  ka_free(var), ka_free(result), ka_free(expr);
+
+  // Define and recover a variable inside a block context
+  expr = ka_expr(ka_block(
+        ka_expr(ka_symbol("def"), ka_symbol("age"), ka_number(42), NULL),
+        ka_expr(ka_symbol("def"), ka_symbol("name"), ka_string("Doe"), NULL),
+        ka_expr(ka_symbol("name"), NULL), NULL), ka_new(KA_NONE), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(!strcmp(result->string, "Doe"));
+  ka_free(result), ka_free(expr);
+
+  // Recover a global variable using a new block
+  expr = ka_expr(ka_symbol("name"), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(!strcmp(result->string, "John"));
+  ka_free(result), ka_free(expr);
+
+  // Use other kind of functions
+  expr = ka_chain(ka_symbol("lt"), ka_number(5), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(result->type == KA_TRUE);
+  ka_free(result), ka_free(expr);
+
+  expr = ka_chain(ka_symbol("lt"), ka_symbol("i"), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(result->type == KA_TRUE);
+  ka_free(result), ka_free(expr);
+
+  expr = ka_chain(ka_symbol("add"), ka_number(5), ka_number(10), NULL);
+  result = ka_eval(&ctx, expr);
+  assert(*result->number == 15);
+  ka_free(result), ka_free(expr);
 
   ka_free(ctx);
 }
 
-void test_upperlower() {
-  KaNode *ctx = ka_new(KA_CTX), *result;
+void test_parser() {
+  KaNode *result;
+  int pos;
 
-  result = ka_upper(&ctx, ka_string("John Doe"));
-  assert(!strcmp(result->string, "JOHN DOE")); ka_free(result);
-  result = ka_lower(&ctx, ka_string("John Doe"));
-  assert(!strcmp(result->string, "john doe")); ka_free(result);
+  result = ka_parser("# This is a comment", (pos = 0, &pos));
+  assert(!result);
 
-  ka_free(ctx);
+  result = ka_parser("42.21 # This is a comment", (pos = 0, &pos));
+  assert(fabsl(*result->children->number - 42.21) < 1e-10);
+  assert(!result->children->next);
+  ka_free(result);
+
+  result = ka_parser("42.21 age // This is a comment", (pos = 0, &pos));
+  assert(fabsl(*result->children->number - 42.21) < 1e-10);
+  assert(!strcmp(result->children->next->symbol, "age"));
+  assert(!result->children->next->next);
+  ka_free(result);
+
+  result = ka_parser("age\n// This is a comment\n42", (pos = 0, &pos));
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->next->children->number == 42);
+  ka_free(result);
+
+  result = ka_parser("age\n/* Multiline\ncomment */\n42", (pos = 0, &pos));
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->next->children->number == 42);
+  ka_free(result);
+
+  result = ka_parser("'It\\'s John Doe. Backslash: \\\\ OK'", (pos = 0, &pos));
+  assert(!strcmp(result->children->string, "It\'s John Doe. Backslash: \\ OK"));
+  ka_free(result);
+
+  result = ka_parser("age; 42 'John Doe' 21;name", (pos = 0, &pos));
+  assert(!strcmp(result->children->symbol, "age"));
+  assert(*result->next->children->number == 42);
+  assert(!strcmp(result->next->children->next->string, "John Doe"));
+  assert(*result->next->children->next->next->number == 21);
+  assert(!strcmp(result->next->next->children->symbol, "name"));
+  ka_free(result);
+
+  result = ka_parser("42 'John Doe';name (22) [1 2] {71; 72}", (pos = 0, &pos));
+  KaNode *number = result->children,
+         *string = result->children->next,
+         *symbol = result->next->children,
+         *expr = result->next->children->next->children,
+         *list = result->next->children->next->next,
+         *block = result->next->children->next->next->next;
+  assert(number->type == KA_NUMBER && *number->number == 42);
+  assert(string->type == KA_STRING && !strcmp(string->string, "John Doe"));
+  assert(symbol->type == KA_SYMBOL && !strcmp(symbol->symbol, "name"));
+  assert(expr->type == KA_EXPR && *expr->children->number == 22);
+  assert(list->type == KA_LIST);
+  assert(*list->children->children->number == 1);
+  assert(*list->children->children->next->number == 2);
+  assert(block->type == KA_BLOCK && *block->children->children->number == 71);
+  assert(*block->children->next->children->number == 72);
+  ka_free(result);
+
+  result = ka_parser("i = 1 * 2; 5 + 6 - 7", (pos = 0, &pos));
+
+  KaNode *expr_set = result->children->children,
+         *expr_mul = result->children->children->next->next->children,
+         *expr_sub = result->next->children->children,
+         *expr_sum = result->next->children->children->next->children;
+  assert(expr_set->type == KA_SYMBOL && !strcmp(expr_set->symbol, "="));
+  assert(!strcmp(expr_set->next->symbol, "i"));
+  assert(expr_mul->type == KA_SYMBOL && !strcmp(expr_mul->symbol, "*"));
+  assert(*expr_mul->next->number == 1 && *expr_mul->next->next->number == 2);
+  assert(expr_sub->type == KA_SYMBOL && !strcmp(expr_sub->symbol, "-"));
+  assert(*expr_sub->next->next->number == 7);
+  assert(expr_sum->type == KA_SYMBOL && !strcmp(expr_sum->symbol, "+"));
+  assert(*expr_sum->next->number == 5 && *expr_sum->next->next->number == 6);
+  ka_free(result);
+
+  result = ka_parser("!1 && 2", (pos = 0, &pos));
+  KaNode *expr_and = result->children->children,
+         *expr_not = result->children->children->next->children;
+  assert(expr_and->type == KA_SYMBOL && !strcmp(expr_and->symbol, "&&"));
+  assert(expr_not->type == KA_SYMBOL && !strcmp(expr_not->symbol, "!"));
+  assert(*expr_not->next->number == 1);
+  assert(*expr_and->next->next->number == 2);
+  ka_free(result);
 }
 
 void test_input() {
@@ -941,9 +941,8 @@ void test_init() {
   assert(ctx->next->type == KA_FUNC);
   assert(strlen(ctx->next->key) > 0);
   assert(last->type == KA_CTX);
-  assert(prev->type == KA_FUNC);
-  assert(prev->func == ka_get);
-  assert(!strcmp(prev->key, "$"));
+  assert(prev->type == KA_TRUE);
+  assert(!strcmp(prev->key, "true"));
 
   ka_free(ctx);
 }
@@ -1123,28 +1122,28 @@ int main() {
   test_expr();
   test_block();
   test_ref();
-  test_bind();
-  test_get();
+  test_del();
   test_key();
+  test_get();
   test_def();
   test_set();
-  test_del();
+  test_bind();
   test_return();
-  test_eval();
-  test_parser();
   test_logical();
   test_comparison();
   test_if();
   test_while();
   test_for();
   test_range();
-  test_cat();
   test_merge();
+  test_cat();
   test_split();
   test_join();
   test_length();
   test_upperlower();
   test_arithmetic();
+  test_eval();
+  test_parser();
   test_input();
   test_read();
   test_write();
