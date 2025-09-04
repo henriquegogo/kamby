@@ -10,7 +10,7 @@ run: all
 test:
 	@$(CC) -fprofile-arcs -ftest-coverage -o $(TESTNAME) $(TESTNAME).c
 	@$(CC) -shared -o $(TESTNAME)lib.so -fPIC $(BINNAME).c
-	@echo "input" | $(TESTPREFIX) ./$(TESTNAME) 2>&1 | \
+	@echo "99" | $(TESTPREFIX) ./$(TESTNAME) 2>&1 | \
 		grep --color=never -E "^(==.*(total heap usage|ERROR SUMMARY)|[^=]|^$$)" |\
 		sed 's/==[^=]*==[^:]*: //'
 	@$(TESTPOST)
