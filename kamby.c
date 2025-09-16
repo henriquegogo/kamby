@@ -15,7 +15,7 @@ void transpile_tree(KaNode *nodes, int *level)
         };
 
         for (int i = 0; i < *level; i++) {
-            printf("  ");
+            printf("    ");
         }
 
         printf("ka_%s(", types[node->type]);
@@ -31,7 +31,7 @@ void transpile_tree(KaNode *nodes, int *level)
             transpile_tree(node->children, level);
 
             for (int i = 0; i < *level; i++) {
-                printf("  ");
+                printf("    ");
             }
 
             printf("NULL),\n");
@@ -51,15 +51,15 @@ void transpile(KaNode **ctx, char *path)
 
     printf("#include \"kamby.h\"\n\n");
     printf("int main() {\n");
-    printf("  KaNode *nodes = ka_expr(\n");
+    printf("    KaNode *nodes = ka_expr(\n");
 
     transpile_tree(nodes, &level);
 
-    printf("  NULL);\n\n");
-    printf("  KaNode *ctx = ka_init();\n");
-    printf("  ka_free(ka_eval(&ctx, nodes));\n");
-    printf("  ka_free(nodes), ka_free(ctx);\n");
-    printf("  return 0;\n");
+    printf("    NULL);\n\n");
+    printf("    KaNode *ctx = ka_init();\n");
+    printf("    ka_free(ka_eval(&ctx, nodes));\n");
+    printf("    ka_free(nodes), ka_free(ctx);\n");
+    printf("    return 0;\n");
     printf("}\n");
 
     ka_free(nodes);
