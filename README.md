@@ -73,6 +73,28 @@ when executed.
     def block {
       print(message)
     }
+    block message:"Hello, World!"
+
+    // You can access blocks arguments using $0, $1, $2, etc.
+    def block {
+      print($0) 
+    }
+    block 'Hello, World!'
+
+    /* or */
+
+    def block {
+      0 = message:$0
+      print message
+    }
+
+    /* or */
+
+    def block {
+      [message:$0].{
+          print(message)
+      }
+    }
 
 For source code or blocks, each line is considered an expression. To execute a
 block, just call it as first item of an expression with any arguments.
@@ -142,18 +164,21 @@ Loops
 While condition block is true, run execution block.
 
     i := 0
-    while ((i += 1) <= 10) { print i }
+    while {(i += 1) <= 10} { print i }
+    // Notice that the "while" condition is a block {}, not an expression ().
+    // Should be a block because it will run multiple times for each iteration.
+    // Expressions are evaluated once.
 
 For each item in list, run execution block.
 
-    list := [1, 2, 3] * { $0 * 2 }
-    list * { print($0) }            // 2 4 6
+    list := [1, 2, 3] * { ($) * 2 }  // ($) == $0
+    list * { print($) }              // 2 4 6
     /* or */
-    for list { print($0) }
+    for list { print($) }
 
 For with range is used to iterate a range of numbers or a list.
 
-    for 0..2 { print(i) }  // 0 1 2
+    for 0..2 { print($) }  // 0 1 2
 
 String and list functions
 -------------------------
@@ -198,7 +223,7 @@ Some operators are overloaded to perform different actions based on argument typ
     "Doe" / ""           // ["D" "o" "e"]
 
     3 * 2                // 6
-    [1 2] * { $0 * 2 }   // [2 4]
+    [1 2] * { ($) * 2 }  // [2 4]
     ["a" "b" "c"] * "-"  // "a-b-c"
 
 Operators and keywords
