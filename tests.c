@@ -352,6 +352,8 @@ void test_get()
     ka_free(result);
     assert(*(result = ka_get(&ctx, ka_symbol("0")))->number == 78);
     ka_free(result);
+    assert(*(result = ka_get(&ctx, NULL))->number == 78);
+    ka_free(result);
     assert((result = ka_get(&ctx, ka_symbol("1")))->type == KA_NONE);
     ka_free(result);
 
@@ -1378,7 +1380,7 @@ KaNode *eval_code(KaNode **ctx, const char *code)
 
 void test_code_print()
 {
-    KaNode *ctx = ka_init(), *expr, *result;
+    KaNode *ctx = ka_init();
 
     ka_free(eval_code(&ctx, "print [12, 3.45, '... testing']"));
 
@@ -1444,7 +1446,7 @@ void test_code_variables()
 
 void test_code_lists()
 {
-    KaNode *ctx = ka_init(), *expr, *result;
+    KaNode *ctx = ka_init(), *result;
 
     ka_free(eval_code(&ctx, "\
         i := 3;\
@@ -1493,7 +1495,7 @@ void test_code_lists()
 
 void test_code_blocks()
 {
-    KaNode *ctx = ka_init(), *expr, *result;
+    KaNode *ctx = ka_init(), *result;
 
     ka_free(eval_code(&ctx, "def test { $1 / first }"));
     result = eval_code(&ctx, "test(first: 2, 8)");
@@ -1565,7 +1567,7 @@ void test_code_return()
 
 void test_code_while()
 {
-    KaNode *ctx = ka_init(), *expr, *result;
+    KaNode *ctx = ka_init(), *result;
 
     ka_free(eval_code(&ctx, "i := 0; while (i < 10) { i += 1 }"));
     assert(*ctx->number == 10);

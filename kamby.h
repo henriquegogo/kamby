@@ -254,7 +254,7 @@ static inline KaNode *ka_del(KaNode **ctx, KaNode *args)
 
 static inline KaNode *ka_key(KaNode **ctx, KaNode *args)
 {
-    if (!args || !args->next) {
+    if (!args) {
         ka_free(args);
         return ka_new(KA_NONE);
     }
@@ -269,8 +269,11 @@ static inline KaNode *ka_key(KaNode **ctx, KaNode *args)
 
 static inline KaNode *ka_get(KaNode **ctx, KaNode *args)
 {
-    if (!args) return ka_new(KA_NONE);
-    return ka_copy(ka_ref(ctx, args));
+    if (args && args->type >= KA_NUMBER && args->type <= KA_SYMBOL) {
+        return ka_copy(ka_ref(ctx, args));
+    } else {
+        return ka_copy(ka_ref(ctx, ka_number(0)));
+    }
 }
 
 static inline KaNode *ka_def(KaNode **ctx, KaNode *args)
