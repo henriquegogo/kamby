@@ -1223,15 +1223,17 @@ static inline KaNode *ka_parser(char *text, int *pos)
             KaNode *next = b ? b->next : NULL;
             KaNode *expr = NULL;
             char *sym = (op->type == KA_SYMBOL) ? op->symbol : (char *)"";
-            int isunary = strchr("$!", sym[0]) && !sym[1];
-            int isassign = !strcmp("=", sym) || (
-                strchr("+-*/%:", sym[0]) && strchr("=", sym[1] ? sym[1] : ' ')
+            char c0 = sym[0], c1 = sym[1];
+            int isunary = (c0 == '$' || c0 == '!') && !c1;
+            int isassign = (c0 == '=' && !c1) || (
+                (c0 == '+' || c0 == '-' || c0 == '*' || c0 == '/' || 
+                 c0 == '%' || c0 == ':') && c1 == '='
             );
-            int iskey = !strcmp(":", sym);
-            int isbind = !strcmp(".", sym);
-            int isexpr = !strcmp("?", sym);
+            int iskey = (c0 == ':' && !c1);
+            int isbind = (c0 == '.' && !c1);
+            int isexpr = (c0 == '?' && !c1);
             int ispunctuation = !isunary && !iskey && !isassign && !isbind &&
-                !isexpr && ispunct(sym[0]);
+                !isexpr && ispunct(c0);
 
             if (step == 1 && isunary) {
                 a->next = ka_new(KA_EXPR);
